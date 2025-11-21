@@ -1,3 +1,6 @@
 [submodule "cheshire"]
 	path = cheshire
 	url = https://github.com/pulp-platform/cheshire
+[submodule "nvdla/block-nvdla-sifive"]
+	path = nvdla/block-nvdla-sifive
+	url = https://github.com/sifive/block-nvdla-sifive

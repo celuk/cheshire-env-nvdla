@@ -4,7 +4,7 @@ from pathlib import Path
 
 from cocotb.runner import get_runner
 
-ROOT="/home/shc/projects/cheshire-env/cheshire"
+ROOT="/home/shc/projects/cheshire-env-nvdla/cheshire"
 
 BINARY="../../../cheshire/sw/tests/helloworld.spm.elf"
 BOOTMODE=0
@@ -650,10 +650,26 @@ def run_test(simulator: str, test_file: Path, top_module: str, waves: bool, cfil
     rtl_dir = Path(SCRIPT_DIR / "../../rtl")
     sim_dir = Path(SCRIPT_DIR / "../../rtl/sim")
 
+    submodule_dirs = [
+        Path(SCRIPT_DIR / "../../nvdla/block-nvdla-sifive/vsrc/small")
+    ]
+
+    submodule_verilog_files = []
+    submodule_system_verilog_files = []
+    submodule_verilog_headers = []
+    submodule_system_verilog_headers = []
+    for submodule_dir in submodule_dirs:
+        submodule_verilog_files.extend(submodule_dir.rglob("*.v"))
+        submodule_system_verilog_files.extend(submodule_dir.rglob("*.sv"))
+        submodule_verilog_headers.extend(submodule_dir.rglob("*.vh"))
+        submodule_system_verilog_headers.extend(submodule_dir.rglob("*.svh"))
+
     verilog_files = FILE_LIST
 
     verilog_sources = (
         list(verilog_files)
+        + submodule_verilog_files
+        + submodule_system_verilog_files
         + list(["../../rtl/src/cheshire_soc_wrap.sv"])
         + list(["../../rtl/src/ddr3_controller.sv"])
         + list(["../../rtl/src/ddr3_core.sv"])
@@ -662,6 +678,18 @@ def run_test(simulator: str, test_file: Path, top_module: str, waves: bool, cfil
         + list(["../../rtl/src/dram_controller_axi.sv"])
         + list(["../../rtl/src/dram_controller_wb.sv"])
         + list(["../../rtl/sim/ddr3.v"])
+        + list([Path(SCRIPT_DIR / "../../nvdla/block-nvdla-sifive/vsrc/defines/defs.v")])
+        + list([Path(SCRIPT_DIR / "../../nvdla/block-nvdla-sifive/hw/vmod/vlibs/nv_assert_no_x.vlib")])
+        + list([Path(SCRIPT_DIR / "../../nvdla/block-nvdla-sifive/hw/vmod/vlibs/RANDFUNC.vlib")])
+        + list([Path(SCRIPT_DIR / "../../nvdla/block-nvdla-sifive/hw/vmod/vlibs/no_lib_cells.vlib")])
+        + list([Path(SCRIPT_DIR / "../../nvdla/block-nvdla-sifive/hw/vmod/vlibs/nv_assert_fifo.vlib")])
+        + list([Path(SCRIPT_DIR / "../../nvdla/block-nvdla-sifive/hw/vmod/vlibs/nv_assert_never.vlib")])
+        + list([Path(SCRIPT_DIR / "../../nvdla/block-nvdla-sifive/hw/vmod/vlibs/nv_assert_always.vlib")])
+        + list([Path(SCRIPT_DIR / "../../nvdla/block-nvdla-sifive/hw/vmod/vlibs/nv_assert_one_hot.vlib")])
+        + list([Path(SCRIPT_DIR / "../../nvdla/block-nvdla-sifive/hw/vmod/vlibs/nv_assert_zero_one_hot.vlib")])
+        + list([Path(SCRIPT_DIR / "../../nvdla/block-nvdla-sifive/hw/vmod/vlibs/nv_assert_vld_credit_max.vlib")])
+        + list([Path(SCRIPT_DIR / "../../nvdla/block-nvdla-sifive/hw/vmod/vlibs/nv_assert_at_time_interval.vlib")])
+        + list([Path(SCRIPT_DIR / "../../nvdla/block-nvdla-sifive/hw/vmod/vlibs/nv_assert_hold_throughout_event_interval.vlib")])
         + list(["../../rtl/vivado_ip/clk_wiz_0_sim_netlist.v"])
         + list(["/tools/Xilinx/Vivado/2022.2/data/verilog/src/glbl.v"])
         + list(["/tools/Xilinx/Vivado/2022.2/data/verilog/src/unisims/OBUFDS.v"])
@@ -676,13 +704,34 @@ def run_test(simulator: str, test_file: Path, top_module: str, waves: bool, cfil
         + list(["/tools/Xilinx/Vivado/2022.2/data/verilog/src/unisims/MMCME2_ADV.v"])
     )
 
-    #verilog_sources = list(dict.fromkeys(verilog_sources))
+    verilog_sources = [
+        path for path in verilog_sources
+        if not str(path).rsplit('/', 1)[-1].endswith("NV_NVDLA_SDP_HLS_Y_idx_top.v")
+        and not str(path).rsplit('/', 1)[-1].endswith("NV_NVDLA_SDP_HLS_Y_cvt_top.v")
+        and not str(path).rsplit('/', 1)[-1].endswith("NV_NVDLA_SDP_HLS_Y_int_core.v")
+        and not str(path).rsplit('/', 1)[-1].endswith("NV_NVDLA_SDP_CORE_Y_lut.v")
+        and not str(path).rsplit('/', 1)[-1].endswith("NV_NVDLA_SDP_HLS_Y_inp_top.v")
+        #and not str(path).rsplit('/', 1)[-1].endswith("NV_NVDLA_CMAC_CORE_mac.v")
+        #and not str(path).rsplit('/', 1)[-1].endswith("NV_NVDLA_CMAC_core.v")
+        #and not str(path).rsplit('/', 1)[-1].startswith("tb_")
+        #and not str(path).rsplit('/', 1)[-1].startswith("tb.sv")
+        #and not str(path).rsplit('/', 1)[-1].endswith("_tb.sv")
+        #and not str(path).rsplit('/', 1)[-1].endswith("_tb.v")
+    ]
+
+    verilog_sources = list(dict.fromkeys(verilog_sources))
 
     vivado_ip_vhdls = ["/tools/Xilinx/Vivado/2022.2/data/vhdl/src/unisims/unisim_VCOMP.vhd", "/tools/Xilinx/Vivado/2022.2/data/vhdl/src/unisims/unisim_VPKG.vhd"]
 
     include_dirs = [
-        #header.parent for header in verilog_sources
+        header.parent
+        for header in list(submodule_verilog_headers)
+        + list(submodule_system_verilog_headers)
     ]
+
+    for submodule_dir in submodule_dirs:
+        subdirectories = [x[0] for x in os.walk(submodule_dir)]
+        include_dirs.extend(subdirectories)
 
     include_dirs.extend(list(INC_DIRS))
 

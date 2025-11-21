@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-ROOT="/home/shc/projects/cheshire-env/cheshire"
+ROOT="/home/shc/projects/cheshire-env-nvdla/cheshire"
 
 FILE_LIST=(
     "$ROOT/.bender/git/checkouts/common_verification-d4dd88aaa1a6fd2b/src/clk_rst_gen.sv"

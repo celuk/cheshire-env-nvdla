@@ -668,8 +668,7 @@ def run_test(simulator: str, test_file: Path, top_module: str, waves: bool, cfil
 
     verilog_sources = (
         list(verilog_files)
-        + submodule_verilog_files
-        + submodule_system_verilog_files
+        + list(["../../rtl/header.vh"])
         + list(["../../rtl/src/cheshire_soc_wrap.sv"])
         + list(["../../rtl/src/ddr3_controller.sv"])
         + list(["../../rtl/src/ddr3_core.sv"])
@@ -677,7 +676,10 @@ def run_test(simulator: str, test_file: Path, top_module: str, waves: bool, cfil
         + list(["../../rtl/src/ddr3_dfi_seq.sv"])
         + list(["../../rtl/src/dram_controller_axi.sv"])
         + list(["../../rtl/src/dram_controller_wb.sv"])
+        + list(["../../rtl/src/nvdla_wrapper_axi.sv"])
         + list(["../../rtl/sim/ddr3.v"])
+        + submodule_verilog_files
+        + submodule_system_verilog_files
         + list([Path(SCRIPT_DIR / "../../nvdla/block-nvdla-sifive/vsrc/defines/defs.v")])
         + list([Path(SCRIPT_DIR / "../../nvdla/block-nvdla-sifive/hw/vmod/vlibs/nv_assert_no_x.vlib")])
         + list([Path(SCRIPT_DIR / "../../nvdla/block-nvdla-sifive/hw/vmod/vlibs/RANDFUNC.vlib")])

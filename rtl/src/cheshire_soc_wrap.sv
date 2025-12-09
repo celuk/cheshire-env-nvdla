@@ -10,7 +10,10 @@ module cheshire_soc_wrap import cheshire_pkg::*; #(
   parameter int unsigned SelectedCfg = 32'd0,
   parameter bit          UseDramSys  = 1'b0,
   parameter time          ClkPeriodRtc      = 30518ns,
-  parameter int unsigned  RstCycles         = 5
+  parameter int unsigned  RstCycles         = 5,
+  parameter time          ClkPeriodSys      = 20ns,
+  parameter real          TAppl             = 0.1,
+  parameter real          TTest             = 0.9
 )
 (
   `ifdef ZC706
@@ -238,112 +241,40 @@ module cheshire_soc_wrap import cheshire_pkg::*; #(
   assign spih_sd  = spih_sd_en;
   assign spih_sd_i = spih_sd;
 
-  `ifdef DRAM_SIM
-    wire ddr3_reset_n;
-    wire ddr3_cke;
-    wire ddr3_ck_p;
-    wire ddr3_ck_n;
-    wire ddr3_cs_n;
-    wire ddr3_ras_n;
-    wire ddr3_cas_n;
-    wire ddr3_we_n;
-    wire [2:0] ddr3_ba;
-    wire [13:0] ddr3_addr;
-    wire ddr3_odt;
-    wire [1:0] ddr3_dm;
-    wire [1:0] ddr3_dqs_p;
-    wire [1:0] ddr3_dqs_n;
-    wire [15:0] ddr3_dq;
-
-    ddr3 ddr3_dut (
-      .rst_n  (ddr3_reset_n),
-      .ck     (ddr3_ck_p),
-      .ck_n   (ddr3_ck_n),
-      .cke    (ddr3_cke),
-      .cs_n   (ddr3_cs_n),
-      .ras_n  (ddr3_ras_n),
-      .cas_n  (ddr3_cas_n),
-      .we_n   (ddr3_we_n),
-      .dm_tdqs(ddr3_dm),
-      .ba     (ddr3_ba),
-      .addr   (ddr3_addr),
-      .dq     (ddr3_dq),
-      .dqs    (ddr3_dqs_p),
-      .dqs_n  (ddr3_dqs_n),
-      .tdqs_n (),
-      .odt    (ddr3_odt)
+  axi_sim_mem #(
+      .AddrWidth          ( 31    ),
+      .DataWidth          ( WrapCfg.AxiDataWidth ),
+      .IdWidth            ( $bits(axi_llc_id_t) ),
+      .UserWidth          ( WrapCfg.AxiUserWidth ),
+      .axi_req_t          ( axi_llc_req_t ),
+      .axi_rsp_t          ( axi_llc_rsp_t ),
+      .WarnUninitialized  ( 0 ),
+      .ClearErrOnAccess   ( 1 ),
+      .ApplDelay          ( ClkPeriodSys * TAppl ),
+      .AcqDelay           ( ClkPeriodSys * TTest )
+    ) i_dram_sim_mem (
+      .clk_i              ( clk   ),
+      .rst_ni             ( rst_n ),
+      .axi_req_i          ( axi_llc_mst_req ),
+      .axi_rsp_o          ( axi_llc_mst_rsp ),
+      .mon_w_valid_o      ( ),
+      .mon_w_addr_o       ( ),
+      .mon_w_data_o       ( ),
+      .mon_w_id_o         ( ),
+      .mon_w_user_o       ( ),
+      .mon_w_beat_count_o ( ),
+      .mon_w_last_o       ( ),
+      .mon_r_valid_o      ( ),
+      .mon_r_addr_o       ( ),
+      .mon_r_data_o       ( ),
+      .mon_r_id_o         ( ),
+      .mon_r_user_o       ( ),
+      .mon_r_beat_count_o ( ),
+      .mon_r_last_o       ( )
     );
-  `endif
 
-  dram_controller_axi #(
-    .AXI_ID_WIDTH  ( $bits(axi_llc_mst_req.ar.id) ), // 6
-    .AXI_ADDR_WIDTH( WrapCfg.AddrWidth ),
-    .AXI_DATA_WIDTH( WrapCfg.AxiDataWidth )
-  ) dram_controller (
-    .clk_i(clkwiz_o),
-    .rst_ni(rst_n),
-
-    .s_axi_awvalid(axi_llc_mst_req.aw_valid),
-    .s_axi_awready(axi_llc_mst_rsp.aw_ready),
-    .s_axi_awaddr(axi_llc_mst_req.aw.addr),
-    .s_axi_awid(axi_llc_mst_req.aw.id),
-    .s_axi_awlen(axi_llc_mst_req.aw.len),
-    .s_axi_awsize(axi_llc_mst_req.aw.size),
-    .s_axi_awburst(axi_llc_mst_req.aw.burst),
-    .s_axi_awprot(axi_llc_mst_req.aw.prot),
-
-    .s_axi_wvalid(axi_llc_mst_req.w_valid),
-    .s_axi_wready(axi_llc_mst_rsp.w_ready),
-    .s_axi_wdata(axi_llc_mst_req.w.data),
-    .s_axi_wstrb(axi_llc_mst_req.w.strb),
-    .s_axi_wlast(axi_llc_mst_req.w.last),
-
-    .s_axi_bvalid(axi_llc_mst_rsp.b_valid),
-    .s_axi_bready(axi_llc_mst_req.b_ready),
-    .s_axi_bid(axi_llc_mst_rsp.b.id),
-    .s_axi_bresp(axi_llc_mst_rsp.b.resp),
-
-    .s_axi_arvalid(axi_llc_mst_req.ar_valid),
-    .s_axi_arready(axi_llc_mst_rsp.ar_ready),
-    .s_axi_araddr(axi_llc_mst_req.ar.addr),
-    .s_axi_arid(axi_llc_mst_req.ar.id),
-    .s_axi_arlen(axi_llc_mst_req.ar.len),
-    .s_axi_arsize(axi_llc_mst_req.ar.size),
-    .s_axi_arburst(axi_llc_mst_req.ar.burst),
-    .s_axi_arprot(axi_llc_mst_req.ar.prot),
-
-    .s_axi_rvalid(axi_llc_mst_rsp.r_valid),
-    .s_axi_rready(axi_llc_mst_req.r_ready),
-    .s_axi_rid(axi_llc_mst_rsp.r.id),
-    .s_axi_rdata(axi_llc_mst_rsp.r.data),
-    .s_axi_rresp(axi_llc_mst_rsp.r.resp),
-    .s_axi_rlast(axi_llc_mst_rsp.r.last),
-
-    .ddr3_reset_n(ddr3_reset_n),
-    .ddr3_cke(ddr3_cke),
-    .ddr3_ck_p(ddr3_ck_p),
-    .ddr3_ck_n(ddr3_ck_n),
-    .ddr3_cs_n(ddr3_cs_n),
-    .ddr3_ras_n(ddr3_ras_n),
-    .ddr3_cas_n(ddr3_cas_n),
-    .ddr3_we_n(ddr3_we_n),
-    .ddr3_ba(ddr3_ba),
-    .ddr3_addr(ddr3_addr),
-    .ddr3_odt(ddr3_odt),
-    .ddr3_dm(ddr3_dm),
-    .ddr3_dqs_p(ddr3_dqs_p),
-    .ddr3_dqs_n(ddr3_dqs_n),
-    .ddr3_dq(ddr3_dq),
-
-    .clk100(clk100),
-    .clk_ddr(clk_ddr),
-    .clk_ref(clk_ref),
-    .clk_ddr_dqs(clk_ddr_dqs),
-
-    .uart_dram_write_we_i(uart_dram_write_we_i),
-    .uart_dram_write_addr_i(uart_dram_write_addr_i),
-    .uart_dram_write_data_i(uart_dram_write_data_i),
-    .uart_dram_write_rst_i(uart_dram_write_rst_i)
-  );
+    initial begin
+      $readmemh("/home/shc/projects/cheshire-env-nvdla/cheshire/sw/tests/helloworld.dram.memh", i_dram_sim_mem.mem);
+    end
 
 endmodule

@@ -1,14 +1,13 @@
 diff --git a/.gitignore b/.gitignore
-index 4c8e9b8..b6b7ecb 100644
+index 4c8e9b8..ae10afb 100644
 --- a/.gitignore
 +++ b/.gitignore
-@@ -53,3 +53,6 @@ target/xilinx/build
+@@ -53,3 +53,5 @@ target/xilinx/build
  target/xilinx/out
  target/xilinx/scripts/add_sources.*
  vivado*
 +
 +*mem_init.txt
-+*.hex
 diff --git a/hw/bootrom/cheshire_bootrom.c b/hw/bootrom/cheshire_bootrom.c
 index 43bae50..a3eddbf 100644
 --- a/hw/bootrom/cheshire_bootrom.c
@@ -3943,10 +3942,93 @@ index 6f97ad5..4041191 100644
              2014: data_o = 32'h00000000 /* 0x1f78 */;
              2015: data_o = 32'h00000000 /* 0x1f7c */;
 diff --git a/hw/cheshire_pkg.sv b/hw/cheshire_pkg.sv
-index 0163af7..1a0e809 100644
+index 0163af7..9116396 100644
 --- a/hw/cheshire_pkg.sv
 +++ b/hw/cheshire_pkg.sv
-@@ -543,7 +543,7 @@ package cheshire_pkg;
+@@ -134,6 +134,7 @@ package cheshire_pkg;
+     bit     SerialLink;
+     bit     Vga;
+     bit     Usb;
++    bit     Nvdla;
+     bit     AxiRt;
+     bit     Clic;
+     bit     IrqRouter;
+@@ -212,12 +213,14 @@ package cheshire_pkg;
+     axi_err_intr_t cores;
+     axi_err_intr_t dma;
+     axi_err_intr_t vga;
++    axi_err_intr_t nvdla;
+   } cheshire_bus_err_intr_t;
+ 
+   // Defined interrupts
+   typedef struct packed {
+     cheshire_bus_err_intr_t bus_err;
+     logic [31:0] gpio;
++    logic nvdla;
+     logic usb;
+     logic spih_spi_event;
+     logic spih_error;
+@@ -277,6 +280,7 @@ package cheshire_pkg;
+   localparam doub_bt AmBrom   = 'h0200_0000;  // Base of reg peripherals
+   localparam doub_bt AmRegs   = 'h0300_0000;
+   localparam doub_bt AmLlc    = 'h0300_1000;
++  localparam doub_bt AmNvdla  = 'h0302_0000;
+   localparam doub_bt AmSlink  = 'h0300_6000;
+   localparam doub_bt AmBusErr = 'h0300_9000;
+   localparam doub_bt AmSpm    = 'h1000_0000;  // Cached region at bottom, uncached on top
+@@ -289,7 +293,8 @@ package cheshire_pkg;
+   // Reg bus error unit indices
+   localparam int unsigned RegBusErrVga        = 0;
+   localparam int unsigned RegBusErrDma        = 1;
+-  localparam int unsigned RegBusErrCoresBase  = 2;
++  localparam int unsigned RegBusErrNvdla      = 2;
++  localparam int unsigned RegBusErrCoresBase  = 3;
+ 
+   // AXI Xbar master indices
+   typedef struct packed {
+@@ -299,6 +304,7 @@ package cheshire_pkg;
+     aw_bt slink;
+     aw_bt vga;
+     aw_bt usb;
++    aw_bt nvdla;
+     aw_bt ext_base;
+     aw_bt num_in;
+   } axi_in_t;
+@@ -312,6 +318,7 @@ package cheshire_pkg;
+     if (cfg.SerialLink) begin i++; ret.slink = i; end
+     if (cfg.Vga)        begin i++; ret.vga   = i; end
+     if (cfg.Usb)        begin i++; ret.usb   = i; end
++    if (cfg.Nvdla)      begin i++; ret.nvdla = i; end
+     i++;
+     ret.ext_base = i;
+     ret.num_in = i + cfg.AxiExtNumMst;
+@@ -333,6 +340,7 @@ package cheshire_pkg;
+     aw_bt spm;
+     aw_bt dma;
+     aw_bt slink;
++    aw_bt nvdla;
+     aw_bt ext_base;
+     aw_bt num_out;
+     aw_bt num_rules;
+@@ -360,6 +368,8 @@ package cheshire_pkg;
+     if (cfg.Dma)          begin i++; r++; ret.dma = i; ret.map[r] = '{i, 'h0100_0000, 'h0100_1000}; end
+     if (cfg.SerialLink)   begin i++; r++; ret.slink = i;
+         ret.map[r] = '{i, cfg.SlinkRegionStart, cfg.SlinkRegionEnd}; end
++    if (cfg.Nvdla)        begin i++; r++; ret.nvdla = i;
++        ret.map[r] = '{i, AmNvdla, AmNvdla + 'h40000}; end
+     // External port indices start after internal ones
+     i++; r++;
+     ret.ext_base  = i;
+@@ -424,7 +434,7 @@ package cheshire_pkg;
+     if (cfg.Clic) for (int j = 0; j < cfg.NumCores; j++) begin
+       i++; ret.clic[j]    = i; r++; ret.map[r] = '{i, AmClic + j*'h40000, AmClic + (j+1)*'h40000};
+     end
+-    if (cfg.BusErr) for (int j = 0; j < 2 + cfg.NumCores; j++) begin
++    if (cfg.BusErr) for (int j = 0; j < 3 + cfg.NumCores; j++) begin
+       i++; ret.bus_err[j] = i; r++; ret.map[r] = '{i, AmBusErr + j*'h40,  AmBusErr + (j+1)*'h40};
+     end
+     i++; r++;
+@@ -543,7 +553,7 @@ package cheshire_pkg;
        NrCachedRegionRules   : 3,   // CachedSPM, LLCOut, ExtCIE
        CachedRegionAddrBase  : {AmSpm,   cfg.LlcOutRegionStart,  CieBase},
        CachedRegionLength    : {SizeSpm, SizeLlcOut,             cfg.Cva6ExtCieLength},
@@ -3955,7 +4037,7 @@ index 0163af7..1a0e809 100644
        DebugEn               : 1,
        NonIdemPotenceEn      : 0,
        AxiBurstWriteEn       : 0
-@@ -569,8 +569,8 @@ package cheshire_pkg;
+@@ -569,8 +579,8 @@ package cheshire_pkg;
      Cva6ExtCieOnTop   : 0,
      // Harts
      NumCores          : 1,
@@ -3966,7 +4048,7 @@ index 0163af7..1a0e809 100644
      CoreUserAmoOffs   : 0, // Convention: lower AMO bits for cores, MSB for serial link
      // Interrupts
      NumExtInIntrs     : 0,
-@@ -580,24 +580,24 @@ package cheshire_pkg;
+@@ -580,24 +590,24 @@ package cheshire_pkg;
      ClicIntCtlBits    : 8,
      NumExtIntrSyncs   : 2,
      // Interconnect
@@ -3997,7 +4079,7 @@ index 0163af7..1a0e809 100644
      // Features
      Bootrom           : 1,
      Uart              : 1,
-@@ -605,18 +605,18 @@ package cheshire_pkg;
+@@ -605,18 +615,19 @@ package cheshire_pkg;
      SpiHost           : 1,
      Gpio              : 1,
      Dma               : 1,
@@ -4007,6 +4089,7 @@ index 0163af7..1a0e809 100644
 +    SerialLink        : 0,
 +    Vga               : 0,
 +    Usb               : 0,
++    Nvdla             : 1,
      AxiRt             : 0,
      Clic              : 0,
      IrqRouter         : 0,
@@ -4022,7 +4105,7 @@ index 0163af7..1a0e809 100644
      DbgAmoNumCuts     : 1,
      DbgAmoPostCut     : 1,
      // LLC: 128 KiB, up to 2 GiB DRAM
-@@ -624,8 +624,8 @@ package cheshire_pkg;
+@@ -624,8 +635,8 @@ package cheshire_pkg;
      LlcSetAssoc       : 8,
      LlcNumLines       : 256,
      LlcNumBlocks      : 8,
@@ -4033,7 +4116,7 @@ index 0163af7..1a0e809 100644
      LlcAmoNumCuts     : 1,
      LlcAmoPostCut     : 1,
      LlcOutConnect     : 1,
-@@ -638,10 +638,10 @@ package cheshire_pkg;
+@@ -638,10 +649,10 @@ package cheshire_pkg;
      VgaHCountWidth    : 24, // TODO: Default is 32; is this needed?
      VgaVCountWidth    : 24, // TODO: See above
      VgaBufferDepth    : 16,
@@ -4047,7 +4130,7 @@ index 0163af7..1a0e809 100644
      SlinkMaxClkDiv    : 1024,
      SlinkRegionStart  : 64'h1_0000_0000,
      SlinkRegionEnd    : 64'h2_0000_0000,
-@@ -649,12 +649,12 @@ package cheshire_pkg;
+@@ -649,12 +660,12 @@ package cheshire_pkg;
      SlinkTxAddrDomain : 'h0000_0000,
      SlinkUserAmoBit   : 1,  // Convention: lower AMO bits for cores, MSB for serial link
      // USB config
@@ -4064,24 +4147,23 @@ index 0163af7..1a0e809 100644
      DmaConfAmoPostCut   : 1,
      DmaConfEnableTwoD   : 1,
 diff --git a/hw/cheshire_soc.sv b/hw/cheshire_soc.sv
-index b3b6254..1b72a1d 100644
+index b3b6254..838e475 100644
 --- a/hw/cheshire_soc.sv
 +++ b/hw/cheshire_soc.sv
-@@ -209,6 +209,8 @@ module cheshire_soc import cheshire_pkg::*; #(
+@@ -209,16 +209,15 @@ module cheshire_soc import cheshire_pkg::*; #(
      addr_t end_addr;
    } addr_rule_t;
  
-+  // Xcelium complains about it
-+  /*
-   // Generate address map
-   function automatic addr_rule_t [AxiOut.num_rules-1:0] gen_axi_map();
-     addr_rule_t [AxiOut.num_rules-1:0] ret;
-@@ -219,6 +221,17 @@ module cheshire_soc import cheshire_pkg::*; #(
-   endfunction
- 
-   localparam addr_rule_t [AxiOut.num_rules-1:0] AxiMap = gen_axi_map();
-+  */
-+
+-  // Generate address map
+-  function automatic addr_rule_t [AxiOut.num_rules-1:0] gen_axi_map();
+-    addr_rule_t [AxiOut.num_rules-1:0] ret;
+-    for (int i = 0; i < AxiOut.num_rules; ++i)
+-      ret[i] = '{idx: AxiOut.map[i].idx,
+-          start_addr: AxiOut.map[i].start, end_addr: AxiOut.map[i].pte};
+-    return ret;
+-  endfunction
+-
+-  localparam addr_rule_t [AxiOut.num_rules-1:0] AxiMap = gen_axi_map();
 +  wire addr_rule_t [AxiOut.num_rules-1:0] AxiMap;
 +  genvar i_axi;
 +  generate
@@ -4094,21 +4176,20 @@ index b3b6254..1b72a1d 100644
  
    // Connectivity of Xbar
    axi_mst_req_t [AxiIn.num_in-1:0]    axi_in_req, axi_rt_in_req;
-@@ -297,6 +310,8 @@ module cheshire_soc import cheshire_pkg::*; #(
+@@ -297,16 +296,15 @@ module cheshire_soc import cheshire_pkg::*; #(
    // Generate indices and get maps for all ports
    localparam reg_out_t  RegOut = gen_reg_out(Cfg);
  
-+  // Xcelium complains about it
-+  /*
-   // Generate Reg address map
-   function automatic addr_rule_t [RegOut.num_rules-1:0] gen_reg_map();
-     addr_rule_t [RegOut.num_rules-1:0] ret;
-@@ -307,6 +322,17 @@ module cheshire_soc import cheshire_pkg::*; #(
-   endfunction
- 
-   localparam addr_rule_t [RegOut.num_rules-1:0] RegMap = gen_reg_map();
-+  */
-+
+-  // Generate Reg address map
+-  function automatic addr_rule_t [RegOut.num_rules-1:0] gen_reg_map();
+-    addr_rule_t [RegOut.num_rules-1:0] ret;
+-    for (int i = 0; i < RegOut.num_rules; ++i)
+-      ret[i] = '{idx: RegOut.map[i].idx,
+-          start_addr: RegOut.map[i].start, end_addr: RegOut.map[i].pte};
+-    return ret;
+-  endfunction
+-
+-  localparam addr_rule_t [RegOut.num_rules-1:0] RegMap = gen_reg_map();
 +  wire addr_rule_t [RegOut.num_rules-1:0] RegMap;
 +  genvar i_reg;
 +  generate
@@ -4121,7 +4202,15 @@ index b3b6254..1b72a1d 100644
  
    logic [cf_math_pkg::idx_width(RegOut.num_out)-1:0] reg_select;
  
-@@ -1198,7 +1224,7 @@ module cheshire_soc import cheshire_pkg::*; #(
+@@ -1002,6 +1000,7 @@ module cheshire_soc import cheshire_pkg::*; #(
+       serial_link : Cfg.SerialLink,
+       vga         : Cfg.Vga,
+       usb         : Cfg.Usb,
++      //nvdla       : Cfg.Nvdla,
+       axirt       : Cfg.AxiRt,
+       clic        : Cfg.Clic,
+       irq_router  : Cfg.IrqRouter,
+@@ -1198,7 +1197,7 @@ module cheshire_soc import cheshire_pkg::*; #(
    if (Cfg.Uart) begin : gen_uart
  
      reg_uart_wrap #(
@@ -4130,6 +4219,129 @@ index b3b6254..1b72a1d 100644
        .reg_req_t  ( reg_req_t ),
        .reg_rsp_t  ( reg_rsp_t )
      ) i_uart (
+@@ -1714,6 +1713,122 @@ module cheshire_soc import cheshire_pkg::*; #(
+ 
+   end
+ 
++  if (Cfg.Nvdla) begin : gen_nvdla
++
++    axi_mst_req_t axi_nvdla_mst_req;
++
++    always_comb begin
++      axi_in_req[AxiIn.nvdla]         = axi_nvdla_mst_req;
++      axi_in_req[AxiIn.nvdla].aw.user = Cfg.AxiUserDefault;
++      axi_in_req[AxiIn.nvdla].w.user  = Cfg.AxiUserDefault;
++      axi_in_req[AxiIn.nvdla].ar.user = Cfg.AxiUserDefault;
++    end
++
++    nvdla_wrapper_axi #(
++        .AXI_ID_WIDTH ( Cfg.AxiMstIdWidth )
++    ) i_nvdla_wrapper (
++        .clk        ( clk_i ),
++        .rstn       ( rst_ni ),
++        // Master Port
++        .m_axi_awid ( axi_nvdla_mst_req.aw.id[7:0] ),
++        .m_axi_awaddr ( axi_nvdla_mst_req.aw.addr ),
++        .m_axi_awlen ( axi_nvdla_mst_req.aw.len ),
++        .m_axi_awsize ( axi_nvdla_mst_req.aw.size ),
++        .m_axi_awburst ( axi_nvdla_mst_req.aw.burst ),
++        .m_axi_awvalid ( axi_nvdla_mst_req.aw_valid ),
++        .m_axi_awready ( axi_in_rsp[AxiIn.nvdla].aw_ready ),
++        .m_axi_wdata ( axi_nvdla_mst_req.w.data ),
++        .m_axi_wstrb ( axi_nvdla_mst_req.w.strb ),
++        .m_axi_wlast ( axi_nvdla_mst_req.w.last ),
++        .m_axi_wvalid ( axi_nvdla_mst_req.w_valid ),
++        .m_axi_wready ( axi_in_rsp[AxiIn.nvdla].w_ready ),
++        .m_axi_bid ( axi_in_rsp[AxiIn.nvdla].b.id[7:0] ),
++        .m_axi_bresp ( axi_in_rsp[AxiIn.nvdla].b.resp ),
++        .m_axi_bvalid ( axi_in_rsp[AxiIn.nvdla].b_valid ),
++        .m_axi_bready ( axi_nvdla_mst_req.b_ready ),
++        .m_axi_arid ( axi_nvdla_mst_req.ar.id[7:0] ),
++        .m_axi_araddr ( axi_nvdla_mst_req.ar.addr ),
++        .m_axi_arlen ( axi_nvdla_mst_req.ar.len ),
++        .m_axi_arsize ( axi_nvdla_mst_req.ar.size ),
++        .m_axi_arburst ( axi_nvdla_mst_req.ar.burst ),
++        .m_axi_arvalid ( axi_nvdla_mst_req.ar_valid ),
++        .m_axi_arready ( axi_in_rsp[AxiIn.nvdla].ar_ready ),
++        .m_axi_rid ( axi_in_rsp[AxiIn.nvdla].r.id[7:0] ),
++        .m_axi_rdata ( axi_in_rsp[AxiIn.nvdla].r.data ),
++        .m_axi_rresp ( axi_in_rsp[AxiIn.nvdla].r.resp ),
++        .m_axi_rlast ( axi_in_rsp[AxiIn.nvdla].r.last ),
++        .m_axi_rvalid ( axi_in_rsp[AxiIn.nvdla].r_valid ),
++        .m_axi_rready ( axi_nvdla_mst_req.r_ready ),
++        // Slave Port
++        .s_axi_awid ( axi_out_req[AxiOut.nvdla].aw.id ),
++        .s_axi_awaddr ( axi_out_req[AxiOut.nvdla].aw.addr[31:0] ),
++        .s_axi_awlen ( axi_out_req[AxiOut.nvdla].aw.len ),
++        .s_axi_awsize ( axi_out_req[AxiOut.nvdla].aw.size ),
++        .s_axi_awburst ( axi_out_req[AxiOut.nvdla].aw.burst ),
++        .s_axi_awprot ( axi_out_req[AxiOut.nvdla].aw.prot ),
++        .s_axi_awvalid ( axi_out_req[AxiOut.nvdla].aw_valid ),
++        .s_axi_awready ( axi_out_rsp[AxiOut.nvdla].aw_ready ),
++        .s_axi_wdata ( axi_out_req[AxiOut.nvdla].w.data ),
++        .s_axi_wstrb ( axi_out_req[AxiOut.nvdla].w.strb ),
++        .s_axi_wlast ( axi_out_req[AxiOut.nvdla].w.last ),
++        .s_axi_wvalid ( axi_out_req[AxiOut.nvdla].w_valid ),
++        .s_axi_wready ( axi_out_rsp[AxiOut.nvdla].w_ready ),
++        .s_axi_bid ( axi_out_rsp[AxiOut.nvdla].b.id ),
++        .s_axi_bresp ( axi_out_rsp[AxiOut.nvdla].b.resp ),
++        .s_axi_bvalid ( axi_out_rsp[AxiOut.nvdla].b_valid ),
++        .s_axi_bready ( axi_out_req[AxiOut.nvdla].b_ready ),
++        .s_axi_arid ( axi_out_req[AxiOut.nvdla].ar.id ),
++        .s_axi_araddr ( axi_out_req[AxiOut.nvdla].ar.addr[31:0] ),
++        .s_axi_arlen ( axi_out_req[AxiOut.nvdla].ar.len ),
++        .s_axi_arsize ( axi_out_req[AxiOut.nvdla].ar.size ),
++        .s_axi_arburst ( axi_out_req[AxiOut.nvdla].ar.burst ),
++        .s_axi_arprot ( axi_out_req[AxiOut.nvdla].ar.prot ),
++        .s_axi_arvalid ( axi_out_req[AxiOut.nvdla].ar_valid ),
++        .s_axi_arready ( axi_out_rsp[AxiOut.nvdla].ar_ready ),
++        .s_axi_rid ( axi_out_rsp[AxiOut.nvdla].r.id ),
++        .s_axi_rdata ( axi_out_rsp[AxiOut.nvdla].r.data ),
++        .s_axi_rresp ( axi_out_rsp[AxiOut.nvdla].r.resp ),
++        .s_axi_rlast ( axi_out_rsp[AxiOut.nvdla].r.last ),
++        .s_axi_rvalid ( axi_out_rsp[AxiOut.nvdla].r_valid ),
++        .s_axi_rready ( axi_out_req[AxiOut.nvdla].r_ready ),
++        .dla_intr ( intr.intn.nvdla )
++    );
++
++    if (Cfg.BusErr) begin : gen_nvdla_bus_err
++      axi_err_unit_wrap #(
++        .AddrWidth          ( Cfg.AddrWidth     ),
++        .IdWidth            ( Cfg.AxiMstIdWidth ),
++        .UserErrBits        ( Cfg.AxiUserErrBits ),
++        .UserErrBitsOffset  ( Cfg.AxiUserErrLsb ),
++        .NumOutstanding     ( Cfg.DmaNumAxInFlight ),
++        .NumStoredErrors    ( 4 ),
++        .DropOldest         ( 1'b0 ),
++        .axi_req_t          ( axi_mst_req_t ),
++        .axi_rsp_t          ( axi_mst_rsp_t ),
++        .reg_req_t          ( reg_req_t ),
++        .reg_rsp_t          ( reg_rsp_t )
++      ) i_nvdla_bus_err (
++        .clk_i,
++        .rst_ni,
++        .testmode_i ( test_mode_i ),
++        .axi_req_i  ( axi_in_req[AxiIn.nvdla] ),
++        .axi_rsp_i  ( axi_in_rsp[AxiIn.nvdla] ),
++        .err_irq_o  ( intr.intn.bus_err.nvdla ),
++        .reg_req_i  ( reg_out_req[RegOut.bus_err[RegBusErrNvdla]] ),
++        .reg_rsp_o  ( reg_out_rsp[RegOut.bus_err[RegBusErrNvdla]] )
++      );
++    end
++
++  end else begin : gen_no_nvdla
++
++    assign intr.intn.nvdla = 0;
++
++  end
++
++  if (!(Cfg.Nvdla && Cfg.BusErr)) begin : gen_nvdla_bus_err_tie
++    assign intr.intn.bus_err.nvdla = '0;
++  end
++
+   //////////////////
+   //  Assertions  //
+   //////////////////
 diff --git a/sw/sw.mk b/sw/sw.mk
 index baa9ee4..a21618c 100644
 --- a/sw/sw.mk
@@ -4143,16 +4355,3 @@ index baa9ee4..a21618c 100644
  CHS_SW_CCFLAGS ?= $(CHS_SW_FLAGS) -ggdb -mcmodel=medany -mexplicit-relocs -fno-builtin -fverbose-asm -pipe
  CHS_SW_LDFLAGS ?= $(CHS_SW_FLAGS) -nostartfiles -Wl,--gc-sections -Wl,-L$(CHS_SW_LD_DIR)
  CHS_SW_ARFLAGS ?= --plugin=$(CHS_SW_LTOPLUG)
-diff --git a/sw/tests/helloworld.c b/sw/tests/helloworld.c
-index d946624..6d744bb 100644
---- a/sw/tests/helloworld.c
-+++ b/sw/tests/helloworld.c
-@@ -13,7 +13,7 @@
- #include "util.h"
- 
- int main(void) {
--    char str[] = "Hello World!\r\n";
-+    char str[] = "Hello World!\n";
-     uint32_t rtc_freq = *reg32(&__base_regs, CHESHIRE_RTC_FREQ_REG_OFFSET);
-     uint64_t reset_freq = clint_get_core_freq(rtc_freq, 2500);
-     uart_init(&__base_uart, reset_freq, __BOOT_BAUDRATE);

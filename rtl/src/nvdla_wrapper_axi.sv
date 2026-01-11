@@ -175,7 +175,7 @@ module nvdla_wrapper_axi #(
     assign penable = (current_state == S_READ_WAIT_APB) || (current_state == S_WRITE_WAIT_APB);
     assign pwrite  = is_write;
     assign paddr   = current_addr;
-    assign pwdata  = apb_wdata;
+    assign pwdata  = current_addr[2] ? apb_wdata[63:32] : apb_wdata[31:0];
 
     always_ff @(posedge clk or negedge rstn) begin
         if (!rstn) begin
@@ -226,7 +226,11 @@ module nvdla_wrapper_axi #(
                 end
                 S_READ_WAIT_APB: begin
                     if (pready && penable) begin
-                        reg_rdata <= prdata;
+                        if (current_addr[2]) begin
+                            reg_rdata <= {prdata, 32'h0};
+                        end else begin
+                            reg_rdata <= {32'h0, prdata};
+                        end
                     end
                 end
                 S_READ_RESP_AXI: begin

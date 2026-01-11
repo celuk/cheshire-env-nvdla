@@ -2,7 +2,7 @@
 `define ASSERTS_OFF 1
 `define TARGET_SYNTHESIS
 
-`define DRAM_SIM
+//`define DRAM_SIM
 //`define SIM
 `define ZC706
 
@@ -13,3 +13,9 @@
 `define SV_TESTPOINTS_OFF 1
 `define DESIGNWARE_NOEXIST 1
 `define SYNTHESIS 1
+`define FPGA 1
+`define VLIB_BYPASS_POWER_CG 1
+`define NV_FPGA_FIFOGEN 1
+`define FIFOGEN_MASTER_CLK_GATING_DISABLED 1
+//`define NV_FPGA_SYSTEM 1
+//`define NV_FPGA_UNIT 1

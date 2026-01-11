@@ -4148,7 +4148,7 @@ index 0163af7..923f8a1 100644
      DmaConfAmoPostCut   : 1,
      DmaConfEnableTwoD   : 1,
 diff --git a/hw/cheshire_soc.sv b/hw/cheshire_soc.sv
-index b3b6254..0553e2f 100644
+index b3b6254..f8e50e4 100644
 --- a/hw/cheshire_soc.sv
 +++ b/hw/cheshire_soc.sv
 @@ -209,16 +209,15 @@ module cheshire_soc import cheshire_pkg::*; #(
@@ -4241,7 +4241,7 @@ index b3b6254..0553e2f 100644
 +        .clk        ( clk_i ),
 +        .rstn       ( rst_ni ),
 +        // Master Port
-+        .m_axi_awid ( axi_nvdla_mst_req.aw.id[7:0] ),
++        .m_axi_awid ( axi_nvdla_mst_req.aw.id ),
 +        .m_axi_awaddr ( axi_nvdla_mst_req.aw.addr ),
 +        .m_axi_awlen ( axi_nvdla_mst_req.aw.len ),
 +        .m_axi_awsize ( axi_nvdla_mst_req.aw.size ),
@@ -4253,18 +4253,18 @@ index b3b6254..0553e2f 100644
 +        .m_axi_wlast ( axi_nvdla_mst_req.w.last ),
 +        .m_axi_wvalid ( axi_nvdla_mst_req.w_valid ),
 +        .m_axi_wready ( axi_in_rsp[AxiIn.nvdla].w_ready ),
-+        .m_axi_bid ( axi_in_rsp[AxiIn.nvdla].b.id[7:0] ),
++        .m_axi_bid ( axi_in_rsp[AxiIn.nvdla].b.id ),
 +        .m_axi_bresp ( axi_in_rsp[AxiIn.nvdla].b.resp ),
 +        .m_axi_bvalid ( axi_in_rsp[AxiIn.nvdla].b_valid ),
 +        .m_axi_bready ( axi_nvdla_mst_req.b_ready ),
-+        .m_axi_arid ( axi_nvdla_mst_req.ar.id[7:0] ),
++        .m_axi_arid ( axi_nvdla_mst_req.ar.id ),
 +        .m_axi_araddr ( axi_nvdla_mst_req.ar.addr ),
 +        .m_axi_arlen ( axi_nvdla_mst_req.ar.len ),
 +        .m_axi_arsize ( axi_nvdla_mst_req.ar.size ),
 +        .m_axi_arburst ( axi_nvdla_mst_req.ar.burst ),
 +        .m_axi_arvalid ( axi_nvdla_mst_req.ar_valid ),
 +        .m_axi_arready ( axi_in_rsp[AxiIn.nvdla].ar_ready ),
-+        .m_axi_rid ( axi_in_rsp[AxiIn.nvdla].r.id[7:0] ),
++        .m_axi_rid ( axi_in_rsp[AxiIn.nvdla].r.id ),
 +        .m_axi_rdata ( axi_in_rsp[AxiIn.nvdla].r.data ),
 +        .m_axi_rresp ( axi_in_rsp[AxiIn.nvdla].r.resp ),
 +        .m_axi_rlast ( axi_in_rsp[AxiIn.nvdla].r.last ),

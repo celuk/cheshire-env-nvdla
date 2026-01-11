@@ -101,7 +101,7 @@ reset:
 
 .PHONY: pico
 pico:
-	picocom -b 921600 /dev/ttyUSB$(ARGS) --imap lfcrlf
+	picocom -b 115200 /dev/ttyUSB$(ARGS) --imap lfcrlf --send-cmd "sz -t 1000"
 
 %:
 	@:
@@ -116,6 +116,19 @@ show:
 .PHONY: gen_dramw
 gen_dramw: rmtemp
 	python3 ./tools/generate_simple_dram_writes.py -f $(ARGS)
+
+.PHONY: program
+program:
+	$(XILINX_VIVADO)/bin/vivado -mode batch -nolog -nojournal -source vivado/program_zc706.tcl -tclargs $(ARGS)
+
+.PHONY: program_linux
+program_linux:
+	$(MAKE) program ARGS="/home/shc/projects/cva-soc/vivado/cva_soc_zc706/cva_soc_zc706.runs/impl_1/secure_soc.bit"
+	python3 tools/uart_send_data_to_dram.py -f /home/shc/projects/cheshire-linux-nvdla/riscv-opensbi-port/platform/template/custom.dtb.hex -p /dev/ttyUSB1 -sa 0x90000000 -b 921600
+	$(MAKE) program ARGS="/home/shc/projects/cva-soc/vivado/cva_soc_zc706/cva_soc_zc706.runs/impl_1/secure_soc.bit"
+	python3 tools/uart_send_data_to_dram.py -f /home/shc/projects/cheshire-linux-nvdla/riscv-linux-port/arch/riscv/boot/Image.hex -p /dev/ttyUSB1 -sa 0x00200000 -b 921600
+	$(MAKE) program ARGS="/home/shc/projects/cheshire-env-nvdla/vivado/cheshire_zc706/cheshire_zc706.runs/impl_1/cheshire_soc_wrap.bit"
+	python3 tools/uart_send_data_to_dram.py -f /home/shc/projects/cheshire-linux-nvdla/riscv-opensbi-port/build/platform/template/firmware/fw_dynamic.hex -p /dev/ttyUSB1
 
 .PHONY: clean
 clean:

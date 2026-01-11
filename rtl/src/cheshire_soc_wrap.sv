@@ -6,15 +6,7 @@
 
 //`default_nettype none
 
-module cheshire_soc_wrap import cheshire_pkg::*; #(
-  parameter int unsigned SelectedCfg = 32'd0,
-  parameter bit          UseDramSys  = 1'b0,
-  parameter time          ClkPeriodRtc      = 30518ns,
-  parameter int unsigned  RstCycles         = 5,
-  parameter time          ClkPeriodSys      = 20ns,
-  parameter real          TAppl             = 0.1,
-  parameter real          TTest             = 0.9
-)
+module cheshire_soc_wrap import cheshire_pkg::*;
 (
   `ifdef ZC706
   input  wire clk_p,
@@ -23,29 +15,11 @@ module cheshire_soc_wrap import cheshire_pkg::*; #(
   input wire clk_i,
   `endif
   input  logic rst_ni,
-  input  logic [1:0] boot_mode_i,
 
-  // JTAG
-  input  logic jtag_tck,
-  input  logic jtag_trst_n,
-  input  logic jtag_tms,
-  input  logic jtag_tdi,
-  output logic jtag_tdo,
-  // UART
-  output logic uart_tx,
-  input  logic uart_rx,
-  // I2C
-  inout  logic i2c_sda,
-  inout  logic i2c_scl,
-  // SPI Host
-  inout  logic                  spih_sck,
-  inout  logic [SpihNumCs-1:0]  spih_csb,
-  inout  logic [3:0]            spih_sd,
-  // Serial Link
-  input  logic [SlinkNumChan-1:0]                    slink_rcv_clk_i,
-  output logic [SlinkNumChan-1:0]                    slink_rcv_clk_o,
-  input  logic [SlinkNumChan-1:0][SlinkNumLanes-1:0]  slink_i,
-  output logic [SlinkNumChan-1:0][SlinkNumLanes-1:0]  slink_o
+  input  wire program_rx_i,
+  output wire prog_mode_led_o,
+   
+  output wire uart_tx_o
 
 `ifndef DRAM_SIM
   // DDR3 Interface
@@ -65,12 +39,35 @@ module cheshire_soc_wrap import cheshire_pkg::*; #(
   inout  logic [1:0] ddr3_dqs_n,
   inout  logic [15:0] ddr3_dq
 `endif
-
-  ,input wire uart_dram_write_we_i,
-  input wire [31:0] uart_dram_write_addr_i,
-  input wire [31:0] uart_dram_write_data_i,
-  input wire uart_dram_write_rst_i
 );
+
+  logic [1:0] boot_mode_i = 2'b00;
+  logic test_mode = 0;
+  // JTAG
+  logic jtag_tck;
+  logic jtag_trst_n;
+  logic jtag_tms;
+  logic jtag_tdi;
+  logic jtag_tdo;
+  // I2C
+  logic i2c_sda;
+  logic i2c_scl;
+  // SPI Host
+  logic                  spih_sck;
+  logic [SpihNumCs-1:0]  spih_csb;
+  logic [3:0]            spih_sd;
+  // Serial Link
+  logic [SlinkNumChan-1:0]                    slink_rcv_clk_i;
+  logic [SlinkNumChan-1:0]                    slink_rcv_clk_o;
+  logic [SlinkNumChan-1:0][SlinkNumLanes-1:0]  slink_i;
+  logic [SlinkNumChan-1:0][SlinkNumLanes-1:0]  slink_o;
+
+  logic system_reset_o;
+  logic uart_dram_write_we;
+  logic [31:0] uart_dram_write_addr;
+  logic [31:0] uart_dram_write_data;
+  logic uart_dram_write_rst;
+  logic uart_dram_mode;
 
   `ifdef BASYS3
      wire clkwiz_o;
@@ -81,7 +78,7 @@ module cheshire_soc_wrap import cheshire_pkg::*; #(
         .reset(~rst_ni),
         .locked(clkwiz_locked)
      );
-     wire rst_n = rst_ni & clkwiz_locked;
+     wire rst_n = rst_ni & system_reset_o & clkwiz_locked;
   `elsif ZC706
      wire pll_locked;
      wire clk100;
@@ -107,25 +104,66 @@ module cheshire_soc_wrap import cheshire_pkg::*; #(
      );
 
      wire clkwiz_o = clk_i;
-     wire rst_n = rst_ni & pll_locked; // & !uart_dram_mode
+     wire rst_n = rst_ni & system_reset_o & !uart_dram_mode & pll_locked; // & !uart_dram_mode
   `else
      wire clkwiz_o = clk_i;
-     wire rst_n = rst_ni;
+     wire rst_n = rst_ni & system_reset_o;
   `endif
 
-  logic test_mode = 0;
+  uart_programmer up_dram (
+     .clk_i(clkwiz_o),
+     .rst_ni(rst_ni `ifdef BASYS3 & clkwiz_locked `endif) // pll_locked
+     
+     ,.program_rx_i(program_rx_i)
+     ,.system_reset_o(system_reset_o)
+     ,.prog_mode_led_o(prog_mode_led_o)
+
+     ,.dram_write_we_o(uart_dram_write_we)
+     ,.dram_write_addr_o(uart_dram_write_addr)
+     ,.dram_write_data_o(uart_dram_write_data)
+     ,.dram_write_rst_o(uart_dram_write_rst)
+     ,.dram_mode_o(uart_dram_mode)
+  );
   
   logic rtc;
   `ifdef SIM
   clk_rst_gen #(
-    .ClkPeriod    ( ClkPeriodRtc ),
-    .RstClkCycles ( RstCycles )
+    .ClkPeriod    (100000ns), //( 30518000ns ),
+    .RstClkCycles ( 5 )
   ) i_clk_rst_rtc (
     .clk_o  ( rtc ),
     .rst_no ( )
   );
   `else
-  assign rtc = 1'b0;
+  //assign rtc = 1'b0;
+  /////////////////////////
+  // "RTC" Clock Divider //
+  /////////////////////////
+  logic rtc_clk_d, rtc_clk_q;
+  logic [15:0] counter_d, counter_q;
+
+  assign rtc = rtc_clk_q;
+
+  // Divide soc_clk (50 MHz) by 50 => 1 MHz RTC Clock
+  always_comb begin
+    counter_d = counter_q + 1;
+    rtc_clk_d = rtc_clk_q;
+
+    if(counter_q == 24) begin
+      counter_d = '0;
+      rtc_clk_d = ~rtc_clk_q;
+    end
+  end
+
+  always_ff @(posedge clkwiz_o, negedge rst_n) begin
+    if(~rst_n) begin
+      counter_q <= '0;
+      rtc_clk_q <= 0;
+    end else begin
+      counter_q <= counter_d;
+      rtc_clk_q <= rtc_clk_d;
+    end
+  end
   `endif
 
   localparam cheshire_cfg_t WrapCfg = DefaultCfg;
@@ -188,8 +226,8 @@ module cheshire_soc_wrap import cheshire_pkg::*; #(
     .jtag_tdi_i         ( jtag_tdi    ),
     .jtag_tdo_o         ( jtag_tdo    ),
     .jtag_tdo_oe_o      ( ),
-    .uart_tx_o          ( uart_tx ),
-    .uart_rx_i          ( uart_rx ),
+    .uart_tx_o          ( uart_tx_o ),
+    .uart_rx_i          ( program_rx_i ),
     .uart_rts_no        ( ),
     .uart_dtr_no        ( ),
     .uart_cts_ni        ( 1'b0 ),
@@ -241,40 +279,85 @@ module cheshire_soc_wrap import cheshire_pkg::*; #(
   assign spih_sd  = spih_sd_en;
   assign spih_sd_i = spih_sd;
 
-  axi_sim_mem #(
-      .AddrWidth          ( 31    ),
-      .DataWidth          ( WrapCfg.AxiDataWidth ),
-      .IdWidth            ( $bits(axi_llc_id_t) ),
-      .UserWidth          ( WrapCfg.AxiUserWidth ),
-      .axi_req_t          ( axi_llc_req_t ),
-      .axi_rsp_t          ( axi_llc_rsp_t ),
-      .WarnUninitialized  ( 0 ),
-      .ClearErrOnAccess   ( 1 ),
-      .ApplDelay          ( ClkPeriodSys * TAppl ),
-      .AcqDelay           ( ClkPeriodSys * TTest )
-    ) i_dram_sim_mem (
-      .clk_i              ( clk   ),
-      .rst_ni             ( rst_n ),
-      .axi_req_i          ( axi_llc_mst_req ),
-      .axi_rsp_o          ( axi_llc_mst_rsp ),
-      .mon_w_valid_o      ( ),
-      .mon_w_addr_o       ( ),
-      .mon_w_data_o       ( ),
-      .mon_w_id_o         ( ),
-      .mon_w_user_o       ( ),
-      .mon_w_beat_count_o ( ),
-      .mon_w_last_o       ( ),
-      .mon_r_valid_o      ( ),
-      .mon_r_addr_o       ( ),
-      .mon_r_data_o       ( ),
-      .mon_r_id_o         ( ),
-      .mon_r_user_o       ( ),
-      .mon_r_beat_count_o ( ),
-      .mon_r_last_o       ( )
-    );
+  `ifdef DRAM_SIM
+    wire ddr3_reset_n;
+    wire ddr3_cke;
+    wire ddr3_ck_p;
+    wire ddr3_ck_n;
+    wire ddr3_cs_n;
+    wire ddr3_ras_n;
+    wire ddr3_cas_n;
+    wire ddr3_we_n;
+    wire [2:0] ddr3_ba;
+    wire [13:0] ddr3_addr;
+    wire ddr3_odt;
+    wire [1:0] ddr3_dm;
+    wire [1:0] ddr3_dqs_p;
+    wire [1:0] ddr3_dqs_n;
+    wire [15:0] ddr3_dq;
 
-    initial begin
-      $readmemh("/home/shc/projects/cheshire-env-nvdla/cheshire/sw/tests/helloworld.dram.memh", i_dram_sim_mem.mem);
-    end
+    ddr3 ddr3_dut (
+      .rst_n  (ddr3_reset_n),
+      .ck     (ddr3_ck_p),
+      .ck_n   (ddr3_ck_n),
+      .cke    (ddr3_cke),
+      .cs_n   (ddr3_cs_n),
+      .ras_n  (ddr3_ras_n),
+      .cas_n  (ddr3_cas_n),
+      .we_n   (ddr3_we_n),
+      .dm_tdqs(ddr3_dm),
+      .ba     (ddr3_ba),
+      .addr   (ddr3_addr),
+      .dq     (ddr3_dq),
+      .dqs    (ddr3_dqs_p),
+      .dqs_n  (ddr3_dqs_n),
+      .tdqs_n (),
+      .odt    (ddr3_odt)
+    );
+  `endif
+
+  dram_wrapper #(
+    .axi_soc_aw_chan_t ( axi_llc_aw_chan_t ),
+    .axi_soc_w_chan_t  ( axi_llc_w_chan_t  ),
+    .axi_soc_b_chan_t  ( axi_llc_b_chan_t  ),
+    .axi_soc_ar_chan_t ( axi_llc_ar_chan_t ),
+    .axi_soc_r_chan_t  ( axi_llc_r_chan_t  ),
+    .axi_soc_req_t     ( axi_llc_req_t     ),
+    .axi_soc_resp_t    ( axi_llc_rsp_t     )
+  ) dram_controller (
+    .soc_resetn_i ( (rst_ni & system_reset_o & pll_locked) || uart_dram_mode ),
+    .soc_clk_i    ( clkwiz_o ),
+
+    .clk100       ( clk100 ),
+    .clk_ddr      ( clk_ddr ),
+    .clk_ref      ( clk_ref ),
+    .clk_ddr_dqs  ( clk_ddr_dqs ),
+
+    .uart_dram_write_we_i   ( uart_dram_write_we ),
+    .uart_dram_write_addr_i ( uart_dram_write_addr ),
+    .uart_dram_write_data_i ( uart_dram_write_data ),
+    .uart_dram_write_rst_i  ( 0 ),
+
+    // PHY interfaces
+    .ddr3_ck_p    ( ddr3_ck_p ),
+    .ddr3_ck_n    ( ddr3_ck_n ),
+    .ddr3_dq      ( ddr3_dq ),
+    .ddr3_dqs_n   ( ddr3_dqs_n ),
+    .ddr3_dqs_p   ( ddr3_dqs_p ),
+    .ddr3_addr    ( ddr3_addr ),
+    .ddr3_ba      ( ddr3_ba ),
+    .ddr3_ras_n   ( ddr3_ras_n ),
+    .ddr3_cas_n   ( ddr3_cas_n ),
+    .ddr3_we_n    ( ddr3_we_n ),
+    .ddr3_reset_n ( ddr3_reset_n ),
+    .ddr3_cke     ( ddr3_cke ),
+    .ddr3_cs_n    ( ddr3_cs_n ),
+    .ddr3_dm      ( ddr3_dm ),
+    .ddr3_odt     ( ddr3_odt ),
+
+    // DRAM AXI interface
+    .soc_req_i    ( axi_llc_mst_req ),
+    .soc_rsp_o    ( axi_llc_mst_rsp )
+  );
 
 endmodule

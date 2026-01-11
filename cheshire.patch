@@ -1,13 +1,14 @@
 diff --git a/.gitignore b/.gitignore
-index 4c8e9b8..ae10afb 100644
+index 4c8e9b8..b6b7ecb 100644
 --- a/.gitignore
 +++ b/.gitignore
-@@ -53,3 +53,5 @@ target/xilinx/build
+@@ -53,3 +53,6 @@ target/xilinx/build
  target/xilinx/out
  target/xilinx/scripts/add_sources.*
  vivado*
 +
 +*mem_init.txt
++*.hex
 diff --git a/hw/bootrom/cheshire_bootrom.c b/hw/bootrom/cheshire_bootrom.c
 index 43bae50..a3eddbf 100644
 --- a/hw/bootrom/cheshire_bootrom.c
@@ -3942,7 +3943,7 @@ index 6f97ad5..4041191 100644
              2014: data_o = 32'h00000000 /* 0x1f78 */;
              2015: data_o = 32'h00000000 /* 0x1f7c */;
 diff --git a/hw/cheshire_pkg.sv b/hw/cheshire_pkg.sv
-index 0163af7..9116396 100644
+index 0163af7..923f8a1 100644
 --- a/hw/cheshire_pkg.sv
 +++ b/hw/cheshire_pkg.sv
 @@ -134,6 +134,7 @@ package cheshire_pkg;
@@ -3972,7 +3973,7 @@ index 0163af7..9116396 100644
    localparam doub_bt AmBrom   = 'h0200_0000;  // Base of reg peripherals
    localparam doub_bt AmRegs   = 'h0300_0000;
    localparam doub_bt AmLlc    = 'h0300_1000;
-+  localparam doub_bt AmNvdla  = 'h0302_0000;
++  localparam doub_bt AmNvdla  = 'h4000_0000;
    localparam doub_bt AmSlink  = 'h0300_6000;
    localparam doub_bt AmBusErr = 'h0300_9000;
    localparam doub_bt AmSpm    = 'h1000_0000;  // Cached region at bottom, uncached on top
@@ -4355,3 +4356,56 @@ index baa9ee4..a21618c 100644
  CHS_SW_CCFLAGS ?= $(CHS_SW_FLAGS) -ggdb -mcmodel=medany -mexplicit-relocs -fno-builtin -fverbose-asm -pipe
  CHS_SW_LDFLAGS ?= $(CHS_SW_FLAGS) -nostartfiles -Wl,--gc-sections -Wl,-L$(CHS_SW_LD_DIR)
  CHS_SW_ARFLAGS ?= --plugin=$(CHS_SW_LTOPLUG)
+diff --git a/sw/tests/helloworld.c b/sw/tests/helloworld.c
+index d946624..5089747 100644
+--- a/sw/tests/helloworld.c
++++ b/sw/tests/helloworld.c
+@@ -12,12 +12,46 @@
+ #include "params.h"
+ #include "util.h"
+ 
++#define NVDLA_BASE_ADDR 0x40000000
++#define NVDLA_HW_VERSION_OFFSET 0x0000
++#define NVDLA_CFG_RD_WEIGHT_1_OFFSET 0x2004
++#define NVDLA_CFG_WR_WEIGHT_0_OFFSET 0x200c
++
++#define NVDLA_HW_VERSION (*(volatile uint32_t*) (NVDLA_BASE_ADDR + NVDLA_HW_VERSION_OFFSET))
++#define NVDLA_CFG_RD_WEIGHT_1 (*(volatile uint32_t*) (NVDLA_BASE_ADDR + NVDLA_CFG_RD_WEIGHT_1_OFFSET))
++#define NVDLA_CFG_WR_WEIGHT_0 (*(volatile uint32_t*) (NVDLA_BASE_ADDR + NVDLA_CFG_WR_WEIGHT_0_OFFSET))
++
++void print_dec(uint32_t val) {
++    char buffer[12];
++    int i = 0;
++    if (val == 0) {
++        uart_write_str(&__base_uart, "0", 1);
++        return;
++    }
++    while (val > 0) {
++        buffer[i++] = (val % 10) + '0';
++        val /= 10;
++    }
++    while (i > 0) {
++        uart_write_str(&__base_uart, &buffer[--i], 1);
++    }
++}
++
+ int main(void) {
+-    char str[] = "Hello World!\r\n";
+     uint32_t rtc_freq = *reg32(&__base_regs, CHESHIRE_RTC_FREQ_REG_OFFSET);
+     uint64_t reset_freq = clint_get_core_freq(rtc_freq, 2500);
+     uart_init(&__base_uart, reset_freq, __BOOT_BAUDRATE);
+-    uart_write_str(&__base_uart, str, sizeof(str) - 1);
++
++    uart_write_str(&__base_uart, "test1: ", 7);
++    print_dec(NVDLA_CFG_RD_WEIGHT_1);
++    uart_write_str(&__base_uart, " \n", 2);
++
++    NVDLA_CFG_WR_WEIGHT_0 = 56;
++
++    uart_write_str(&__base_uart, "test2: ", 7);
++    print_dec(NVDLA_CFG_WR_WEIGHT_0);
++    uart_write_str(&__base_uart, " \n", 2);
++
+     uart_write_flush(&__base_uart);
+     return 0;
+ }

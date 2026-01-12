@@ -4148,7 +4148,7 @@ index 0163af7..923f8a1 100644
      DmaConfAmoPostCut   : 1,
      DmaConfEnableTwoD   : 1,
 diff --git a/hw/cheshire_soc.sv b/hw/cheshire_soc.sv
-index b3b6254..5a98f79 100644
+index b3b6254..0bbd8c6 100644
 --- a/hw/cheshire_soc.sv
 +++ b/hw/cheshire_soc.sv
 @@ -209,16 +209,15 @@ module cheshire_soc import cheshire_pkg::*; #(
@@ -4369,7 +4369,7 @@ index b3b6254..5a98f79 100644
 +      .AxiSlvPortIdWidth      ( NvdlaIdWidth ),
 +      .AxiSlvPortMaxTxns      ( 1 ),
 +      .AxiMstPortIdWidth      ( Cfg.AxiMstIdWidth ),
-+      .AxiMstPortMaxUniqIds   ( 2 ** Cfg.AxiMstIdWidth ),
++      .AxiMstPortMaxUniqIds   ( 1 ),
 +      .AxiMstPortMaxTxnsPerId ( 1 ),
 +      .AxiAddrWidth           ( Cfg.AddrWidth ),
 +      .AxiDataWidth           ( Cfg.AxiDataWidth ),

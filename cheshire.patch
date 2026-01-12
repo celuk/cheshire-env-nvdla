@@ -10,7 +10,7 @@ index 4c8e9b8..b6b7ecb 100644
 +*mem_init.txt
 +*.hex
 diff --git a/hw/bootrom/cheshire_bootrom.c b/hw/bootrom/cheshire_bootrom.c
-index 43bae50..a3eddbf 100644
+index 43bae50..0ec49e6 100644
 --- a/hw/bootrom/cheshire_bootrom.c
 +++ b/hw/bootrom/cheshire_bootrom.c
 @@ -33,6 +33,76 @@ int boot_passive(uint64_t core_freq) {
@@ -40,7 +40,7 @@ index 43bae50..a3eddbf 100644
 +
 +#define BOOT_HART_ID 0x0
 +
-+#define DTB_ADDRESS_OFFSET 0x10000000
++#define DTB_ADDRESS_OFFSET 0x30000000
 +#define DTB_ADDRESS (OPENSBI_BASE_ADDR + DTB_ADDRESS_OFFSET) // fw_fdt_bin (compiled dts - dtb file) address
 +
 +int boot_from_dram(uint64_t core_freq, uint64_t rtc_freq) {
@@ -101,7 +101,7 @@ index 43bae50..a3eddbf 100644
          return boot_spi_sdcard(core_freq, rtc_freq);
      case 2:
 diff --git a/hw/bootrom/cheshire_bootrom.sv b/hw/bootrom/cheshire_bootrom.sv
-index 6f97ad5..4041191 100644
+index 6f97ad5..0749cae 100644
 --- a/hw/bootrom/cheshire_bootrom.sv
 +++ b/hw/bootrom/cheshire_bootrom.sv
 @@ -51,7 +51,7 @@ module cheshire_bootrom #(
@@ -3593,7 +3593,7 @@ index 6f97ad5..4041191 100644
 +            1668: data_o = 32'hec3ee452 /* 0x1a10 */;
 +            1669: data_o = 32'hf402f002 /* 0x1a14 */;
 +            1670: data_o = 32'hf14027f3 /* 0x1a18 */;
-+            1671: data_o = 32'h27814725 /* 0x1a1c */;
++            1671: data_o = 32'h2781472d /* 0x1a1c */;
 +            1672: data_o = 32'h853e0772 /* 0x1a20 */;
 +            1673: data_o = 32'h860a85ba /* 0x1a24 */;
 +            1674: data_o = 32'h800007b7 /* 0x1a28 */;
@@ -4148,7 +4148,7 @@ index 0163af7..923f8a1 100644
      DmaConfAmoPostCut   : 1,
      DmaConfEnableTwoD   : 1,
 diff --git a/hw/cheshire_soc.sv b/hw/cheshire_soc.sv
-index b3b6254..3e2efd2 100644
+index b3b6254..5a98f79 100644
 --- a/hw/cheshire_soc.sv
 +++ b/hw/cheshire_soc.sv
 @@ -209,16 +209,15 @@ module cheshire_soc import cheshire_pkg::*; #(
@@ -4367,10 +4367,10 @@ index b3b6254..3e2efd2 100644
 +    // Serialize NVDLA IDs (8bit) to match Cheshire AXI master ID width (2bit)
 +    axi_id_serialize #(
 +      .AxiSlvPortIdWidth      ( NvdlaIdWidth ),
-+      .AxiSlvPortMaxTxns      ( 64 ),
++      .AxiSlvPortMaxTxns      ( 1 ),
 +      .AxiMstPortIdWidth      ( Cfg.AxiMstIdWidth ),
-+      .AxiMstPortMaxUniqIds   ( 4 ),
-+      .AxiMstPortMaxTxnsPerId ( 64 ),
++      .AxiMstPortMaxUniqIds   ( 2 ** Cfg.AxiMstIdWidth ),
++      .AxiMstPortMaxTxnsPerId ( 1 ),
 +      .AxiAddrWidth           ( Cfg.AddrWidth ),
 +      .AxiDataWidth           ( Cfg.AxiDataWidth ),
 +      .AxiUserWidth           ( Cfg.AxiUserWidth ),

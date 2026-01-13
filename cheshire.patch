@@ -3943,7 +3943,7 @@ index 6f97ad5..0749cae 100644
              2014: data_o = 32'h00000000 /* 0x1f78 */;
              2015: data_o = 32'h00000000 /* 0x1f7c */;
 diff --git a/hw/cheshire_pkg.sv b/hw/cheshire_pkg.sv
-index 0163af7..d045f05 100644
+index 0163af7..923f8a1 100644
 --- a/hw/cheshire_pkg.sv
 +++ b/hw/cheshire_pkg.sv
 @@ -134,6 +134,7 @@ package cheshire_pkg;
@@ -4094,8 +4094,7 @@ index 0163af7..d045f05 100644
      AxiRt             : 0,
      Clic              : 0,
      IrqRouter         : 0,
--    BusErr            : 1,
-+    BusErr            : 0,
+     BusErr            : 1,
      // Debug
      DbgIdCode         : CheshireIdCode,
 -    DbgMaxReqs        : 4,
@@ -4149,7 +4148,7 @@ index 0163af7..d045f05 100644
      DmaConfAmoPostCut   : 1,
      DmaConfEnableTwoD   : 1,
 diff --git a/hw/cheshire_soc.sv b/hw/cheshire_soc.sv
-index b3b6254..bb9fb39 100644
+index b3b6254..893a465 100644
 --- a/hw/cheshire_soc.sv
 +++ b/hw/cheshire_soc.sv
 @@ -209,16 +209,15 @@ module cheshire_soc import cheshire_pkg::*; #(
@@ -4221,7 +4220,7 @@ index b3b6254..bb9fb39 100644
        .reg_req_t  ( reg_req_t ),
        .reg_rsp_t  ( reg_rsp_t )
      ) i_uart (
-@@ -1714,6 +1713,212 @@ module cheshire_soc import cheshire_pkg::*; #(
+@@ -1714,6 +1713,227 @@ module cheshire_soc import cheshire_pkg::*; #(
  
    end
  
@@ -4229,6 +4228,21 @@ index b3b6254..bb9fb39 100644
 +  typedef logic [NvdlaIdWidth-1:0] nvdla_id_t;
 +
 +  `CHESHIRE_TYPEDEF_AXI_CT(nvdla_axi, addr_t, nvdla_id_t, axi_data_t, axi_strb_t, axi_user_t)
++  
++  localparam SocDataWidth = $bits(axi_out_req[AxiOut.nvdla].w.data);
++  localparam SocIdWidth   = $bits(axi_out_req[AxiOut.nvdla].ar.id);
++  localparam SocUserWidth = $bits(axi_out_req[AxiOut.nvdla].ar.user);
++  localparam SocAddrWidth = $bits(axi_out_req[AxiOut.nvdla].ar.addr);
++
++  // Define type after data width and address resizer
++  `AXI_TYPEDEF_ALL(axi_dw, logic[SocAddrWidth-1:0], logic[SocIdWidth-1:0],
++                   logic[64-1:0], logic[8-1:0],
++                   logic[SocUserWidth-1:0])
++
++  // Define type after data & id width resizers
++  `AXI_TYPEDEF_ALL(axi_dw_iw, logic[SocAddrWidth-1:0], logic[8-1:0],
++                   logic[64-1:0], logic[8-1:0],
++                   logic[SocUserWidth-1:0])
 +
 +  if (Cfg.Nvdla) begin : gen_nvdla
 +
@@ -4250,7 +4264,7 @@ index b3b6254..bb9fb39 100644
 +    logic [63:0] nvdla_rdata;
 +
 +    nvdla_wrapper_axi #(
-+        .AXI_ID_WIDTH ( AxiSlvIdWidth )
++        .AXI_ID_WIDTH ( 8 )
 +    ) i_nvdla_wrapper (
 +        .clk        ( clk_i ),
 +        .rstn       ( rst_ni ),
@@ -4323,8 +4337,8 @@ index b3b6254..bb9fb39 100644
 +    assign nvdla_raw_req.aw.size  = nvdla_awsize;
 +    assign nvdla_raw_req.aw.burst = nvdla_awburst;
 +    assign nvdla_raw_req.aw.lock  = '0;
-+    assign nvdla_raw_req.aw.cache = '0;
-+    assign nvdla_raw_req.aw.prot  = '0;
++    assign nvdla_raw_req.aw.cache = '0; //4'b0011;
++    assign nvdla_raw_req.aw.prot  = '0; //3'b010;
 +    assign nvdla_raw_req.aw.qos   = '0;
 +    assign nvdla_raw_req.aw.region= '0;
 +    assign nvdla_raw_req.aw.atop  = '0;
@@ -4343,8 +4357,8 @@ index b3b6254..bb9fb39 100644
 +    assign nvdla_raw_req.ar.size  = nvdla_arsize;
 +    assign nvdla_raw_req.ar.burst = nvdla_arburst;
 +    assign nvdla_raw_req.ar.lock  = '0;
-+    assign nvdla_raw_req.ar.cache = '0;
-+    assign nvdla_raw_req.ar.prot  = '0;
++    assign nvdla_raw_req.ar.cache = '0; //4'b0011;
++    assign nvdla_raw_req.ar.prot  = '0; //3'b010;
 +    assign nvdla_raw_req.ar.qos   = '0;
 +    assign nvdla_raw_req.ar.region= '0;
 +    assign nvdla_raw_req.ar.user  = '0;
@@ -4365,24 +4379,24 @@ index b3b6254..bb9fb39 100644
 +    assign nvdla_rlast   = nvdla_raw_rsp.r.last;
 +    assign nvdla_rvalid  = nvdla_raw_rsp.r_valid;
 +
-+    // Serialize NVDLA IDs (8bit) to match Cheshire AXI master ID width (2bit)
-+    axi_id_serialize #(
-+      .AxiSlvPortIdWidth      ( NvdlaIdWidth ),
-+      .AxiSlvPortMaxTxns      ( 1 ),
-+      .AxiMstPortIdWidth      ( Cfg.AxiMstIdWidth ),
++    axi_iw_converter #(
++      .AxiAddrWidth           ( SocAddrWidth  ),
++      .AxiDataWidth           ( 64 ),
++      .AxiUserWidth           ( SocUserWidth  ),
++      .AxiSlvPortIdWidth      ( SocIdWidth    ),
++      .AxiSlvPortMaxUniqIds   ( 4 ),
++      .AxiSlvPortMaxTxnsPerId ( 1    ),
++      .AxiSlvPortMaxTxns      ( 1    ),
++      .AxiMstPortIdWidth      ( 8    ),
 +      .AxiMstPortMaxUniqIds   ( 4 ),
-+      .AxiMstPortMaxTxnsPerId ( 1 ),
-+      .AxiAddrWidth           ( Cfg.AddrWidth ),
-+      .AxiDataWidth           ( Cfg.AxiDataWidth ),
-+      .AxiUserWidth           ( Cfg.AxiUserWidth ),
-+      .AtopSupport            ( 0 ),
-+      .slv_req_t              ( nvdla_axi_req_t ),
-+      .slv_resp_t             ( nvdla_axi_rsp_t ),
-+      .mst_req_t              ( axi_mst_req_t ),
-+      .mst_resp_t             ( axi_mst_rsp_t )
-+    ) i_nvdla_id_serialize (
-+      .clk_i,
-+      .rst_ni,
++      .AxiMstPortMaxTxnsPerId ( 1    ),
++      .slv_req_t              ( axi_dw_req_t     ),
++      .slv_resp_t             ( axi_dw_resp_t    ),
++      .mst_req_t              ( axi_dw_iw_req_t  ),
++      .mst_resp_t             ( axi_dw_iw_resp_t )
++    ) i_nvdla_iw_converter (
++      .clk_i      ( clk_i ),
++      .rst_ni     ( rst_ni ),
 +      .slv_req_i  ( nvdla_raw_req ),
 +      .slv_resp_o ( nvdla_raw_rsp ),
 +      .mst_req_o  ( axi_nvdla_mst_req ),
@@ -4402,7 +4416,7 @@ index b3b6254..bb9fb39 100644
 +        .IdWidth            ( Cfg.AxiMstIdWidth ),
 +        .UserErrBits        ( Cfg.AxiUserErrBits ),
 +        .UserErrBitsOffset  ( Cfg.AxiUserErrLsb ),
-+        .NumOutstanding     ( 1 ),
++        .NumOutstanding     ( Cfg.DmaNumAxInFlight ),
 +        .NumStoredErrors    ( 4 ),
 +        .DropOldest         ( 1'b0 ),
 +        .axi_req_t          ( axi_mst_req_t ),

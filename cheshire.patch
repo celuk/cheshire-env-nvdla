@@ -3943,7 +3943,7 @@ index 6f97ad5..0749cae 100644
              2014: data_o = 32'h00000000 /* 0x1f78 */;
              2015: data_o = 32'h00000000 /* 0x1f7c */;
 diff --git a/hw/cheshire_pkg.sv b/hw/cheshire_pkg.sv
-index 0163af7..923f8a1 100644
+index 0163af7..d045f05 100644
 --- a/hw/cheshire_pkg.sv
 +++ b/hw/cheshire_pkg.sv
 @@ -134,6 +134,7 @@ package cheshire_pkg;
@@ -4094,7 +4094,8 @@ index 0163af7..923f8a1 100644
      AxiRt             : 0,
      Clic              : 0,
      IrqRouter         : 0,
-     BusErr            : 1,
+-    BusErr            : 1,
++    BusErr            : 0,
      // Debug
      DbgIdCode         : CheshireIdCode,
 -    DbgMaxReqs        : 4,
@@ -4148,7 +4149,7 @@ index 0163af7..923f8a1 100644
      DmaConfAmoPostCut   : 1,
      DmaConfEnableTwoD   : 1,
 diff --git a/hw/cheshire_soc.sv b/hw/cheshire_soc.sv
-index b3b6254..5a98f79 100644
+index b3b6254..bb9fb39 100644
 --- a/hw/cheshire_soc.sv
 +++ b/hw/cheshire_soc.sv
 @@ -209,16 +209,15 @@ module cheshire_soc import cheshire_pkg::*; #(
@@ -4249,7 +4250,7 @@ index b3b6254..5a98f79 100644
 +    logic [63:0] nvdla_rdata;
 +
 +    nvdla_wrapper_axi #(
-+        .AXI_ID_WIDTH ( Cfg.AxiMstIdWidth )
++        .AXI_ID_WIDTH ( AxiSlvIdWidth )
 +    ) i_nvdla_wrapper (
 +        .clk        ( clk_i ),
 +        .rstn       ( rst_ni ),
@@ -4283,7 +4284,7 @@ index b3b6254..5a98f79 100644
 +        .m_axi_rlast  ( nvdla_rlast ),
 +        .m_axi_rvalid ( nvdla_rvalid ),
 +        .s_axi_awid   ( axi_out_req[AxiOut.nvdla].aw.id ),
-+        .s_axi_awaddr ( axi_out_req[AxiOut.nvdla].aw.addr - AmNvdla ),
++        .s_axi_awaddr ( axi_out_req[AxiOut.nvdla].aw.addr ),
 +        .s_axi_awlen  ( axi_out_req[AxiOut.nvdla].aw.len ),
 +        .s_axi_awsize ( axi_out_req[AxiOut.nvdla].aw.size ),
 +        .s_axi_awburst( axi_out_req[AxiOut.nvdla].aw.burst ),
@@ -4300,7 +4301,7 @@ index b3b6254..5a98f79 100644
 +        .s_axi_bvalid ( axi_out_rsp[AxiOut.nvdla].b_valid ),
 +        .s_axi_bready ( axi_out_req[AxiOut.nvdla].b_ready ),
 +        .s_axi_arid   ( axi_out_req[AxiOut.nvdla].ar.id ),
-+        .s_axi_araddr ( axi_out_req[AxiOut.nvdla].ar.addr - AmNvdla ),
++        .s_axi_araddr ( axi_out_req[AxiOut.nvdla].ar.addr ),
 +        .s_axi_arlen  ( axi_out_req[AxiOut.nvdla].ar.len ),
 +        .s_axi_arsize ( axi_out_req[AxiOut.nvdla].ar.size ),
 +        .s_axi_arburst( axi_out_req[AxiOut.nvdla].ar.burst ),
@@ -4369,7 +4370,7 @@ index b3b6254..5a98f79 100644
 +      .AxiSlvPortIdWidth      ( NvdlaIdWidth ),
 +      .AxiSlvPortMaxTxns      ( 1 ),
 +      .AxiMstPortIdWidth      ( Cfg.AxiMstIdWidth ),
-+      .AxiMstPortMaxUniqIds   ( 2 ** Cfg.AxiMstIdWidth ),
++      .AxiMstPortMaxUniqIds   ( 4 ),
 +      .AxiMstPortMaxTxnsPerId ( 1 ),
 +      .AxiAddrWidth           ( Cfg.AddrWidth ),
 +      .AxiDataWidth           ( Cfg.AxiDataWidth ),
@@ -4401,7 +4402,7 @@ index b3b6254..5a98f79 100644
 +        .IdWidth            ( Cfg.AxiMstIdWidth ),
 +        .UserErrBits        ( Cfg.AxiUserErrBits ),
 +        .UserErrBitsOffset  ( Cfg.AxiUserErrLsb ),
-+        .NumOutstanding     ( Cfg.DmaNumAxInFlight ),
++        .NumOutstanding     ( 1 ),
 +        .NumStoredErrors    ( 4 ),
 +        .DropOldest         ( 1'b0 ),
 +        .axi_req_t          ( axi_mst_req_t ),

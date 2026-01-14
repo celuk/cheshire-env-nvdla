@@ -10,7 +10,7 @@ index 4c8e9b8..b6b7ecb 100644
 +*mem_init.txt
 +*.hex
 diff --git a/hw/bootrom/cheshire_bootrom.c b/hw/bootrom/cheshire_bootrom.c
-index 43bae50..0ec49e6 100644
+index 43bae50..a3eddbf 100644
 --- a/hw/bootrom/cheshire_bootrom.c
 +++ b/hw/bootrom/cheshire_bootrom.c
 @@ -33,6 +33,76 @@ int boot_passive(uint64_t core_freq) {
@@ -40,7 +40,7 @@ index 43bae50..0ec49e6 100644
 +
 +#define BOOT_HART_ID 0x0
 +
-+#define DTB_ADDRESS_OFFSET 0x30000000
++#define DTB_ADDRESS_OFFSET 0x10000000
 +#define DTB_ADDRESS (OPENSBI_BASE_ADDR + DTB_ADDRESS_OFFSET) // fw_fdt_bin (compiled dts - dtb file) address
 +
 +int boot_from_dram(uint64_t core_freq, uint64_t rtc_freq) {
@@ -101,7 +101,7 @@ index 43bae50..0ec49e6 100644
          return boot_spi_sdcard(core_freq, rtc_freq);
      case 2:
 diff --git a/hw/bootrom/cheshire_bootrom.sv b/hw/bootrom/cheshire_bootrom.sv
-index 6f97ad5..0749cae 100644
+index 6f97ad5..4041191 100644
 --- a/hw/bootrom/cheshire_bootrom.sv
 +++ b/hw/bootrom/cheshire_bootrom.sv
 @@ -51,7 +51,7 @@ module cheshire_bootrom #(
@@ -3593,7 +3593,7 @@ index 6f97ad5..0749cae 100644
 +            1668: data_o = 32'hec3ee452 /* 0x1a10 */;
 +            1669: data_o = 32'hf402f002 /* 0x1a14 */;
 +            1670: data_o = 32'hf14027f3 /* 0x1a18 */;
-+            1671: data_o = 32'h2781472d /* 0x1a1c */;
++            1671: data_o = 32'h27814725 /* 0x1a1c */;
 +            1672: data_o = 32'h853e0772 /* 0x1a20 */;
 +            1673: data_o = 32'h860a85ba /* 0x1a24 */;
 +            1674: data_o = 32'h800007b7 /* 0x1a28 */;
@@ -4152,7 +4152,7 @@ index 0163af7..38bf92a 100644
      DmaConfAmoPostCut   : 1,
      DmaConfEnableTwoD   : 1,
 diff --git a/hw/cheshire_soc.sv b/hw/cheshire_soc.sv
-index b3b6254..3772854 100644
+index b3b6254..5a98f79 100644
 --- a/hw/cheshire_soc.sv
 +++ b/hw/cheshire_soc.sv
 @@ -209,16 +209,15 @@ module cheshire_soc import cheshire_pkg::*; #(
@@ -4224,7 +4224,7 @@ index b3b6254..3772854 100644
        .reg_req_t  ( reg_req_t ),
        .reg_rsp_t  ( reg_rsp_t )
      ) i_uart (
-@@ -1714,6 +1713,227 @@ module cheshire_soc import cheshire_pkg::*; #(
+@@ -1714,6 +1713,212 @@ module cheshire_soc import cheshire_pkg::*; #(
  
    end
  
@@ -4232,21 +4232,6 @@ index b3b6254..3772854 100644
 +  typedef logic [NvdlaIdWidth-1:0] nvdla_id_t;
 +
 +  `CHESHIRE_TYPEDEF_AXI_CT(nvdla_axi, addr_t, nvdla_id_t, axi_data_t, axi_strb_t, axi_user_t)
-+  
-+  localparam SocDataWidth = $bits(axi_out_req[AxiOut.nvdla].w.data);
-+  localparam SocIdWidth   = $bits(axi_out_req[AxiOut.nvdla].ar.id);
-+  localparam SocUserWidth = $bits(axi_out_req[AxiOut.nvdla].ar.user);
-+  localparam SocAddrWidth = $bits(axi_out_req[AxiOut.nvdla].ar.addr);
-+
-+  // Define type after data width and address resizer
-+  `AXI_TYPEDEF_ALL(axi_dw, logic[SocAddrWidth-1:0], logic[SocIdWidth-1:0],
-+                   logic[64-1:0], logic[8-1:0],
-+                   logic[SocUserWidth-1:0])
-+
-+  // Define type after data & id width resizers
-+  `AXI_TYPEDEF_ALL(axi_dw_iw, logic[SocAddrWidth-1:0], logic[8-1:0],
-+                   logic[64-1:0], logic[8-1:0],
-+                   logic[SocUserWidth-1:0])
 +
 +  if (Cfg.Nvdla) begin : gen_nvdla
 +
@@ -4268,7 +4253,7 @@ index b3b6254..3772854 100644
 +    logic [63:0] nvdla_rdata;
 +
 +    nvdla_wrapper_axi #(
-+        .AXI_ID_WIDTH ( 8 )
++        .AXI_ID_WIDTH ( Cfg.AxiMstIdWidth )
 +    ) i_nvdla_wrapper (
 +        .clk        ( clk_i ),
 +        .rstn       ( rst_ni ),
@@ -4302,7 +4287,7 @@ index b3b6254..3772854 100644
 +        .m_axi_rlast  ( nvdla_rlast ),
 +        .m_axi_rvalid ( nvdla_rvalid ),
 +        .s_axi_awid   ( axi_out_req[AxiOut.nvdla].aw.id ),
-+        .s_axi_awaddr ( axi_out_req[AxiOut.nvdla].aw.addr ),
++        .s_axi_awaddr ( axi_out_req[AxiOut.nvdla].aw.addr - AmNvdla ),
 +        .s_axi_awlen  ( axi_out_req[AxiOut.nvdla].aw.len ),
 +        .s_axi_awsize ( axi_out_req[AxiOut.nvdla].aw.size ),
 +        .s_axi_awburst( axi_out_req[AxiOut.nvdla].aw.burst ),
@@ -4319,7 +4304,7 @@ index b3b6254..3772854 100644
 +        .s_axi_bvalid ( axi_out_rsp[AxiOut.nvdla].b_valid ),
 +        .s_axi_bready ( axi_out_req[AxiOut.nvdla].b_ready ),
 +        .s_axi_arid   ( axi_out_req[AxiOut.nvdla].ar.id ),
-+        .s_axi_araddr ( axi_out_req[AxiOut.nvdla].ar.addr ),
++        .s_axi_araddr ( axi_out_req[AxiOut.nvdla].ar.addr - AmNvdla ),
 +        .s_axi_arlen  ( axi_out_req[AxiOut.nvdla].ar.len ),
 +        .s_axi_arsize ( axi_out_req[AxiOut.nvdla].ar.size ),
 +        .s_axi_arburst( axi_out_req[AxiOut.nvdla].ar.burst ),
@@ -4341,8 +4326,8 @@ index b3b6254..3772854 100644
 +    assign nvdla_raw_req.aw.size  = nvdla_awsize;
 +    assign nvdla_raw_req.aw.burst = nvdla_awburst;
 +    assign nvdla_raw_req.aw.lock  = '0;
-+    assign nvdla_raw_req.aw.cache = '0; //4'b0011;
-+    assign nvdla_raw_req.aw.prot  = '0; //3'b010;
++    assign nvdla_raw_req.aw.cache = '0;
++    assign nvdla_raw_req.aw.prot  = '0;
 +    assign nvdla_raw_req.aw.qos   = '0;
 +    assign nvdla_raw_req.aw.region= '0;
 +    assign nvdla_raw_req.aw.atop  = '0;
@@ -4361,8 +4346,8 @@ index b3b6254..3772854 100644
 +    assign nvdla_raw_req.ar.size  = nvdla_arsize;
 +    assign nvdla_raw_req.ar.burst = nvdla_arburst;
 +    assign nvdla_raw_req.ar.lock  = '0;
-+    assign nvdla_raw_req.ar.cache = '0; //4'b0011;
-+    assign nvdla_raw_req.ar.prot  = '0; //3'b010;
++    assign nvdla_raw_req.ar.cache = '0;
++    assign nvdla_raw_req.ar.prot  = '0;
 +    assign nvdla_raw_req.ar.qos   = '0;
 +    assign nvdla_raw_req.ar.region= '0;
 +    assign nvdla_raw_req.ar.user  = '0;
@@ -4383,24 +4368,24 @@ index b3b6254..3772854 100644
 +    assign nvdla_rlast   = nvdla_raw_rsp.r.last;
 +    assign nvdla_rvalid  = nvdla_raw_rsp.r_valid;
 +
-+    axi_iw_converter #(
-+      .AxiAddrWidth           ( SocAddrWidth  ),
-+      .AxiDataWidth           ( 64 ),
-+      .AxiUserWidth           ( SocUserWidth  ),
-+      .AxiSlvPortIdWidth      ( SocIdWidth    ),
-+      .AxiSlvPortMaxUniqIds   ( 4 ),
-+      .AxiSlvPortMaxTxnsPerId ( 1    ),
-+      .AxiSlvPortMaxTxns      ( 64    ),
-+      .AxiMstPortIdWidth      ( 8    ),
-+      .AxiMstPortMaxUniqIds   ( 4 ),
-+      .AxiMstPortMaxTxnsPerId ( 1    ),
-+      .slv_req_t              ( axi_dw_req_t     ),
-+      .slv_resp_t             ( axi_dw_resp_t    ),
-+      .mst_req_t              ( axi_dw_iw_req_t  ),
-+      .mst_resp_t             ( axi_dw_iw_resp_t )
-+    ) i_nvdla_iw_converter (
-+      .clk_i      ( clk_i ),
-+      .rst_ni     ( rst_ni ),
++    // Serialize NVDLA IDs (8bit) to match Cheshire AXI master ID width (2bit)
++    axi_id_serialize #(
++      .AxiSlvPortIdWidth      ( NvdlaIdWidth ),
++      .AxiSlvPortMaxTxns      ( 1 ),
++      .AxiMstPortIdWidth      ( Cfg.AxiMstIdWidth ),
++      .AxiMstPortMaxUniqIds   ( 2 ** Cfg.AxiMstIdWidth ),
++      .AxiMstPortMaxTxnsPerId ( 1 ),
++      .AxiAddrWidth           ( Cfg.AddrWidth ),
++      .AxiDataWidth           ( Cfg.AxiDataWidth ),
++      .AxiUserWidth           ( Cfg.AxiUserWidth ),
++      .AtopSupport            ( 0 ),
++      .slv_req_t              ( nvdla_axi_req_t ),
++      .slv_resp_t             ( nvdla_axi_rsp_t ),
++      .mst_req_t              ( axi_mst_req_t ),
++      .mst_resp_t             ( axi_mst_rsp_t )
++    ) i_nvdla_id_serialize (
++      .clk_i,
++      .rst_ni,
 +      .slv_req_i  ( nvdla_raw_req ),
 +      .slv_resp_o ( nvdla_raw_rsp ),
 +      .mst_req_o  ( axi_nvdla_mst_req ),
@@ -4466,146 +4451,54 @@ index baa9ee4..a21618c 100644
  CHS_SW_LDFLAGS ?= $(CHS_SW_FLAGS) -nostartfiles -Wl,--gc-sections -Wl,-L$(CHS_SW_LD_DIR)
  CHS_SW_ARFLAGS ?= --plugin=$(CHS_SW_LTOPLUG)
 diff --git a/sw/tests/helloworld.c b/sw/tests/helloworld.c
-index d946624..3bf1892 100644
+index d946624..5089747 100644
 --- a/sw/tests/helloworld.c
 +++ b/sw/tests/helloworld.c
-@@ -1,10 +1,6 @@
- // Copyright 2023 ETH Zurich and University of Bologna.
- // Licensed under the Apache License, Version 2.0, see LICENSE for details.
- // SPDX-License-Identifier: Apache-2.0
--//
--// Nicole Narr <narrn@student.ethz.ch>
--// Christopher Reinwardt <creinwar@student.ethz.ch>
--// Paul Scheffler <paulsc@iis.ee.ethz.ch>
- 
- #include "regs/cheshire.h"
- #include "dif/clint.h"
-@@ -12,12 +8,127 @@
+@@ -12,12 +12,46 @@
  #include "params.h"
  #include "util.h"
  
-+// =============================================================
-+// NVDLA ADDRESS DEFINITIONS
-+// =============================================================
-+#define NVDLA_BASE_ADDR         0x40000000
++#define NVDLA_BASE_ADDR 0x40000000
++#define NVDLA_HW_VERSION_OFFSET 0x0000
++#define NVDLA_CFG_RD_WEIGHT_1_OFFSET 0x2004
++#define NVDLA_CFG_WR_WEIGHT_0_OFFSET 0x200c
 +
-+// BDMA (Bridge DMA) is at offset 0x4000 in NVDLA aperture
-+#define NVDLA_BDMA_OFFSET       0x4000 
-+#define NVDLA_BDMA_BASE         (NVDLA_BASE_ADDR + NVDLA_BDMA_OFFSET)
++#define NVDLA_HW_VERSION (*(volatile uint32_t*) (NVDLA_BASE_ADDR + NVDLA_HW_VERSION_OFFSET))
++#define NVDLA_CFG_RD_WEIGHT_1 (*(volatile uint32_t*) (NVDLA_BASE_ADDR + NVDLA_CFG_RD_WEIGHT_1_OFFSET))
++#define NVDLA_CFG_WR_WEIGHT_0 (*(volatile uint32_t*) (NVDLA_BASE_ADDR + NVDLA_CFG_WR_WEIGHT_0_OFFSET))
 +
-+// BDMA Registers
-+#define BDMA_CFG_SRC_ADDR_LOW   (*(volatile uint32_t*)(NVDLA_BDMA_BASE + 0x0C))
-+#define BDMA_CFG_SRC_ADDR_HIGH  (*(volatile uint32_t*)(NVDLA_BDMA_BASE + 0x10))
-+#define BDMA_CFG_DST_ADDR_LOW   (*(volatile uint32_t*)(NVDLA_BDMA_BASE + 0x14))
-+#define BDMA_CFG_DST_ADDR_HIGH  (*(volatile uint32_t*)(NVDLA_BDMA_BASE + 0x18))
-+#define BDMA_CFG_LINE_SIZE      (*(volatile uint32_t*)(NVDLA_BDMA_BASE + 0x1C))
-+#define BDMA_CFG_CMD            (*(volatile uint32_t*)(NVDLA_BDMA_BASE + 0x20)) // Launch
-+#define BDMA_CFG_SRC_SURF       (*(volatile uint32_t*)(NVDLA_BDMA_BASE + 0x24))
-+#define BDMA_CFG_DST_SURF       (*(volatile uint32_t*)(NVDLA_BDMA_BASE + 0x28))
-+#define BDMA_STATUS             (*(volatile uint32_t*)(NVDLA_BDMA_BASE + 0x2C)) // Status
-+
-+// A simple RAM location to use for the test (Ensure this is valid DRAM in your Sim)
-+#define MEM_SRC_ADDR            0x81000000
-+#define MEM_DST_ADDR            0x82000000
-+#define COPY_SIZE_BYTES         256 // A small burst
-+
-+void print_hex(uint32_t val) {
-+    char buffer[10];
-+    const char *hex = "0123456789ABCDEF";
-+    buffer[0] = '0'; buffer[1] = 'x';
-+    for (int i = 0; i < 8; i++) {
-+        buffer[9 - i] = hex[val & 0xF];
-+        val >>= 4;
++void print_dec(uint32_t val) {
++    char buffer[12];
++    int i = 0;
++    if (val == 0) {
++        uart_write_str(&__base_uart, "0", 1);
++        return;
 +    }
-+    uart_write_str(&__base_uart, buffer, 10);
++    while (val > 0) {
++        buffer[i++] = (val % 10) + '0';
++        val /= 10;
++    }
++    while (i > 0) {
++        uart_write_str(&__base_uart, &buffer[--i], 1);
++    }
 +}
 +
  int main(void) {
 -    char str[] = "Hello World!\r\n";
-+    // 1. Setup UART and Timer
      uint32_t rtc_freq = *reg32(&__base_regs, CHESHIRE_RTC_FREQ_REG_OFFSET);
      uint64_t reset_freq = clint_get_core_freq(rtc_freq, 2500);
      uart_init(&__base_uart, reset_freq, __BOOT_BAUDRATE);
 -    uart_write_str(&__base_uart, str, sizeof(str) - 1);
 +
-+    uart_write_str(&__base_uart, "N1\n", 3);
++    uart_write_str(&__base_uart, "test1: ", 7);
++    print_dec(NVDLA_CFG_RD_WEIGHT_1);
++    uart_write_str(&__base_uart, " \n", 2);
 +
-+    // 2. Prepare Memory (So we aren't copying garbage)
-+    // We write to DRAM using the CPU first.
-+    volatile uint32_t* src = (uint32_t*)MEM_SRC_ADDR;
-+    volatile uint32_t* dst = (uint32_t*)MEM_DST_ADDR;
-+    
-+    uart_write_str(&__base_uart, "N2\n", 3);
-+    for(int i=0; i< (COPY_SIZE_BYTES/4); i++) {
-+        src[i] = 0xDEADBEEF;
-+        dst[i] = 0x00000000;
-+    }
++    NVDLA_CFG_WR_WEIGHT_0 = 56;
 +
-+    // 3. Check if NVDLA is accessible (sanity check)
-+    uint32_t status = BDMA_STATUS;
-+    uart_write_str(&__base_uart, "N:\n", 2);
-+    print_hex(status);
-+    uart_write_str(&__base_uart, "\n", 1);
-+
-+    // 4. Configure NVDLA BDMA to copy SRC -> DST
-+    // This will force NVDLA to issue AXI Reads (from SRC) and AXI Writes (to DST).
-+    // If your AXI ID/Transaction configuration is wrong, it will hang here.
-+    
-+    uart_write_str(&__base_uart, "N4\n", 2);
-+
-+    BDMA_CFG_SRC_ADDR_LOW  = (uint32_t)MEM_SRC_ADDR;
-+    BDMA_CFG_SRC_ADDR_HIGH = 0x00000000;
-+    
-+    BDMA_CFG_DST_ADDR_LOW  = (uint32_t)MEM_DST_ADDR;
-+    BDMA_CFG_DST_ADDR_HIGH = 0x00000000;
-+
-+    BDMA_CFG_LINE_SIZE     = COPY_SIZE_BYTES; // Bytes to copy
-+    
-+    BDMA_CFG_SRC_SURF      = COPY_SIZE_BYTES; // Stride (for linear, same as size)
-+    BDMA_CFG_DST_SURF      = COPY_SIZE_BYTES; // Stride
-+
-+    // 5. Launch the Operation
-+    // Bit 0 = 1 (Launch), Bit 1 = 1 (Interrupt Enable - Optional)
-+    uart_write_str(&__base_uart, "N5\n", 3);
-+    BDMA_CFG_CMD = 0x1; 
-+
-+    // 6. Poll for Completion (THE DEADLOCK CATCHER)
-+    // If the AXI Bus hangs, the 'idle' bit will never return to 1.
-+    
-+    int timeout = 100000;
-+    while(timeout > 0) {
-+        status = BDMA_STATUS;
-+        // Check if Idle (Bit 0 of status register usually indicates idle/done)
-+        // Note: Exact bit depends on NVDLA spec, usually 0 is 'idle' count.
-+        // Assuming non-zero status means busy or checking IDLE status.
-+        
-+        // Simpler check: Wait for interrupts or status change.
-+        // For baremetal without interrupts, we poll.
-+        // If status returns 0 (Idle), we are done.
-+        if (status == 0) {
-+            uart_write_str(&__base_uart, "N6\n", 3);
-+            break;
-+        }
-+        
-+        timeout--;
-+        if ((timeout % 1000) == 0) {
-+             uart_write_str(&__base_uart, ".", 1);
-+        }
-+    }
-+
-+    if (timeout == 0) {
-+        uart_write_str(&__base_uart, "E7\n", 3);
-+        uart_write_str(&__base_uart, "E:\n", 3);
-+        print_hex(BDMA_STATUS);
-+        uart_write_str(&__base_uart, "\n", 1);
-+    }
-+
-+    // 7. Verify Data (If we got here)
-+    if (dst[0] == 0xDEADBEEF) {
-+        uart_write_str(&__base_uart, "P9\n", 3);
-+    } else {
-+        uart_write_str(&__base_uart, "F9\n", 3);
-+    }
++    uart_write_str(&__base_uart, "test2: ", 7);
++    print_dec(NVDLA_CFG_WR_WEIGHT_0);
++    uart_write_str(&__base_uart, " \n", 2);
 +
      uart_write_flush(&__base_uart);
      return 0;

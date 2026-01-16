@@ -144,12 +144,12 @@ module cheshire_soc_wrap import cheshire_pkg::*;
 
   assign rtc = rtc_clk_q;
 
-  // Divide soc_clk (50 MHz) by 5 => 10 MHz RTC Clock
+  // Divide soc_clk (50 MHz) by 50 => 1 MHz RTC Clock
   always_comb begin
     counter_d = counter_q + 1;
     rtc_clk_d = rtc_clk_q;
 
-    if(counter_q == 4) begin
+    if(counter_q == 24) begin
       counter_d = '0;
       rtc_clk_d = ~rtc_clk_q;
     end

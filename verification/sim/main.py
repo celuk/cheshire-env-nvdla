@@ -806,6 +806,7 @@ def run_test(simulator: str, test_file: Path, top_module: str, waves: bool, cfil
         + list(["../../rtl/src/uart_programmer.sv"])
         + list(["../../rtl/src/simpleuart.sv"])
         + list(["../../rtl/src/nvdla_wrapper_axi.sv"])
+        + list(["../../rtl/src/regwriter.sv"])
         + list(["../../rtl/sim/ddr3.v"])
         + submodule_verilog_files
         + submodule_system_verilog_files

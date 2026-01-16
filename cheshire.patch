@@ -3943,7 +3943,7 @@ index 6f97ad5..4041191 100644
              2014: data_o = 32'h00000000 /* 0x1f78 */;
              2015: data_o = 32'h00000000 /* 0x1f7c */;
 diff --git a/hw/cheshire_pkg.sv b/hw/cheshire_pkg.sv
-index 0163af7..90e726b 100644
+index 0163af7..d4a88cf 100644
 --- a/hw/cheshire_pkg.sv
 +++ b/hw/cheshire_pkg.sv
 @@ -134,6 +134,7 @@ package cheshire_pkg;
@@ -3987,15 +3987,24 @@ index 0163af7..90e726b 100644
  
    // AXI Xbar master indices
    typedef struct packed {
-@@ -299,6 +304,7 @@ package cheshire_pkg;
+@@ -299,6 +304,8 @@ package cheshire_pkg;
      aw_bt slink;
      aw_bt vga;
      aw_bt usb;
 +    aw_bt nvdla;
++    aw_bt [2**MaxCoresWidth-1:0] regwriter;
      aw_bt ext_base;
      aw_bt num_in;
    } axi_in_t;
-@@ -312,6 +318,7 @@ package cheshire_pkg;
+@@ -306,12 +313,14 @@ package cheshire_pkg;
+   function automatic axi_in_t gen_axi_in(cheshire_cfg_t cfg);
+     axi_in_t ret = '{default: '0};
+     int unsigned i = 0;
+-    for (int j = 0; j < cfg.NumCores; j++) begin ret.cores[i] = i; i++; end
++    for (int j = 0; j < cfg.NumCores; j++) begin ret.cores[j] = i; i++; end
++    for (int j = 0; j < cfg.NumCores; j++) begin ret.regwriter[j] = i; i++; end
+     ret.dbg = i;
+     if (cfg.Dma)        begin i++; ret.dma   = i; end
      if (cfg.SerialLink) begin i++; ret.slink = i; end
      if (cfg.Vga)        begin i++; ret.vga   = i; end
      if (cfg.Usb)        begin i++; ret.usb   = i; end
@@ -4003,7 +4012,7 @@ index 0163af7..90e726b 100644
      i++;
      ret.ext_base = i;
      ret.num_in = i + cfg.AxiExtNumMst;
-@@ -333,6 +340,7 @@ package cheshire_pkg;
+@@ -333,6 +342,7 @@ package cheshire_pkg;
      aw_bt spm;
      aw_bt dma;
      aw_bt slink;
@@ -4011,7 +4020,7 @@ index 0163af7..90e726b 100644
      aw_bt ext_base;
      aw_bt num_out;
      aw_bt num_rules;
-@@ -360,6 +368,8 @@ package cheshire_pkg;
+@@ -360,6 +370,8 @@ package cheshire_pkg;
      if (cfg.Dma)          begin i++; r++; ret.dma = i; ret.map[r] = '{i, 'h0100_0000, 'h0100_1000}; end
      if (cfg.SerialLink)   begin i++; r++; ret.slink = i;
          ret.map[r] = '{i, cfg.SlinkRegionStart, cfg.SlinkRegionEnd}; end
@@ -4020,7 +4029,7 @@ index 0163af7..90e726b 100644
      // External port indices start after internal ones
      i++; r++;
      ret.ext_base  = i;
-@@ -424,7 +434,7 @@ package cheshire_pkg;
+@@ -424,7 +436,7 @@ package cheshire_pkg;
      if (cfg.Clic) for (int j = 0; j < cfg.NumCores; j++) begin
        i++; ret.clic[j]    = i; r++; ret.map[r] = '{i, AmClic + j*'h40000, AmClic + (j+1)*'h40000};
      end
@@ -4029,7 +4038,7 @@ index 0163af7..90e726b 100644
        i++; ret.bus_err[j] = i; r++; ret.map[r] = '{i, AmBusErr + j*'h40,  AmBusErr + (j+1)*'h40};
      end
      i++; r++;
-@@ -543,7 +553,7 @@ package cheshire_pkg;
+@@ -543,7 +555,7 @@ package cheshire_pkg;
        NrCachedRegionRules   : 3,   // CachedSPM, LLCOut, ExtCIE
        CachedRegionAddrBase  : {AmSpm,   cfg.LlcOutRegionStart,  CieBase},
        CachedRegionLength    : {SizeSpm, SizeLlcOut,             cfg.Cva6ExtCieLength},
@@ -4038,7 +4047,7 @@ index 0163af7..90e726b 100644
        DebugEn               : 1,
        NonIdemPotenceEn      : 0,
        AxiBurstWriteEn       : 0
-@@ -569,8 +579,8 @@ package cheshire_pkg;
+@@ -569,8 +581,8 @@ package cheshire_pkg;
      Cva6ExtCieOnTop   : 0,
      // Harts
      NumCores          : 1,
@@ -4049,7 +4058,7 @@ index 0163af7..90e726b 100644
      CoreUserAmoOffs   : 0, // Convention: lower AMO bits for cores, MSB for serial link
      // Interrupts
      NumExtInIntrs     : 0,
-@@ -580,43 +590,44 @@ package cheshire_pkg;
+@@ -580,43 +592,44 @@ package cheshire_pkg;
      ClicIntCtlBits    : 8,
      NumExtIntrSyncs   : 2,
      // Interconnect
@@ -4076,7 +4085,7 @@ index 0163af7..90e726b 100644
      RegAdaptMemCut    : 1,
      // RTC
 -    RtcFreq           : 32768,
-+    RtcFreq           : 10000000, // 10 MHz
++    RtcFreq           : 1000000, // 1 MHz
      // Features
      Bootrom           : 1,
      Uart              : 1,
@@ -4110,7 +4119,7 @@ index 0163af7..90e726b 100644
      DbgAmoNumCuts     : 1,
      DbgAmoPostCut     : 1,
      // LLC: 128 KiB, up to 2 GiB DRAM
-@@ -624,8 +635,8 @@ package cheshire_pkg;
+@@ -624,8 +637,8 @@ package cheshire_pkg;
      LlcSetAssoc       : 8,
      LlcNumLines       : 256,
      LlcNumBlocks      : 8,
@@ -4121,7 +4130,7 @@ index 0163af7..90e726b 100644
      LlcAmoNumCuts     : 1,
      LlcAmoPostCut     : 1,
      LlcOutConnect     : 1,
-@@ -638,10 +649,10 @@ package cheshire_pkg;
+@@ -638,10 +651,10 @@ package cheshire_pkg;
      VgaHCountWidth    : 24, // TODO: Default is 32; is this needed?
      VgaVCountWidth    : 24, // TODO: See above
      VgaBufferDepth    : 16,
@@ -4135,7 +4144,7 @@ index 0163af7..90e726b 100644
      SlinkMaxClkDiv    : 1024,
      SlinkRegionStart  : 64'h1_0000_0000,
      SlinkRegionEnd    : 64'h2_0000_0000,
-@@ -649,12 +660,12 @@ package cheshire_pkg;
+@@ -649,12 +662,12 @@ package cheshire_pkg;
      SlinkTxAddrDomain : 'h0000_0000,
      SlinkUserAmoBit   : 1,  // Convention: lower AMO bits for cores, MSB for serial link
      // USB config
@@ -4152,9 +4161,18 @@ index 0163af7..90e726b 100644
      DmaConfAmoPostCut   : 1,
      DmaConfEnableTwoD   : 1,
 diff --git a/hw/cheshire_soc.sv b/hw/cheshire_soc.sv
-index b3b6254..5a98f79 100644
+index b3b6254..cceff9d 100644
 --- a/hw/cheshire_soc.sv
 +++ b/hw/cheshire_soc.sv
+@@ -8,7 +8,7 @@
+ // Thomas Benz <tbenz@iis.ee.ethz.ch>
+ // Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
+ 
+-module cheshire_soc import cheshire_pkg::*; #(
++module cheshire_soc import cheshire_pkg::*; import cvxif_pkg::*; #(
+   // Cheshire config
+   parameter cheshire_cfg_t Cfg = '0,
+   // Debug info for external harts
 @@ -209,16 +209,15 @@ module cheshire_soc import cheshire_pkg::*; #(
      addr_t end_addr;
    } addr_rule_t;
@@ -4207,7 +4225,100 @@ index b3b6254..5a98f79 100644
  
    logic [cf_math_pkg::idx_width(RegOut.num_out)-1:0] reg_select;
  
-@@ -1002,6 +1000,7 @@ module cheshire_soc import cheshire_pkg::*; #(
+@@ -599,6 +597,81 @@ module cheshire_soc import cheshire_pkg::*; #(
+     logic [7:0]        clic_irq_level;
+     riscv::priv_lvl_t  clic_irq_priv;
+ 
++    // CVXIF connection
++    cvxif_pkg::cvxif_req_t  cvxif_req;
++    cvxif_pkg::cvxif_resp_t cvxif_resp;
++
++    // Regwriter AXI connection
++    axi_mst_req_t regwriter_req;
++    axi_mst_rsp_t regwriter_rsp;
++    
++    assign axi_in_req[AxiIn.regwriter[i]] = regwriter_req;
++    assign regwriter_rsp = axi_in_rsp[AxiIn.regwriter[i]];
++
++    // Zero-out unused fields
++    assign regwriter_req.aw.lock   = '0;
++    assign regwriter_req.aw.cache  = '0;
++    assign regwriter_req.aw.prot   = '0;
++    assign regwriter_req.aw.qos    = '0;
++    assign regwriter_req.aw.region = '0;
++    assign regwriter_req.aw.atop   = '0;
++    assign regwriter_req.aw.user   = '0;
++
++    assign regwriter_req.ar.lock   = '0;
++    assign regwriter_req.ar.cache  = '0;
++    assign regwriter_req.ar.prot   = '0;
++    assign regwriter_req.ar.qos    = '0;
++    assign regwriter_req.ar.region = '0;
++    assign regwriter_req.ar.user   = '0;
++
++    assign regwriter_req.w.user    = '0;
++
++    regwriter #(
++        .AXI_ADDR_WIDTH ( Cfg.AddrWidth ),
++        .AXI_DATA_WIDTH ( Cfg.AxiDataWidth ),
++        .AXI_ID_WIDTH   ( Cfg.AxiMstIdWidth ),
++        .X_ID_WIDTH     ( 4 )
++    ) i_regwriter (
++        .clk_i,
++        .rst_ni,
++        .cvxif_req_i       ( cvxif_req       ),
++        .cvxif_resp_o      ( cvxif_resp      ),
++
++        .m_axi_awid        ( regwriter_req.aw.id ),
++        .m_axi_awaddr      ( regwriter_req.aw.addr ),
++        .m_axi_awlen       ( regwriter_req.aw.len ),
++        .m_axi_awsize      ( regwriter_req.aw.size ),
++        .m_axi_awburst     ( regwriter_req.aw.burst ),
++        .m_axi_awvalid     ( regwriter_req.aw_valid ),
++        .m_axi_awready     ( regwriter_rsp.aw_ready ),
++        
++        .m_axi_wdata       ( regwriter_req.w.data ),
++        .m_axi_wstrb       ( regwriter_req.w.strb ),
++        .m_axi_wlast       ( regwriter_req.w.last ),
++        .m_axi_wvalid      ( regwriter_req.w_valid ),
++        .m_axi_wready      ( regwriter_rsp.w_ready ),
++        
++        .m_axi_bid         ( regwriter_rsp.b.id ),
++        .m_axi_bresp       ( regwriter_rsp.b.resp ),
++        .m_axi_bvalid      ( regwriter_rsp.b_valid ),
++        .m_axi_bready      ( regwriter_req.b_ready ),
++
++        .m_axi_arid        ( regwriter_req.ar.id ),
++        .m_axi_araddr      ( regwriter_req.ar.addr ),
++        .m_axi_arlen       ( regwriter_req.ar.len ),
++        .m_axi_arsize      ( regwriter_req.ar.size ),
++        .m_axi_arburst     ( regwriter_req.ar.burst ),
++        .m_axi_arvalid     ( regwriter_req.ar_valid ),
++        .m_axi_arready     ( regwriter_rsp.ar_ready ),
++        
++        .m_axi_rid         ( regwriter_rsp.r.id ),
++        .m_axi_rdata       ( regwriter_rsp.r.data ),
++        .m_axi_rresp       ( regwriter_rsp.r.resp ),
++        .m_axi_rlast       ( regwriter_rsp.r.last ),
++        .m_axi_rvalid      ( regwriter_rsp.r_valid ),
++        .m_axi_rready      ( regwriter_req.r_ready )
++    );
++
+     cva6 #(
+       .CVA6Cfg        ( Cva6Cfg ),
+       .axi_ar_chan_t  ( axi_cva6_ar_chan_t ),
+@@ -626,8 +699,8 @@ module cheshire_soc import cheshire_pkg::*; #(
+       .clic_kill_req_i  ( clic_irq_kill_req ),
+       .clic_kill_ack_o  ( clic_irq_kill_ack ),
+       .rvfi_probes_o    ( ),
+-      .cvxif_req_o      ( ),
+-      .cvxif_resp_i     ( '0 ),
++      .cvxif_req_o      ( cvxif_req      ),
++      .cvxif_resp_i     ( cvxif_resp     ),
+       .noc_req_o        ( core_out_req ),
+       .noc_resp_i       ( core_out_rsp )
+     );
+@@ -1002,6 +1075,7 @@ module cheshire_soc import cheshire_pkg::*; #(
        serial_link : Cfg.SerialLink,
        vga         : Cfg.Vga,
        usb         : Cfg.Usb,
@@ -4215,7 +4326,7 @@ index b3b6254..5a98f79 100644
        axirt       : Cfg.AxiRt,
        clic        : Cfg.Clic,
        irq_router  : Cfg.IrqRouter,
-@@ -1198,7 +1197,7 @@ module cheshire_soc import cheshire_pkg::*; #(
+@@ -1198,7 +1272,7 @@ module cheshire_soc import cheshire_pkg::*; #(
    if (Cfg.Uart) begin : gen_uart
  
      reg_uart_wrap #(
@@ -4224,7 +4335,7 @@ index b3b6254..5a98f79 100644
        .reg_req_t  ( reg_req_t ),
        .reg_rsp_t  ( reg_rsp_t )
      ) i_uart (
-@@ -1714,6 +1713,212 @@ module cheshire_soc import cheshire_pkg::*; #(
+@@ -1714,6 +1788,212 @@ module cheshire_soc import cheshire_pkg::*; #(
  
    end
  

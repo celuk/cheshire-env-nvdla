@@ -4170,7 +4170,7 @@ index 0163af7..a3c52ec 100644
      DmaConfAmoPostCut   : 1,
      DmaConfEnableTwoD   : 1,
 diff --git a/hw/cheshire_soc.sv b/hw/cheshire_soc.sv
-index b3b6254..f015649 100644
+index b3b6254..059154d 100644
 --- a/hw/cheshire_soc.sv
 +++ b/hw/cheshire_soc.sv
 @@ -8,7 +8,7 @@
@@ -4473,10 +4473,10 @@ index b3b6254..f015649 100644
 +    // Serialize NVDLA IDs (8bit) to match Cheshire AXI master ID width (2bit)
 +    axi_id_serialize #(
 +      .AxiSlvPortIdWidth      ( NvdlaIdWidth ),
-+      .AxiSlvPortMaxTxns      ( 8 ),
++      .AxiSlvPortMaxTxns      ( Cfg.CoreMaxTxns ),
 +      .AxiMstPortIdWidth      ( Cfg.AxiMstIdWidth ),
 +      .AxiMstPortMaxUniqIds   ( 2 ** Cfg.AxiMstIdWidth ),
-+      .AxiMstPortMaxTxnsPerId ( 8 ),
++      .AxiMstPortMaxTxnsPerId ( Cfg.CoreMaxTxnsPerId ),
 +      .AxiAddrWidth           ( Cfg.AddrWidth ),
 +      .AxiDataWidth           ( Cfg.AxiDataWidth ),
 +      .AxiUserWidth           ( Cfg.AxiUserWidth ),

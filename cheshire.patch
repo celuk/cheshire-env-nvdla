@@ -3943,7 +3943,7 @@ index 6f97ad5..4041191 100644
              2014: data_o = 32'h00000000 /* 0x1f78 */;
              2015: data_o = 32'h00000000 /* 0x1f7c */;
 diff --git a/hw/cheshire_pkg.sv b/hw/cheshire_pkg.sv
-index 0163af7..d4a88cf 100644
+index 0163af7..a3c52ec 100644
 --- a/hw/cheshire_pkg.sv
 +++ b/hw/cheshire_pkg.sv
 @@ -134,6 +134,7 @@ package cheshire_pkg;
@@ -4038,6 +4038,15 @@ index 0163af7..d4a88cf 100644
        i++; ret.bus_err[j] = i; r++; ret.map[r] = '{i, AmBusErr + j*'h40,  AmBusErr + (j+1)*'h40};
      end
      i++; r++;
+@@ -504,7 +516,7 @@ package cheshire_pkg;
+       RVH                   : 1,
+       RVZCB                 : 1,
+       XFVec                 : 0,
+-      CvxifEn               : 0,
++      CvxifEn               : 1,
+       ZiCondExtEn           : 1,
+       RVSCLIC               : cfg.Clic,
+       RVF                   : 1,
 @@ -543,7 +555,7 @@ package cheshire_pkg;
        NrCachedRegionRules   : 3,   // CachedSPM, LLCOut, ExtCIE
        CachedRegionAddrBase  : {AmSpm,   cfg.LlcOutRegionStart,  CieBase},
@@ -4161,7 +4170,7 @@ index 0163af7..d4a88cf 100644
      DmaConfAmoPostCut   : 1,
      DmaConfEnableTwoD   : 1,
 diff --git a/hw/cheshire_soc.sv b/hw/cheshire_soc.sv
-index b3b6254..cceff9d 100644
+index b3b6254..4860dd2 100644
 --- a/hw/cheshire_soc.sv
 +++ b/hw/cheshire_soc.sv
 @@ -8,7 +8,7 @@
@@ -4225,7 +4234,7 @@ index b3b6254..cceff9d 100644
  
    logic [cf_math_pkg::idx_width(RegOut.num_out)-1:0] reg_select;
  
-@@ -599,6 +597,81 @@ module cheshire_soc import cheshire_pkg::*; #(
+@@ -599,6 +597,63 @@ module cheshire_soc import cheshire_pkg::*; #(
      logic [7:0]        clic_irq_level;
      riscv::priv_lvl_t  clic_irq_priv;
  
@@ -4239,24 +4248,6 @@ index b3b6254..cceff9d 100644
 +    
 +    assign axi_in_req[AxiIn.regwriter[i]] = regwriter_req;
 +    assign regwriter_rsp = axi_in_rsp[AxiIn.regwriter[i]];
-+
-+    // Zero-out unused fields
-+    assign regwriter_req.aw.lock   = '0;
-+    assign regwriter_req.aw.cache  = '0;
-+    assign regwriter_req.aw.prot   = '0;
-+    assign regwriter_req.aw.qos    = '0;
-+    assign regwriter_req.aw.region = '0;
-+    assign regwriter_req.aw.atop   = '0;
-+    assign regwriter_req.aw.user   = '0;
-+
-+    assign regwriter_req.ar.lock   = '0;
-+    assign regwriter_req.ar.cache  = '0;
-+    assign regwriter_req.ar.prot   = '0;
-+    assign regwriter_req.ar.qos    = '0;
-+    assign regwriter_req.ar.region = '0;
-+    assign regwriter_req.ar.user   = '0;
-+
-+    assign regwriter_req.w.user    = '0;
 +
 +    regwriter #(
 +        .AXI_ADDR_WIDTH ( Cfg.AddrWidth ),
@@ -4307,7 +4298,7 @@ index b3b6254..cceff9d 100644
      cva6 #(
        .CVA6Cfg        ( Cva6Cfg ),
        .axi_ar_chan_t  ( axi_cva6_ar_chan_t ),
-@@ -626,8 +699,8 @@ module cheshire_soc import cheshire_pkg::*; #(
+@@ -626,8 +681,8 @@ module cheshire_soc import cheshire_pkg::*; #(
        .clic_kill_req_i  ( clic_irq_kill_req ),
        .clic_kill_ack_o  ( clic_irq_kill_ack ),
        .rvfi_probes_o    ( ),
@@ -4318,7 +4309,7 @@ index b3b6254..cceff9d 100644
        .noc_req_o        ( core_out_req ),
        .noc_resp_i       ( core_out_rsp )
      );
-@@ -1002,6 +1075,7 @@ module cheshire_soc import cheshire_pkg::*; #(
+@@ -1002,6 +1057,7 @@ module cheshire_soc import cheshire_pkg::*; #(
        serial_link : Cfg.SerialLink,
        vga         : Cfg.Vga,
        usb         : Cfg.Usb,
@@ -4326,7 +4317,7 @@ index b3b6254..cceff9d 100644
        axirt       : Cfg.AxiRt,
        clic        : Cfg.Clic,
        irq_router  : Cfg.IrqRouter,
-@@ -1198,7 +1272,7 @@ module cheshire_soc import cheshire_pkg::*; #(
+@@ -1198,7 +1254,7 @@ module cheshire_soc import cheshire_pkg::*; #(
    if (Cfg.Uart) begin : gen_uart
  
      reg_uart_wrap #(
@@ -4335,7 +4326,7 @@ index b3b6254..cceff9d 100644
        .reg_req_t  ( reg_req_t ),
        .reg_rsp_t  ( reg_rsp_t )
      ) i_uart (
-@@ -1714,6 +1788,212 @@ module cheshire_soc import cheshire_pkg::*; #(
+@@ -1714,6 +1770,212 @@ module cheshire_soc import cheshire_pkg::*; #(
  
    end
  
@@ -4364,7 +4355,7 @@ index b3b6254..cceff9d 100644
 +    logic [63:0] nvdla_rdata;
 +
 +    nvdla_wrapper_axi #(
-+        .AXI_ID_WIDTH ( Cfg.AxiMstIdWidth )
++        .AXI_ID_WIDTH ( NvdlaIdWidth )
 +    ) i_nvdla_wrapper (
 +        .clk        ( clk_i ),
 +        .rstn       ( rst_ni ),
@@ -4562,10 +4553,10 @@ index baa9ee4..a21618c 100644
  CHS_SW_LDFLAGS ?= $(CHS_SW_FLAGS) -nostartfiles -Wl,--gc-sections -Wl,-L$(CHS_SW_LD_DIR)
  CHS_SW_ARFLAGS ?= --plugin=$(CHS_SW_LTOPLUG)
 diff --git a/sw/tests/helloworld.c b/sw/tests/helloworld.c
-index d946624..5089747 100644
+index d946624..bea9875 100644
 --- a/sw/tests/helloworld.c
 +++ b/sw/tests/helloworld.c
-@@ -12,12 +12,46 @@
+@@ -12,12 +12,54 @@
  #include "params.h"
  #include "util.h"
  
@@ -4605,7 +4596,15 @@ index d946624..5089747 100644
 +    print_dec(NVDLA_CFG_RD_WEIGHT_1);
 +    uart_write_str(&__base_uart, " \n", 2);
 +
-+    NVDLA_CFG_WR_WEIGHT_0 = 56;
++    unsigned long addr = NVDLA_BASE_ADDR + NVDLA_CFG_WR_WEIGHT_0_OFFSET;
++    uint32_t val = 56;
++
++    asm volatile (
++        "regw %0, %1"
++        :
++        : "r" (addr), "r" (val)
++        : "memory"
++    );
 +
 +    uart_write_str(&__base_uart, "test2: ", 7);
 +    print_dec(NVDLA_CFG_WR_WEIGHT_0);

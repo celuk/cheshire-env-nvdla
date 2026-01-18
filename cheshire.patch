@@ -3943,7 +3943,7 @@ index 6f97ad5..4041191 100644
              2014: data_o = 32'h00000000 /* 0x1f78 */;
              2015: data_o = 32'h00000000 /* 0x1f7c */;
 diff --git a/hw/cheshire_pkg.sv b/hw/cheshire_pkg.sv
-index 0163af7..a3c52ec 100644
+index 0163af7..58794c4 100644
 --- a/hw/cheshire_pkg.sv
 +++ b/hw/cheshire_pkg.sv
 @@ -134,6 +134,7 @@ package cheshire_pkg;
@@ -4038,6 +4038,15 @@ index 0163af7..a3c52ec 100644
        i++; ret.bus_err[j] = i; r++; ret.map[r] = '{i, AmBusErr + j*'h40,  AmBusErr + (j+1)*'h40};
      end
      i++; r++;
+@@ -486,7 +498,7 @@ package cheshire_pkg;
+     doub_bt CieBase   = cfg.Cva6ExtCieOnTop ? 64'h8000_0000 - cfg.Cva6ExtCieLength : 64'h2000_0000;
+     doub_bt NoCieBase = cfg.Cva6ExtCieOnTop ? 64'h2000_0000 : 64'h2000_0000 + cfg.Cva6ExtCieLength;
+     return config_pkg::cva6_cfg_t'{
+-      NrCommitPorts         : 2,
++      NrCommitPorts         : 1,
+       AxiAddrWidth          : cfg.AddrWidth,
+       AxiDataWidth          : cfg.AxiDataWidth,
+       AxiIdWidth            : Cva6IdWidth,
 @@ -504,7 +516,7 @@ package cheshire_pkg;
        RVH                   : 1,
        RVZCB                 : 1,
@@ -4075,9 +4084,10 @@ index 0163af7..a3c52ec 100644
 +    AddrWidth         : 32,
      AxiDataWidth      : 64,
      AxiUserWidth      : 2,  // AMO(2)
-     AxiMstIdWidth     : 2,
+-    AxiMstIdWidth     : 2,
 -    AxiMaxMstTrans    : 24,
 -    AxiMaxSlvTrans    : 24,
++    AxiMstIdWidth     : 8,
 +    AxiMaxMstTrans    : 1,
 +    AxiMaxSlvTrans    : 1,
      AxiUserAmoMsb     : 1, // Convention: lower AMO bits for cores, MSB for serial link
@@ -4170,7 +4180,7 @@ index 0163af7..a3c52ec 100644
      DmaConfAmoPostCut   : 1,
      DmaConfEnableTwoD   : 1,
 diff --git a/hw/cheshire_soc.sv b/hw/cheshire_soc.sv
-index b3b6254..4860dd2 100644
+index b3b6254..65cf9cd 100644
 --- a/hw/cheshire_soc.sv
 +++ b/hw/cheshire_soc.sv
 @@ -8,7 +8,7 @@
@@ -4309,7 +4319,101 @@ index b3b6254..4860dd2 100644
        .noc_req_o        ( core_out_req ),
        .noc_resp_i       ( core_out_rsp )
      );
-@@ -1002,6 +1057,7 @@ module cheshire_soc import cheshire_pkg::*; #(
+@@ -721,32 +776,67 @@ module cheshire_soc import cheshire_pkg::*; #(
+       core_out_rsp        = core_ur_rsp;
+     end
+ 
+-    // CVA6's ID encoding is wasteful; remap it statically pack into available bits
+-    axi_id_serialize #(
+-      .AxiSlvPortIdWidth      ( Cva6IdWidth     ),
+-      .AxiSlvPortMaxTxns      ( Cfg.CoreMaxTxns ),
+-      .AxiMstPortIdWidth      ( Cfg.AxiMstIdWidth      ),
+-      .AxiMstPortMaxUniqIds   ( 2 ** Cfg.AxiMstIdWidth ),
+-      .AxiMstPortMaxTxnsPerId ( Cfg.CoreMaxTxnsPerId   ),
+-      .AxiAddrWidth           ( Cfg.AddrWidth    ),
+-      .AxiDataWidth           ( Cfg.AxiDataWidth ),
+-      .AxiUserWidth           ( Cfg.AxiUserWidth ),
+-      .AtopSupport            ( 1 ),
+-      .slv_req_t              ( axi_cva6_req_t ),
+-      .slv_resp_t             ( axi_cva6_rsp_t ),
+-      .mst_req_t              ( axi_mst_req_t  ),
+-      .mst_resp_t             ( axi_mst_rsp_t  ),
+-      .MstIdBaseOffset        ( '0 ),
+-      .IdMapNumEntries        ( Cva6IdsUsed ),
+-      .IdMap                  ( gen_cva6_id_map(Cfg) )
+-    ) i_axi_id_serialize (
+-      .clk_i,
+-      .rst_ni,
+-      .slv_req_i  ( core_ur_req ),
+-      .slv_resp_o ( core_ur_rsp ),
+-      .mst_req_o  ( axi_in_req[AxiIn.cores[i]] ),
+-      .mst_resp_i ( axi_in_rsp[AxiIn.cores[i]] )
+-    );
++    if (Cfg.AxiMstIdWidth > Cva6IdWidth) begin : gen_cva6_id_passthrough
++        always_comb begin
++            axi_in_req[AxiIn.cores[i]] = '0;
++            core_ur_rsp                = '0;
++
++            axi_in_req[AxiIn.cores[i]].aw       = core_ur_req.aw;
++            axi_in_req[AxiIn.cores[i]].aw.id    = { {(Cfg.AxiMstIdWidth - Cva6IdWidth){1'b0}}, core_ur_req.aw.id };
++            axi_in_req[AxiIn.cores[i]].aw_valid = core_ur_req.aw_valid;
++
++            axi_in_req[AxiIn.cores[i]].w        = core_ur_req.w;
++            axi_in_req[AxiIn.cores[i]].w_valid  = core_ur_req.w_valid;
++
++            axi_in_req[AxiIn.cores[i]].ar       = core_ur_req.ar;
++            axi_in_req[AxiIn.cores[i]].ar.id    = { {(Cfg.AxiMstIdWidth - Cva6IdWidth){1'b0}}, core_ur_req.ar.id };
++            axi_in_req[AxiIn.cores[i]].ar_valid = core_ur_req.ar_valid;
++
++            axi_in_req[AxiIn.cores[i]].b_ready  = core_ur_req.b_ready;
++            axi_in_req[AxiIn.cores[i]].r_ready  = core_ur_req.r_ready;
++
++            core_ur_rsp.aw_ready = axi_in_rsp[AxiIn.cores[i]].aw_ready;
++            core_ur_rsp.w_ready  = axi_in_rsp[AxiIn.cores[i]].w_ready;
++
++            core_ur_rsp.b        = axi_in_rsp[AxiIn.cores[i]].b;
++            core_ur_rsp.b.id     = axi_in_rsp[AxiIn.cores[i]].b.id[Cva6IdWidth-1:0];
++            core_ur_rsp.b_valid  = axi_in_rsp[AxiIn.cores[i]].b_valid;
++
++            core_ur_rsp.ar_ready = axi_in_rsp[AxiIn.cores[i]].ar_ready;
++
++            core_ur_rsp.r        = axi_in_rsp[AxiIn.cores[i]].r;
++            core_ur_rsp.r.id     = axi_in_rsp[AxiIn.cores[i]].r.id[Cva6IdWidth-1:0];
++            core_ur_rsp.r_valid  = axi_in_rsp[AxiIn.cores[i]].r_valid;
++        end
++    end
++    else begin : gen_cva6_id_serialize
++        // CVA6's ID encoding is wasteful; remap it statically pack into available bits
++        axi_id_serialize #(
++          .AxiSlvPortIdWidth      ( Cva6IdWidth     ),
++          .AxiSlvPortMaxTxns      ( Cfg.CoreMaxTxns ),
++          .AxiMstPortIdWidth      ( Cfg.AxiMstIdWidth      ),
++          .AxiMstPortMaxUniqIds   ( 2 ** Cfg.AxiMstIdWidth ),
++          .AxiMstPortMaxTxnsPerId ( Cfg.CoreMaxTxnsPerId   ),
++          .AxiAddrWidth           ( Cfg.AddrWidth    ),
++          .AxiDataWidth           ( Cfg.AxiDataWidth ),
++          .AxiUserWidth           ( Cfg.AxiUserWidth ),
++          .AtopSupport            ( 1 ),
++          .slv_req_t              ( axi_cva6_req_t ),
++          .slv_resp_t             ( axi_cva6_rsp_t ),
++          .mst_req_t              ( axi_mst_req_t  ),
++          .mst_resp_t             ( axi_mst_rsp_t  ),
++          .MstIdBaseOffset        ( '0 ),
++          .IdMapNumEntries        ( Cva6IdsUsed ),
++          .IdMap                  ( gen_cva6_id_map(Cfg) )
++        ) i_axi_id_serialize (
++          .clk_i,
++          .rst_ni,
++          .slv_req_i  ( core_ur_req ),
++          .slv_resp_o ( core_ur_rsp ),
++          .mst_req_o  ( axi_in_req[AxiIn.cores[i]] ),
++          .mst_resp_i ( axi_in_rsp[AxiIn.cores[i]] )
++        );
++    end
+   end
+ 
+   /////////////////////////
+@@ -1002,6 +1092,7 @@ module cheshire_soc import cheshire_pkg::*; #(
        serial_link : Cfg.SerialLink,
        vga         : Cfg.Vga,
        usb         : Cfg.Usb,
@@ -4317,7 +4421,7 @@ index b3b6254..4860dd2 100644
        axirt       : Cfg.AxiRt,
        clic        : Cfg.Clic,
        irq_router  : Cfg.IrqRouter,
-@@ -1198,7 +1254,7 @@ module cheshire_soc import cheshire_pkg::*; #(
+@@ -1198,7 +1289,7 @@ module cheshire_soc import cheshire_pkg::*; #(
    if (Cfg.Uart) begin : gen_uart
  
      reg_uart_wrap #(
@@ -4326,7 +4430,7 @@ index b3b6254..4860dd2 100644
        .reg_req_t  ( reg_req_t ),
        .reg_rsp_t  ( reg_rsp_t )
      ) i_uart (
-@@ -1714,6 +1770,212 @@ module cheshire_soc import cheshire_pkg::*; #(
+@@ -1714,6 +1805,188 @@ module cheshire_soc import cheshire_pkg::*; #(
  
    end
  
@@ -4355,7 +4459,7 @@ index b3b6254..4860dd2 100644
 +    logic [63:0] nvdla_rdata;
 +
 +    nvdla_wrapper_axi #(
-+        .AXI_ID_WIDTH ( NvdlaIdWidth )
++        .AXI_ID_WIDTH ( AxiSlvIdWidth )
 +    ) i_nvdla_wrapper (
 +        .clk        ( clk_i ),
 +        .rstn       ( rst_ni ),
@@ -4422,77 +4526,53 @@ index b3b6254..4860dd2 100644
 +        .dla_intr     ( intr.intn.nvdla )
 +    );
 +
-+    assign nvdla_raw_req.aw.id    = nvdla_awid;
-+    assign nvdla_raw_req.aw.addr  = nvdla_awaddr;
-+    assign nvdla_raw_req.aw.len   = nvdla_awlen;
-+    assign nvdla_raw_req.aw.size  = nvdla_awsize;
-+    assign nvdla_raw_req.aw.burst = nvdla_awburst;
-+    assign nvdla_raw_req.aw.lock  = '0;
-+    assign nvdla_raw_req.aw.cache = '0;
-+    assign nvdla_raw_req.aw.prot  = '0;
-+    assign nvdla_raw_req.aw.qos   = '0;
-+    assign nvdla_raw_req.aw.region= '0;
-+    assign nvdla_raw_req.aw.atop  = '0;
-+    assign nvdla_raw_req.aw.user  = '0;
-+    assign nvdla_raw_req.aw_valid = nvdla_awvalid;
++    assign axi_nvdla_mst_req.aw.id    = nvdla_awid;
++    assign axi_nvdla_mst_req.aw.addr  = nvdla_awaddr;
++    assign axi_nvdla_mst_req.aw.len   = nvdla_awlen;
++    assign axi_nvdla_mst_req.aw.size  = nvdla_awsize;
++    assign axi_nvdla_mst_req.aw.burst = nvdla_awburst;
++    assign axi_nvdla_mst_req.aw.lock  = '0;
++    assign axi_nvdla_mst_req.aw.cache = '0;
++    assign axi_nvdla_mst_req.aw.prot  = '0;
++    assign axi_nvdla_mst_req.aw.qos   = '0;
++    assign axi_nvdla_mst_req.aw.region= '0;
++    assign axi_nvdla_mst_req.aw.atop  = '0;
++    assign axi_nvdla_mst_req.aw.user  = '0;
++    assign axi_nvdla_mst_req.aw_valid = nvdla_awvalid;
 +
-+    assign nvdla_raw_req.w.data   = nvdla_wdata;
-+    assign nvdla_raw_req.w.strb   = nvdla_wstrb;
-+    assign nvdla_raw_req.w.last   = nvdla_wlast;
-+    assign nvdla_raw_req.w.user   = '0;
-+    assign nvdla_raw_req.w_valid  = nvdla_wvalid;
++    assign axi_nvdla_mst_req.w.data   = nvdla_wdata;
++    assign axi_nvdla_mst_req.w.strb   = nvdla_wstrb;
++    assign axi_nvdla_mst_req.w.last   = nvdla_wlast;
++    assign axi_nvdla_mst_req.w.user   = '0;
++    assign axi_nvdla_mst_req.w_valid  = nvdla_wvalid;
 +
-+    assign nvdla_raw_req.ar.id    = nvdla_arid;
-+    assign nvdla_raw_req.ar.addr  = nvdla_araddr;
-+    assign nvdla_raw_req.ar.len   = nvdla_arlen;
-+    assign nvdla_raw_req.ar.size  = nvdla_arsize;
-+    assign nvdla_raw_req.ar.burst = nvdla_arburst;
-+    assign nvdla_raw_req.ar.lock  = '0;
-+    assign nvdla_raw_req.ar.cache = '0;
-+    assign nvdla_raw_req.ar.prot  = '0;
-+    assign nvdla_raw_req.ar.qos   = '0;
-+    assign nvdla_raw_req.ar.region= '0;
-+    assign nvdla_raw_req.ar.user  = '0;
-+    assign nvdla_raw_req.ar_valid = nvdla_arvalid;
++    assign axi_nvdla_mst_req.ar.id    = nvdla_arid;
++    assign axi_nvdla_mst_req.ar.addr  = nvdla_araddr;
++    assign axi_nvdla_mst_req.ar.len   = nvdla_arlen;
++    assign axi_nvdla_mst_req.ar.size  = nvdla_arsize;
++    assign axi_nvdla_mst_req.ar.burst = nvdla_arburst;
++    assign axi_nvdla_mst_req.ar.lock  = '0;
++    assign axi_nvdla_mst_req.ar.cache = '0;
++    assign axi_nvdla_mst_req.ar.prot  = '0;
++    assign axi_nvdla_mst_req.ar.qos   = '0;
++    assign axi_nvdla_mst_req.ar.region= '0;
++    assign axi_nvdla_mst_req.ar.user  = '0;
++    assign axi_nvdla_mst_req.ar_valid = nvdla_arvalid;
 +
-+    assign nvdla_raw_req.b_ready  = nvdla_bready;
-+    assign nvdla_raw_req.r_ready  = nvdla_rready;
++    assign axi_nvdla_mst_req.b_ready  = nvdla_bready;
++    assign axi_nvdla_mst_req.r_ready  = nvdla_rready;
 +
-+    assign nvdla_awready = nvdla_raw_rsp.aw_ready;
-+    assign nvdla_wready  = nvdla_raw_rsp.w_ready;
-+    assign nvdla_bid     = nvdla_raw_rsp.b.id;
-+    assign nvdla_bresp   = nvdla_raw_rsp.b.resp;
-+    assign nvdla_bvalid  = nvdla_raw_rsp.b_valid;
-+    assign nvdla_arready = nvdla_raw_rsp.ar_ready;
-+    assign nvdla_rid     = nvdla_raw_rsp.r.id;
-+    assign nvdla_rdata   = nvdla_raw_rsp.r.data;
-+    assign nvdla_rresp   = nvdla_raw_rsp.r.resp;
-+    assign nvdla_rlast   = nvdla_raw_rsp.r.last;
-+    assign nvdla_rvalid  = nvdla_raw_rsp.r_valid;
-+
-+    // Serialize NVDLA IDs (8bit) to match Cheshire AXI master ID width (2bit)
-+    axi_id_serialize #(
-+      .AxiSlvPortIdWidth      ( NvdlaIdWidth ),
-+      .AxiSlvPortMaxTxns      ( 1 ),
-+      .AxiMstPortIdWidth      ( Cfg.AxiMstIdWidth ),
-+      .AxiMstPortMaxUniqIds   ( 2 ** Cfg.AxiMstIdWidth ),
-+      .AxiMstPortMaxTxnsPerId ( 1 ),
-+      .AxiAddrWidth           ( Cfg.AddrWidth ),
-+      .AxiDataWidth           ( Cfg.AxiDataWidth ),
-+      .AxiUserWidth           ( Cfg.AxiUserWidth ),
-+      .AtopSupport            ( 0 ),
-+      .slv_req_t              ( nvdla_axi_req_t ),
-+      .slv_resp_t             ( nvdla_axi_rsp_t ),
-+      .mst_req_t              ( axi_mst_req_t ),
-+      .mst_resp_t             ( axi_mst_rsp_t )
-+    ) i_nvdla_id_serialize (
-+      .clk_i,
-+      .rst_ni,
-+      .slv_req_i  ( nvdla_raw_req ),
-+      .slv_resp_o ( nvdla_raw_rsp ),
-+      .mst_req_o  ( axi_nvdla_mst_req ),
-+      .mst_resp_i ( axi_in_rsp[AxiIn.nvdla] )
-+    );
++    assign nvdla_awready = axi_in_rsp[AxiIn.nvdla].aw_ready;
++    assign nvdla_wready  = axi_in_rsp[AxiIn.nvdla].w_ready;
++    assign nvdla_bid     = axi_in_rsp[AxiIn.nvdla].b.id;
++    assign nvdla_bresp   = axi_in_rsp[AxiIn.nvdla].b.resp;
++    assign nvdla_bvalid  = axi_in_rsp[AxiIn.nvdla].b_valid;
++    assign nvdla_arready = axi_in_rsp[AxiIn.nvdla].ar_ready;
++    assign nvdla_rid     = axi_in_rsp[AxiIn.nvdla].r.id;
++    assign nvdla_rdata   = axi_in_rsp[AxiIn.nvdla].r.data;
++    assign nvdla_rresp   = axi_in_rsp[AxiIn.nvdla].r.resp;
++    assign nvdla_rlast   = axi_in_rsp[AxiIn.nvdla].r.last;
++    assign nvdla_rvalid  = axi_in_rsp[AxiIn.nvdla].r_valid;
 +
 +    always_comb begin
 +      axi_in_req[AxiIn.nvdla]         = axi_nvdla_mst_req;

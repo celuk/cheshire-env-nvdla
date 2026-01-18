@@ -65,11 +65,14 @@ module regwriter #(
     logic [AXI_ADDR_WIDTH-1:0] addr_q, addr_d;
     logic [AXI_DATA_WIDTH-1:0] data_q, data_d;
     logic [X_ID_WIDTH-1:0]     id_q, id_d;
-
+    
     logic is_regw;
-    // custom-0 opcode: 0001011 (0x0B). Funct3=0.
-    assign is_regw = (cvxif_req_i.x_issue_req.instr[6:0] == 7'b0001011) && 
-                     (cvxif_req_i.x_issue_req.instr[14:12] == 3'b000);
+
+    // Encoding: 0000000 | rs2 | rs1 | 000 | 00000 | 1111111
+    // regw rs1, rs2 --> Write rs1 data to address in rs2
+    assign is_regw = (cvxif_req_i.x_issue_req.instr[6:0] == 7'b1111111) &&
+                     (cvxif_req_i.x_issue_req.instr[14:12] == 3'b000) &&
+                     (cvxif_req_i.x_issue_req.instr[31:25] == 7'b0000000);
 
     assign cvxif_resp_o.x_issue_ready = (state_q == IDLE) && is_regw;
     assign cvxif_resp_o.x_issue_resp.accept = is_regw;
@@ -114,10 +117,12 @@ module regwriter #(
 
         case (state_q)
             IDLE: begin
+                // x_issue_ready is driven by assign
                 if (cvxif_req_i.x_issue_valid && is_regw) begin
-                    // rs1 is data(0), rs2 is address(1) from register file array
+                    // rs1 is data(0)
                     data_d  = cvxif_req_i.x_issue_req.rs[0];
-                    addr_d  = cvxif_req_i.x_issue_req.rs[1];
+                    // rs2 is address(1)
+                    addr_d  = cvxif_req_i.x_issue_req.rs[1]; // 64'h40000000 + {44'b0, imm};
                     id_d    = cvxif_req_i.x_issue_req.id;
                     state_d = WRITE_ADDR;
                 end

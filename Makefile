@@ -146,6 +146,10 @@ PHONY: gdb
 gdb:
 	/home/shc/projects/cheshire-linux-nvdla/riscv-toolchain-custom/_install/bin/riscv64-unknown-linux-gnu-gdb -ex "target remote :3333"
 
+PHONY: jtag_trace
+jtag_trace:
+	python3 ./tools/jtag_trace.py ./verification/jtag/jtag_trace.txt $(ARGS)
+
 .PHONY: clean
 clean:
 	-rm -rf ./build

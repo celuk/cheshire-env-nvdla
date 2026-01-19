@@ -3943,7 +3943,7 @@ index 6f97ad5..4041191 100644
              2014: data_o = 32'h00000000 /* 0x1f78 */;
              2015: data_o = 32'h00000000 /* 0x1f7c */;
 diff --git a/hw/cheshire_pkg.sv b/hw/cheshire_pkg.sv
-index 0163af7..a3c52ec 100644
+index 0163af7..4647d27 100644
 --- a/hw/cheshire_pkg.sv
 +++ b/hw/cheshire_pkg.sv
 @@ -134,6 +134,7 @@ package cheshire_pkg;
@@ -4075,9 +4075,10 @@ index 0163af7..a3c52ec 100644
 +    AddrWidth         : 32,
      AxiDataWidth      : 64,
      AxiUserWidth      : 2,  // AMO(2)
-     AxiMstIdWidth     : 2,
+-    AxiMstIdWidth     : 2,
 -    AxiMaxMstTrans    : 24,
 -    AxiMaxSlvTrans    : 24,
++    AxiMstIdWidth     : 4,
 +    AxiMaxMstTrans    : 1,
 +    AxiMaxSlvTrans    : 1,
      AxiUserAmoMsb     : 1, // Convention: lower AMO bits for cores, MSB for serial link

@@ -19,3 +19,5 @@
 `define FIFOGEN_MASTER_CLK_GATING_DISABLED 1
 //`define NV_FPGA_SYSTEM 1
 //`define NV_FPGA_UNIT 1
+
+`define JTAG

@@ -8,17 +8,16 @@ define trace_logger
         set logging redirect on
         set logging on
         
-        printf "Time(ns)   Cycle      PC               InstrHex   Disassembly\n"
+        set style enabled off
+        
+        printf "Cycle      PC               Disassembly\n"
         
         set $i = 0
         set $max = $arg1
-        set $period_ns = 20
         
         while $i < $max
-            set $time = $i * $period_ns
-            set $instr_hex = *(unsigned int*)$pc
+            printf "%-10d 0x%016x ", $i, $pc
             
-            printf "%-10d %-10d 0x%016x %08x ", $time, $i, $pc, $instr_hex
             x/1i $pc
             
             stepi
@@ -28,6 +27,7 @@ define trace_logger
         
         set logging off
         set logging redirect off
+        set style enabled on
         printf "Trace finished. Written to %s\n", $arg0
     end
 end

@@ -130,13 +130,21 @@ program_linux:
 	$(MAKE) program ARGS="/home/shc/projects/cheshire-env-nvdla/vivado/cheshire_zc706/cheshire_zc706.runs/impl_1/cheshire_soc_wrap.bit"
 	python3 tools/uart_send_data_to_dram.py -f /home/shc/projects/cheshire-linux-nvdla/riscv-opensbi-port/build/platform/template/firmware/fw_dynamic.hex -p /dev/ttyUSB$(ARGS)
 
+.PHONY: program_basys3
+program_basys3:
+	$(XILINX_VIVADO)/bin/vivado -mode batch -nolog -nojournal -source vivado/program_basys3.tcl -tclargs $(ARGS)
+
+.PHONY: buart
+buart:
+	$(MAKE) program_basys3 ARGS="/home/shc/projects/cva-soc/vivado/buart/buart.runs/impl_1/prog_uart.bit"
+
 .PHONY: jtag
 jtag:
 	/media/shc/0EDEBC4906059163/tools/riscv-openocd/src/openocd -f verification/jtag/debug_soc.cfg
 
 PHONY: gdb
 gdb:
-	/home/shc/projects/cheshire-linux-nvdla/riscv-toolchain-custom/_install/bin/riscv64-unknown-elf-gdb -ex "target remote :3333"
+	/home/shc/projects/cheshire-linux-nvdla/riscv-toolchain-custom/_install/bin/riscv64-unknown-linux-gnu-gdb -ex "target remote :3333"
 
 .PHONY: clean
 clean:

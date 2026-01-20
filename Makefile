@@ -144,7 +144,7 @@ jtag:
 
 PHONY: gdb
 gdb:
-	/home/shc/projects/cheshire-linux-nvdla/riscv-toolchain-custom/_install/bin/riscv64-unknown-linux-gnu-gdb -ex "target remote :3333"
+	/home/shc/projects/cheshire-linux-nvdla/riscv-toolchain-custom/_install/bin/riscv64-unknown-linux-gnu-gdb /home/shc/projects/cheshire-linux-nvdla/riscv-linux-port/vmlinux -ex "target remote :3333"
 
 PHONY: jtag_trace
 jtag_trace:

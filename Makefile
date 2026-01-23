@@ -146,6 +146,14 @@ PHONY: gdb
 gdb:
 	/home/shc/projects/cheshire-linux-nvdla/riscv-toolchain-custom/_install/bin/riscv64-unknown-linux-gnu-gdb /home/shc/projects/cheshire-linux-nvdla/riscv-linux-port/vmlinux -ex "target remote :3333"
 
+.PHONY: gdb_cmd
+gdb_cmd:
+	python3 tools/gdb_command_runner.py --command=$(ARGS) --timeout="1000" --gdb-exec="/home/shc/projects/cheshire-linux-nvdla/riscv-toolchain-custom/_install/bin/riscv64-unknown-linux-gnu-gdb" --elf-file="/home/shc/projects/cheshire-linux-nvdla/riscv-linux-port/vmlinux" --args='-ex "target remote :3333"'
+
+.PHONY: gdb_continue
+gdb_continue:
+	python3 tools/gdb_command_runner.py --command="continue" --timeout=$(ARGS) --gdb-exec="/home/shc/projects/cheshire-linux-nvdla/riscv-toolchain-custom/_install/bin/riscv64-unknown-linux-gnu-gdb" --elf-file="/home/shc/projects/cheshire-linux-nvdla/riscv-linux-port/vmlinux" --args='-ex "target remote :3333"'
+
 PHONY: jtag_trace
 jtag_trace:
 	python3 ./tools/jtag_trace.py ./verification/jtag/jtag_trace.txt $(ARGS)

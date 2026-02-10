@@ -7,14 +7,14 @@ set_property IOSTANDARD LVDS [get_ports clk_n]
 create_clock -period 5.000 -name clk_200mhz_p [get_ports clk_p]
 
 # PMOD1_5_LS
-#set_property PACKAGE_PIN Y23 [get_ports uart_rx_i]
+#set_property PACKAGE_PIN Y20 [get_ports uart_rx_i]
 #set_property IOSTANDARD LVCMOS33 [get_ports uart_rx_i]
 
-set_property PACKAGE_PIN Y23 [get_ports program_rx_i]
+set_property PACKAGE_PIN Y20 [get_ports program_rx_i]
 set_property IOSTANDARD LVCMOS33 [get_ports program_rx_i]
 
 # PMOD1_4_LS
-set_property PACKAGE_PIN Y20 [get_ports uart_tx_o]
+set_property PACKAGE_PIN Y23 [get_ports uart_tx_o]
 set_property IOSTANDARD LVCMOS33 [get_ports uart_tx_o]
 
 # GPIO_LED_0

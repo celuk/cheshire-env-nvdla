@@ -94,6 +94,16 @@ set_property VCCAUX_IO HIGH [get_ports {ddr3_dm[1]}]
 set_property IOSTANDARD SSTL15 [get_ports {ddr3_dm[1]}]
 set_property PACKAGE_PIN AF3 [get_ports {ddr3_dm[1]}]
 
+set_property VCCAUX_IO HIGH [get_ports {ddr3_dm[2]}]
+#set_property SLEW FAST [get_ports {ddr3_dm[2]}]
+set_property IOSTANDARD SSTL15 [get_ports {ddr3_dm[2]}]
+set_property PACKAGE_PIN AH4 [get_ports {ddr3_dm[2]}]
+
+set_property VCCAUX_IO HIGH [get_ports {ddr3_dm[3]}]
+#set_property SLEW FAST [get_ports {ddr3_dm[3]}]
+set_property IOSTANDARD SSTL15 [get_ports {ddr3_dm[3]}]
+set_property PACKAGE_PIN AF8 [get_ports {ddr3_dm[3]}]
+
 ##
 
 ## DDR3_BA

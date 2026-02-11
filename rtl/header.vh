@@ -4,7 +4,12 @@
 
 //`define DRAM_SIM
 //`define SIM
+`define GENESYS2
+//`define ZC706
+
+`ifdef GENESYS2
 `define ZC706
+`endif
 
 `define CPU_CLK 50_000_000
 `define BAUD_RATE 921600

@@ -34,13 +34,7 @@ module cheshire_soc_wrap import cheshire_pkg::*;
   output logic [2:0] ddr3_ba,
   output logic [13:0] ddr3_addr,
   output logic ddr3_odt,
-
-  `ifdef  GENESYS2
-  inout  logic [3:0] ddr3_dm,
-  `else
   inout  logic [1:0] ddr3_dm,
-  `endif
-
   inout  logic [1:0] ddr3_dqs_p,
   inout  logic [1:0] ddr3_dqs_n,
   inout  logic [15:0] ddr3_dq
@@ -132,14 +126,13 @@ module cheshire_soc_wrap import cheshire_pkg::*;
      wire rst_n = rst_ni & system_reset_o;
   `endif
 
-  assign prog_mode_led_o = 1'b1;
   uart_programmer up_dram (
      .clk_i(clkwiz_o),
      .rst_ni(rst_ni `ifdef BASYS3 & clkwiz_locked `endif) // pll_locked
      
      ,.program_rx_i(program_rx_i)
      ,.system_reset_o(system_reset_o)
-     ,.prog_mode_led_o()
+     ,.prog_mode_led_o(prog_mode_led_o)
 
      ,.dram_write_we_o(uart_dram_write_we)
      ,.dram_write_addr_o(uart_dram_write_addr)
@@ -375,17 +368,12 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     .ddr3_reset_n ( ddr3_reset_n ),
     .ddr3_cke     ( ddr3_cke ),
     .ddr3_cs_n    ( ddr3_cs_n ),
-    .ddr3_dm      ( ddr3_dm[1:0] ),
+    .ddr3_dm      ( ddr3_dm ),
     .ddr3_odt     ( ddr3_odt ),
 
     // DRAM AXI interface
     .soc_req_i    ( axi_llc_mst_req ),
     .soc_rsp_o    ( axi_llc_mst_rsp )
   );
-
-  `ifdef GENESYS2
-  assign ddr3_dm[2] = 1'b1;
-  assign ddr3_dm[3] = 1'b1;
-  `endif
 
 endmodule

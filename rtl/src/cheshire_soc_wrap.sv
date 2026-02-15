@@ -11,6 +11,9 @@ module cheshire_soc_wrap import cheshire_pkg::*;
   `ifdef ZC706
   input  wire clk_p,
   input  wire clk_n,
+  `elsif GENESYS2
+  input  wire clk_p,
+  input  wire clk_n,
   `else
   input wire clk_i,
   `endif
@@ -31,6 +34,15 @@ module cheshire_soc_wrap import cheshire_pkg::*;
   output logic ddr3_ras_n,
   output logic ddr3_cas_n,
   output logic ddr3_we_n,
+  `ifdef GENESYS2
+  output logic [2:0] ddr3_ba,
+  output logic [14:0] ddr3_addr,
+  output logic ddr3_odt,
+  inout  logic [3:0] ddr3_dm,
+  inout  logic [3:0] ddr3_dqs_p,
+  inout  logic [3:0] ddr3_dqs_n,
+  inout  logic [31:0] ddr3_dq
+  `else
   output logic [2:0] ddr3_ba,
   output logic [13:0] ddr3_addr,
   output logic ddr3_odt,
@@ -38,6 +50,7 @@ module cheshire_soc_wrap import cheshire_pkg::*;
   inout  logic [1:0] ddr3_dqs_p,
   inout  logic [1:0] ddr3_dqs_n,
   inout  logic [15:0] ddr3_dq
+  `endif
 `endif
 
   `ifdef JTAG
@@ -121,6 +134,28 @@ module cheshire_soc_wrap import cheshire_pkg::*;
 
      wire clkwiz_o = clk_i;
      wire rst_n = rst_ni & system_reset_o & !uart_dram_mode & pll_locked; // & !uart_dram_mode
+  `elsif GENESYS2
+     wire pll_locked;
+     wire clk100;
+     wire clk_ddr;
+     wire clk_ref;
+     wire clk_ddr_dqs;
+     wire clk_i;
+     
+     clk_wiz_0 u_pll (
+        .clk_in1_p(clk_p),
+        .clk_in1_n(clk_n),
+        .reset(~rst_ni),
+        .clk_out1(clk100),
+        .clk_out2(clk_ddr),
+        .clk_out3(clk_ref),
+        .clk_out4(clk_ddr_dqs),
+        .clk_out5(clk_i),
+        .locked(pll_locked)
+     );
+
+     wire clkwiz_o = clk_i;
+     wire rst_n = rst_ni & system_reset_o & pll_locked;
   `else
      wire clkwiz_o = clk_i;
      wire rst_n = rst_ni & system_reset_o;

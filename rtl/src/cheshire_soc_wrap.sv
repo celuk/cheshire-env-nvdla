@@ -12,8 +12,8 @@ module cheshire_soc_wrap import cheshire_pkg::*;
   input  wire clk_p,
   input  wire clk_n,
   `elsif GENESYS2
-  input  wire clk_p,
-  input  wire clk_n,
+  input  wire sys_clk_p,
+  input  wire sys_clk_n,
   `else
   input wire clk_i,
   `endif
@@ -143,8 +143,8 @@ module cheshire_soc_wrap import cheshire_pkg::*;
      wire clk_i;
      
      clk_wiz_0 u_pll (
-        .clk_in1_p(clk_p),
-        .clk_in1_n(clk_n),
+        .clk_in1_p(sys_clk_p),
+        .clk_in1_n(sys_clk_n),
         .reset(~rst_ni),
         .clk_out1(clk100),
         .clk_out2(clk_ddr),
@@ -383,6 +383,9 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     .clk_ddr      ( clk_ddr ),
     .clk_ref      ( clk_ref ),
     .clk_ddr_dqs  ( clk_ddr_dqs ),
+
+    .sys_clk_p( sys_clk_p ),
+    .sys_clk_n( sys_clk_n ),
 
     .uart_dram_write_we_i   ( uart_dram_write_we ),
     .uart_dram_write_addr_i ( uart_dram_write_addr ),

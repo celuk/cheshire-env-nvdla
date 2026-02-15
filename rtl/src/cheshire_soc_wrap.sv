@@ -163,7 +163,7 @@ module cheshire_soc_wrap import cheshire_pkg::*;
      );
 
      wire clkwiz_o = clk_i;
-     wire rst_n = rst_ni & system_reset_o & pll_locked;
+     wire rst_n = rst_ni & system_reset_o & !uart_dram_mode & pll_locked;
   `else
      wire clkwiz_o = clk_i;
      wire rst_n = rst_ni & system_reset_o;

@@ -199,6 +199,12 @@ module dram_wrapper #(
   //  Instiantiate CDC  //
   ////////////////////////
 
+  `ifdef GENESYS2
+  // For GENESYS2: intermediate signals between UART MUX and CDC (soc_clk_i domain)
+  axi_dw_iw_req_t  pre_cdc_req;
+  axi_dw_iw_resp_t pre_cdc_rsp;
+  `endif
+
   if (cfg.EnCdc) begin : gen_cdc
     axi_cdc #(
       .aw_chan_t  ( axi_dw_iw_aw_chan_t),
@@ -212,8 +218,13 @@ module dram_wrapper #(
     ) i_axi_cdc_mig (
       .src_clk_i  ( soc_clk_i    ),
       .src_rst_ni ( soc_resetn_i ),
+      `ifdef GENESYS2
+      .src_req_i  ( pre_cdc_req ),
+      .src_resp_o ( pre_cdc_rsp ),
+      `else
       .src_req_i  ( iresizer_cdc_req ),
       .src_resp_o ( iresizer_cdc_rsp ),
+      `endif
       .dst_clk_i  ( dram_axi_clk ),
       .dst_rst_ni ( ~dram_rst_o  ),
       .dst_req_o  ( cdc_dram_req ),
@@ -246,125 +257,73 @@ module dram_wrapper #(
   assign dram_axi_clk = ui_clk;
   assign dram_rst_o   = ui_clk_sync_rst;
 
-  // UART to AXI Bridge Logic
-  logic [31:0] uart_addr_sync;
-  logic [31:0] uart_data_sync;
-  
-  // 3-stage synchronizer for WE to detect rising edge and crossing domains safely
-  logic uart_we_r1, uart_we_r2, uart_we_r3;
-  
-  always_ff @(posedge ui_clk) begin
-      if (ui_clk_sync_rst) begin
-          uart_we_r1 <= 1'b0;
-          uart_we_r2 <= 1'b0;
-          uart_we_r3 <= 1'b0;
-      end else begin
-          uart_we_r1 <= uart_dram_write_we_i;
-          uart_we_r2 <= uart_we_r1;
-          uart_we_r3 <= uart_we_r2;
-      end
-  end
-  
-  // Pulse generation (rising edge of synchronized WE)
-  wire uart_write_pulse = uart_we_r2 && !uart_we_r3;
+  typedef enum logic [1:0] { U_IDLE, U_AW, U_W, U_B } uart_st_t;
+  uart_st_t u_st;
 
-  // Sample data/addr on the pulse
-  always_ff @(posedge ui_clk) begin
-      if (uart_write_pulse) begin
-          uart_addr_sync <= uart_dram_write_addr_i;
-          uart_data_sync <= uart_dram_write_data_i;
-      end
-  end
+  reg [29:0] u_addr;
+  reg [63:0] u_wdata;
+  reg [7:0]  u_wstrb;
 
-  // AXI Master FSM for UART
-  typedef enum logic [1:0] { u_idle, u_aw, u_w, u_b } u_state_t;
-  u_state_t u_state;
-  
-  logic        u_awvalid, u_wvalid, u_bready;
-  logic [29:0] u_awaddr;
-  logic [63:0] u_wdata;
-  logic [7:0]  u_wstrb;
-
-  // MIG Output Wires (to be used by both FSM and CDC)
-  wire mig_awready;
-  wire mig_wready;
-  wire mig_bvalid;
-  wire [3:0] mig_bid;
-  wire [1:0] mig_bresp;
-  
-  // FSM Implementation
-  always_ff @(posedge ui_clk) begin
-      if (ui_clk_sync_rst) begin
-          u_state <= u_idle;
-          u_awvalid <= 1'b0;
-          u_wvalid <= 1'b0;
-          u_bready <= 1'b0;
-          u_awaddr <= '0;
-          u_wdata <= '0;
-          u_wstrb <= '0;
-      end else begin
-          case (u_state)
-              u_idle: begin
-                  if (uart_write_pulse) begin
-                      u_state <= u_aw;
-                      u_awvalid <= 1'b1;
-                      // Address Mapping - Byte address
-                      u_awaddr <= uart_dram_write_addr_i[29:0]; 
-                      // Data duplication for 32->64 sizing
-                      u_wdata <= {2{uart_dram_write_data_i}};
-                      // Strobe selection based on address bit 2 (0x0 vs 0x4)
-                      u_wstrb <= (uart_dram_write_addr_i[2]) ? 8'hF0 : 8'h0F; 
-                  end
-              end
-              u_aw: begin
-                  if (mig_awready && u_awvalid) begin
-                      u_awvalid <= 1'b0;
-                      u_wvalid <= 1'b1;
-                      u_state <= u_w;
-                  end
-              end
-              u_w: begin
-                  if (mig_wready && u_wvalid) begin
-                      u_wvalid <= 1'b0;
-                      u_bready <= 1'b1;
-                      u_state <= u_b;
-                  end
-              end
-              u_b: begin
-                  if (mig_bvalid && u_bready) begin
-                      u_bready <= 1'b0;
-                      u_state <= u_idle;
-                  end
-              end
-          endcase
-      end
+  always_ff @(posedge soc_clk_i) begin
+    if (!soc_resetn_i) begin
+      u_st    <= U_IDLE;
+      u_addr  <= '0;
+      u_wdata <= '0;
+      u_wstrb <= '0;
+    end else begin
+      case (u_st)
+        U_IDLE: begin
+          if (uart_dram_write_we_i) begin
+            // 8-byte aligned address (MIG does not support narrow bursts)
+            u_addr  <= {uart_dram_write_addr_i[29:3], 3'b000};
+            // Place 32-bit data in correct half of 64-bit word
+            u_wdata <= uart_dram_write_addr_i[2] ?
+                       {uart_dram_write_data_i, 32'h0} :
+                       {32'h0, uart_dram_write_data_i};
+            u_wstrb <= uart_dram_write_addr_i[2] ? 8'hF0 : 8'h0F;
+            u_st    <= U_AW;
+          end
+        end
+        U_AW: begin
+          if (pre_cdc_rsp.aw_ready)
+            u_st <= U_W;
+        end
+        U_W: begin
+          if (pre_cdc_rsp.w_ready)
+            u_st <= U_B;
+        end
+        U_B: begin
+          if (pre_cdc_rsp.b_valid)
+            u_st <= U_IDLE;
+        end
+      endcase
+    end
   end
 
-  // MUX Logic
-  wire uart_active = (u_state != u_idle) || uart_write_pulse;
-  
-  wire [29:0] mux_awaddr  = uart_active ? u_awaddr : cdc_dram_req_aw_addr;
-  wire        mux_awvalid = uart_active ? u_awvalid : cdc_dram_req.aw_valid;
-  wire [3:0]  mux_awid    = uart_active ? 4'd0 : cdc_dram_req.aw.id;
-  wire [7:0]  mux_awlen   = uart_active ? 8'd0 : cdc_dram_req.aw.len;
-  wire [2:0]  mux_awsize  = uart_active ? 3'd3 : cdc_dram_req.aw.size; // 64-bit size
-  wire [1:0]  mux_awburst = uart_active ? 2'd1 : cdc_dram_req.aw.burst; // INCR
-  wire [2:0]  mux_awprot  = uart_active ? 3'd0 : cdc_dram_req.aw.prot;
-  
-  wire [63:0] mux_wdata   = uart_active ? u_wdata : cdc_dram_req.w.data;
-  wire [7:0]  mux_wstrb   = uart_active ? u_wstrb : cdc_dram_req.w.strb;
-  wire        mux_wlast   = uart_active ? 1'b1 : cdc_dram_req.w.last;
-  wire        mux_wvalid  = uart_active ? u_wvalid : cdc_dram_req.w_valid;
-  
-  wire        mux_bready  = uart_active ? u_bready : cdc_dram_req.b_ready;
+  wire uart_active = (u_st != U_IDLE);
 
-  // Pass ready/valid signals back to CDC, gated when UART is active
-  assign cdc_dram_rsp.aw_ready = !uart_active & mig_awready;
-  assign cdc_dram_rsp.w_ready  = !uart_active & mig_wready;
-  assign cdc_dram_rsp.b_valid  = !uart_active & mig_bvalid;
-  assign cdc_dram_rsp.b.id     = mig_bid;
-  assign cdc_dram_rsp.b.resp   = mig_bresp;
+  // MUX: UART FSM or SoC (via IW converter) -> CDC input (all on soc_clk_i)
+  always_comb begin
+    if (uart_active) begin
+      pre_cdc_req          = '0;
+      pre_cdc_req.aw_valid = (u_st == U_AW);
+      pre_cdc_req.aw.addr  = SocAddrWidth'(u_addr);
+      pre_cdc_req.aw.size  = 3'd3;  // 8 bytes
+      pre_cdc_req.aw.burst = 2'd1;  // INCR
+      pre_cdc_req.w_valid  = (u_st == U_W);
+      pre_cdc_req.w.data   = u_wdata;
+      pre_cdc_req.w.strb   = u_wstrb;
+      pre_cdc_req.w.last   = 1'b1;
+      pre_cdc_req.b_ready  = (u_st == U_B);
+    end else begin
+      pre_cdc_req = iresizer_cdc_req;
+    end
+  end
 
+  // Route CDC responses back to IW converter
+  assign iresizer_cdc_rsp = pre_cdc_rsp;
+
+  // MIG 7 Series — directly connected to CDC output (ui_clk domain)
   mig_7series_0 u_mig_7series_0 (
     // Memory interface ports
     .ddr3_addr                      (ddr3_addr),
@@ -397,30 +356,30 @@ module dram_wrapper #(
     .app_zq_ack                     (),
 
     // Slave Interface Write Address Ports
-    .s_axi_awid                     (mux_awid),
-    .s_axi_awaddr                   (mux_awaddr),
-    .s_axi_awlen                    (mux_awlen),
-    .s_axi_awsize                   (mux_awsize),
-    .s_axi_awburst                  (mux_awburst),
+    .s_axi_awid                     (cdc_dram_req.aw.id),
+    .s_axi_awaddr                   (cdc_dram_req_aw_addr),
+    .s_axi_awlen                    (cdc_dram_req.aw.len),
+    .s_axi_awsize                   (cdc_dram_req.aw.size),
+    .s_axi_awburst                  (cdc_dram_req.aw.burst),
     .s_axi_awlock                   (1'b0),
     .s_axi_awcache                  (4'b0011),
-    .s_axi_awprot                   (mux_awprot),
+    .s_axi_awprot                   (cdc_dram_req.aw.prot),
     .s_axi_awqos                    (4'b0),
-    .s_axi_awvalid                  (mux_awvalid),
-    .s_axi_awready                  (mig_awready),
+    .s_axi_awvalid                  (cdc_dram_req.aw_valid),
+    .s_axi_awready                  (cdc_dram_rsp.aw_ready),
 
     // Slave Interface Write Data Ports
-    .s_axi_wdata                    (mux_wdata),
-    .s_axi_wstrb                    (mux_wstrb),
-    .s_axi_wlast                    (mux_wlast),
-    .s_axi_wvalid                   (mux_wvalid),
-    .s_axi_wready                   (mig_wready),
+    .s_axi_wdata                    (cdc_dram_req.w.data),
+    .s_axi_wstrb                    (cdc_dram_req.w.strb),
+    .s_axi_wlast                    (cdc_dram_req.w.last),
+    .s_axi_wvalid                   (cdc_dram_req.w_valid),
+    .s_axi_wready                   (cdc_dram_rsp.w_ready),
 
     // Slave Interface Write Response Ports
-    .s_axi_bid                      (mig_bid),
-    .s_axi_bresp                    (mig_bresp),
-    .s_axi_bvalid                   (mig_bvalid),
-    .s_axi_bready                   (mux_bready),
+    .s_axi_bid                      (cdc_dram_rsp.b.id),
+    .s_axi_bresp                    (cdc_dram_rsp.b.resp),
+    .s_axi_bvalid                   (cdc_dram_rsp.b_valid),
+    .s_axi_bready                   (cdc_dram_req.b_ready),
 
     // Slave Interface Read Address Ports
     .s_axi_arid                     (cdc_dram_req.ar.id),

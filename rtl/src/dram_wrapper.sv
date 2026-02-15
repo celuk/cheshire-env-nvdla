@@ -29,9 +29,6 @@ module dram_wrapper #(
   input  logic  clk_ref,
   input  logic  clk_ddr_dqs,
 
-  input  logic  sys_clk_p,
-  input  logic  sys_clk_n,
-
   input  logic        uart_dram_write_we_i,
   input  logic [31:0] uart_dram_write_addr_i,
   input  logic [31:0] uart_dram_write_data_i,
@@ -447,8 +444,7 @@ module dram_wrapper #(
     .s_axi_rready                   (cdc_dram_req.r_ready),
 
     // System Clock Ports
-    .sys_clk_p                      (sys_clk_p),
-    .sys_clk_n                      (sys_clk_n),
+    .sys_clk_i                      (clk_ref),
     .sys_rst                        (~soc_resetn_i)
   );
 

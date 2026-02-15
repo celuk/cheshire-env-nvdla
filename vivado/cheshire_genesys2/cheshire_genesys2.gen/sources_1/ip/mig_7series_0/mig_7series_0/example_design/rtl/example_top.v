@@ -245,9 +245,8 @@ module example_top #
 
    // Inputs
    
-   // Differential system clocks
-   input                                        sys_clk_p,
-   input                                        sys_clk_n,
+   // Single-ended system clock
+   input                                        sys_clk_i,
    
 
    output                                       tg_compare_error,
@@ -483,8 +482,7 @@ function integer clogb2 (input integer size);
       
        
 // System Clock Ports
-       .sys_clk_p                       (sys_clk_p),
-       .sys_clk_n                       (sys_clk_n),
+       .sys_clk_i                       (sys_clk_i),
        .device_temp            (device_temp),
        `ifdef SKIP_CALIB
        .calib_tap_req                    (calib_tap_req),

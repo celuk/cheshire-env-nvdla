@@ -101,7 +101,7 @@ reset:
 
 .PHONY: pico
 pico:
-	picocom -b 115200 /dev/ttyUSB$(ARGS) --imap lfcrlf --send-cmd "sz -t 1000"
+	picocom -b 921600 /dev/ttyUSB$(ARGS) --imap lfcrlf --send-cmd "sz -t 1000"
 
 %:
 	@:

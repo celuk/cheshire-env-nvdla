@@ -303,7 +303,7 @@ module mig_7series_0_mig #
    //***************************************************************************
    parameter BYTE_LANES_B0         = 4'b1111,
                                      // Byte lanes used in an IO column.
-   parameter BYTE_LANES_B1         = 4'b1110,
+   parameter BYTE_LANES_B1         = 4'b1111,
                                      // Byte lanes used in an IO column.
    parameter BYTE_LANES_B2         = 4'b0000,
                                      // Byte lanes used in an IO column.
@@ -337,28 +337,28 @@ module mig_7series_0_mig #
                                      // position indicates a data byte lane and
                                      // a '0' indicates a control byte lane
    parameter PHY_0_BITLANES        = 48'h3FE_3FE_3FE_2FF,
-   parameter PHY_1_BITLANES        = 48'h3FF_FFF_C00_000,
+   parameter PHY_1_BITLANES        = 48'h3FE_FFC_C10_003,
    parameter PHY_2_BITLANES        = 48'h000_000_000_000,
 
    // control/address/data pin mapping parameters
    parameter CK_BYTE_MAP
      = 144'h00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_13,
    parameter ADDR_MAP
-     = 192'h000_139_138_137_136_135_134_133_132_131_130_129_128_127_126_12B,
-   parameter BANK_MAP   = 36'h12A_125_124,
+     = 192'h000_114_139_138_137_136_135_134_133_132_131_125_128_127_126_12B,
+   parameter BANK_MAP   = 36'h12A_129_124,
    parameter CAS_MAP    = 12'h122,
    parameter CKE_ODT_BYTE_MAP = 8'h00,
    parameter CKE_MAP    = 96'h000_000_000_000_000_000_000_11B,
    parameter ODT_MAP    = 96'h000_000_000_000_000_000_000_11A,
-   parameter CS_MAP     = 120'h000_000_000_000_000_000_000_000_000_120,
+   parameter CS_MAP     = 120'h000_000_000_000_000_000_000_000_000_100,
    parameter PARITY_MAP = 12'h000,
    parameter RAS_MAP    = 12'h123,
-   parameter WE_MAP     = 12'h121,
+   parameter WE_MAP     = 12'h101,
    parameter DQS_BYTE_MAP
      = 144'h00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_01_02_03,
    parameter DATA0_MAP  = 96'h031_032_033_034_035_036_037_038,
    parameter DATA1_MAP  = 96'h021_022_023_024_025_026_027_028,
-   parameter DATA2_MAP  = 96'h011_012_013_014_016_017_018_019,
+   parameter DATA2_MAP  = 96'h011_012_013_014_015_016_017_018,
    parameter DATA3_MAP  = 96'h000_001_002_003_004_005_006_007,
    parameter DATA4_MAP  = 96'h000_000_000_000_000_000_000_000,
    parameter DATA5_MAP  = 96'h000_000_000_000_000_000_000_000,
@@ -374,7 +374,7 @@ module mig_7series_0_mig #
    parameter DATA15_MAP = 96'h000_000_000_000_000_000_000_000,
    parameter DATA16_MAP = 96'h000_000_000_000_000_000_000_000,
    parameter DATA17_MAP = 96'h000_000_000_000_000_000_000_000,
-   parameter MASK0_MAP  = 108'h000_000_000_000_000_009_015_029_039,
+   parameter MASK0_MAP  = 108'h000_000_000_000_000_009_019_029_039,
    parameter MASK1_MAP  = 108'h000_000_000_000_000_000_000_000_000,
 
    parameter SLOT_0_CONFIG         = 8'b0000_0001,

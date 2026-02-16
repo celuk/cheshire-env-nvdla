@@ -142,17 +142,19 @@ module cheshire_soc_wrap import cheshire_pkg::*;
      wire clk_ddr_dqs;
      wire clk_i;
      
-     wire sys_clk;
-     IBUFDS #(
-       .IBUF_LOW_PWR ("FALSE")
-     ) i_bufds_sys_clk (
-       .I  ( clk_p ),
-       .IB ( clk_n ),
-       .O  ( sys_clk   )
-     );
+     //wire sys_clk;
+     //IBUFDS #(
+     //  .IBUF_LOW_PWR ("FALSE")
+     //) i_bufds_sys_clk (
+     //  .I  ( clk_p ),
+     //  .IB ( clk_n ),
+     //  .O  ( sys_clk   )
+     //);
 
      clk_wiz_0 u_pll (
-        .clk_in1(sys_clk),
+        //.clk_in1(sys_clk),
+        .clk_in1_p(clk_p),
+        .clk_in1_n(clk_n),
         .reset(~rst_ni),
         .clk_out1(clk100),
         .clk_out2(clk_ddr),

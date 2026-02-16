@@ -771,7 +771,8 @@ def run_test(simulator: str, test_file: Path, top_module: str, waves: bool, cfil
     sim_dir = Path(SCRIPT_DIR / "../../rtl/sim")
 
     submodule_dirs = [
-        Path(SCRIPT_DIR / "../../nvdla/block-nvdla-sifive/vsrc/small")
+        Path(SCRIPT_DIR / "../../nvdla/block-nvdla-sifive/vsrc/small"),
+        Path(f"{VIVADO_PATH}/data/verilog/src/unisims")
     ]
 
     submodule_verilog_files = []
@@ -823,18 +824,19 @@ def run_test(simulator: str, test_file: Path, top_module: str, waves: bool, cfil
         + list([Path(SCRIPT_DIR / "../../nvdla/block-nvdla-sifive/hw/vmod/vlibs/nv_assert_vld_credit_max.vlib")])
         + list([Path(SCRIPT_DIR / "../../nvdla/block-nvdla-sifive/hw/vmod/vlibs/nv_assert_at_time_interval.vlib")])
         + list([Path(SCRIPT_DIR / "../../nvdla/block-nvdla-sifive/hw/vmod/vlibs/nv_assert_hold_throughout_event_interval.vlib")])
-        + list(["../../vivado/cheshire_zc706/cheshire_zc706.gen/sources_1/ip/clk_wiz_0/clk_wiz_0_sim_netlist.v"])
+        + list(["../../vivado/cheshire_genesys2/cheshire_genesys2.gen/sources_1/ip/clk_wiz_0/clk_wiz_0_sim_netlist.v"])
+        + list(["../../vivado/cheshire_genesys2/cheshire_genesys2.gen/sources_1/ip/mig_7series_0/mig_7series_0_sim_netlist.v"])
         + list([f"{VIVADO_PATH}/data/verilog/src/glbl.v"])
-        + list([f"{VIVADO_PATH}/data/verilog/src/unisims/OBUFDS.v"])
-        + list([f"{VIVADO_PATH}/data/verilog/src/unisims/IOBUFDS.v"])
-        + list([f"{VIVADO_PATH}/data/verilog/src/unisims/OSERDESE2.v"])
-        + list([f"{VIVADO_PATH}/data/verilog/src/unisims/ISERDESE2.v"])
-        + list([f"{VIVADO_PATH}/data/verilog/src/unisims/IOBUF.v"])
-        + list([f"{VIVADO_PATH}/data/verilog/src/unisims/IDELAYE2.v"])
-        + list([f"{VIVADO_PATH}/data/verilog/src/unisims/IDELAYCTRL.v"])
-        + list([f"{VIVADO_PATH}/data/verilog/src/unisims/BUFG.v"])
-        + list([f"{VIVADO_PATH}/data/verilog/src/unisims/IBUFDS.v"])
-        + list([f"{VIVADO_PATH}/data/verilog/src/unisims/MMCME2_ADV.v"])
+        #+ list([f"{VIVADO_PATH}/data/verilog/src/unisims/OBUFDS.v"])
+        #+ list([f"{VIVADO_PATH}/data/verilog/src/unisims/IOBUFDS.v"])
+        #+ list([f"{VIVADO_PATH}/data/verilog/src/unisims/OSERDESE2.v"])
+        #+ list([f"{VIVADO_PATH}/data/verilog/src/unisims/ISERDESE2.v"])
+        #+ list([f"{VIVADO_PATH}/data/verilog/src/unisims/IOBUF.v"])
+        #+ list([f"{VIVADO_PATH}/data/verilog/src/unisims/IDELAYE2.v"])
+        #+ list([f"{VIVADO_PATH}/data/verilog/src/unisims/IDELAYCTRL.v"])
+        #+ list([f"{VIVADO_PATH}/data/verilog/src/unisims/BUFG.v"])
+        #+ list([f"{VIVADO_PATH}/data/verilog/src/unisims/IBUFDS.v"])
+        #+ list([f"{VIVADO_PATH}/data/verilog/src/unisims/MMCME2_ADV.v"])
     )
 
     verilog_sources = [

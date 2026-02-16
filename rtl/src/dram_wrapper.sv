@@ -48,10 +48,10 @@ module dram_wrapper #(
   output        ddr3_cas_n,
   output        ddr3_we_n,
   output        ddr3_reset_n,
-  output        ddr3_cke,
-  output        ddr3_cs_n,
+  output [0:0]  ddr3_cke,
+  output [0:0]  ddr3_cs_n,
   output [3:0]  ddr3_dm,
-  output        ddr3_odt,
+  output [0:0]  ddr3_odt,
   `else
   inout  [15:0] ddr3_dq,
   inout  [1:0]  ddr3_dqs_n,

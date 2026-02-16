@@ -5,8 +5,8 @@ from pathlib import Path
 
 from cocotb.runner import get_runner
 
-#VIVADO_PATH = "/tools/Xilinx/Vivado/2022.2"
-VIVADO_PATH = "/home/kasirga/work/xilinx/tools/Xilinx/Vivado/2022.2"
+VIVADO_PATH = "/tools/Xilinx/Vivado/2022.2"
+#VIVADO_PATH = "/home/kasirga/work/xilinx/tools/Xilinx/Vivado/2022.2"
 
 ROOT="../../cheshire"
 
@@ -332,7 +332,8 @@ FILE_LIST = [
     f"{ROOT}/.bender/git/checkouts/fpnew-*/src/lfsr_sr.sv",
     f"{ROOT}/.bender/git/checkouts/fpnew-*/src/fpnew_top.sv",
     f"{ROOT}/.bender/git/checkouts/obi_peripherals-*/hw/obi_uart/obi_uart_pkg.sv",
-    f"{ROOT}/.bender/git/checkouts/obi_peripherals-*/hw/obi_uart/obi_uart_baudgen.sv",
+#   f"{ROOT}/.bender/git/checkouts/obi_peripherals-*/hw/obi_uart/obi_uart_baudgen.sv",
+    "../../rtl/src/obi_uart_baudgen.sv",
     f"{ROOT}/.bender/git/checkouts/obi_peripherals-*/hw/obi_uart/obi_uart_interrupts.sv",
     f"{ROOT}/.bender/git/checkouts/obi_peripherals-*/hw/obi_uart/obi_uart_modem.sv",
     f"{ROOT}/.bender/git/checkouts/obi_peripherals-*/hw/obi_uart/obi_uart_rx.sv",
@@ -896,7 +897,7 @@ def run_test(simulator: str, test_file: Path, top_module: str, waves: bool, cfil
 
         input_script = (
             f"@database -open cocotb_waves -default;"
-            f"probe -database cocotb_waves -create {xrun_top} -all -memories -variables -depth all;"
+            f"probe -database cocotb_waves -create {xrun_top} -all;"
         #    f"probe -create -packed 131072 *;"
             f"run;"
             f"exit;"

@@ -101,7 +101,7 @@ index 43bae50..a3eddbf 100644
          return boot_spi_sdcard(core_freq, rtc_freq);
      case 2:
 diff --git a/hw/bootrom/cheshire_bootrom.sv b/hw/bootrom/cheshire_bootrom.sv
-index 6f97ad5..4041191 100644
+index 6f97ad5..8aea1bc 100644
 --- a/hw/bootrom/cheshire_bootrom.sv
 +++ b/hw/bootrom/cheshire_bootrom.sv
 @@ -51,7 +51,7 @@ module cheshire_bootrom #(
@@ -2181,8 +2181,8 @@ index 6f97ad5..4041191 100644
 +            256: data_o = 32'h80824501 /* 0x0400 */;
 +            257: data_o = 32'hb77987ae /* 0x0404 */;
 +            258: data_o = 32'h80824549 /* 0x0408 */;
-+            259: data_o = 32'h27b7c925 /* 0x040c */;
-+            260: data_o = 32'h5533001c /* 0x0410 */;
++            259: data_o = 32'h07b7c925 /* 0x040c */;
++            260: data_o = 32'h553300e1 /* 0x0410 */;
 +            261: data_o = 32'h279702f5 /* 0x0414 */;
 +            262: data_o = 32'h87930100 /* 0x0418 */;
 +            263: data_o = 32'h8223bea7 /* 0x041c */;
@@ -4540,6 +4540,19 @@ index b3b6254..059154d 100644
    //////////////////
    //  Assertions  //
    //////////////////
+diff --git a/sw/include/params.h b/sw/include/params.h
+index 40f7db4..d6d088e 100644
+--- a/sw/include/params.h
++++ b/sw/include/params.h
+@@ -34,7 +34,7 @@ extern void *__base_spm;
+ extern void *__base_dram;
+ 
+ // Default boot baudrate
+-static const uint32_t __BOOT_BAUDRATE = 115200;
++static const uint32_t __BOOT_BAUDRATE = 921600; //115200;
+ 
+ // Maximum number of LBAs to copy to SPM for boot (48 KiB)
+ static const uint64_t __BOOT_SPM_MAX_LBAS = 2 * 48;
 diff --git a/sw/sw.mk b/sw/sw.mk
 index baa9ee4..a21618c 100644
 --- a/sw/sw.mk
@@ -4554,63 +4567,21 @@ index baa9ee4..a21618c 100644
  CHS_SW_LDFLAGS ?= $(CHS_SW_FLAGS) -nostartfiles -Wl,--gc-sections -Wl,-L$(CHS_SW_LD_DIR)
  CHS_SW_ARFLAGS ?= --plugin=$(CHS_SW_LTOPLUG)
 diff --git a/sw/tests/helloworld.c b/sw/tests/helloworld.c
-index d946624..bea9875 100644
+index d946624..8c13ee5 100644
 --- a/sw/tests/helloworld.c
 +++ b/sw/tests/helloworld.c
-@@ -12,12 +12,54 @@
- #include "params.h"
+@@ -13,11 +13,11 @@
  #include "util.h"
  
-+#define NVDLA_BASE_ADDR 0x40000000
-+#define NVDLA_HW_VERSION_OFFSET 0x0000
-+#define NVDLA_CFG_RD_WEIGHT_1_OFFSET 0x2004
-+#define NVDLA_CFG_WR_WEIGHT_0_OFFSET 0x200c
-+
-+#define NVDLA_HW_VERSION (*(volatile uint32_t*) (NVDLA_BASE_ADDR + NVDLA_HW_VERSION_OFFSET))
-+#define NVDLA_CFG_RD_WEIGHT_1 (*(volatile uint32_t*) (NVDLA_BASE_ADDR + NVDLA_CFG_RD_WEIGHT_1_OFFSET))
-+#define NVDLA_CFG_WR_WEIGHT_0 (*(volatile uint32_t*) (NVDLA_BASE_ADDR + NVDLA_CFG_WR_WEIGHT_0_OFFSET))
-+
-+void print_dec(uint32_t val) {
-+    char buffer[12];
-+    int i = 0;
-+    if (val == 0) {
-+        uart_write_str(&__base_uart, "0", 1);
-+        return;
-+    }
-+    while (val > 0) {
-+        buffer[i++] = (val % 10) + '0';
-+        val /= 10;
-+    }
-+    while (i > 0) {
-+        uart_write_str(&__base_uart, &buffer[--i], 1);
-+    }
-+}
-+
  int main(void) {
 -    char str[] = "Hello World!\r\n";
      uint32_t rtc_freq = *reg32(&__base_regs, CHESHIRE_RTC_FREQ_REG_OFFSET);
      uint64_t reset_freq = clint_get_core_freq(rtc_freq, 2500);
      uart_init(&__base_uart, reset_freq, __BOOT_BAUDRATE);
 -    uart_write_str(&__base_uart, str, sizeof(str) - 1);
+-    uart_write_flush(&__base_uart);
 +
-+    uart_write_str(&__base_uart, "test1: ", 7);
-+    print_dec(NVDLA_CFG_RD_WEIGHT_1);
-+    uart_write_str(&__base_uart, " \n", 2);
-+
-+    unsigned long addr = NVDLA_BASE_ADDR + NVDLA_CFG_WR_WEIGHT_0_OFFSET;
-+    uint32_t val = 56;
-+
-+    asm volatile (
-+        "regw %0, %1"
-+        :
-+        : "r" (addr), "r" (val)
-+        : "memory"
-+    );
-+
-+    uart_write_str(&__base_uart, "test2: ", 7);
-+    print_dec(NVDLA_CFG_WR_WEIGHT_0);
-+    uart_write_str(&__base_uart, " \n", 2);
-+
-     uart_write_flush(&__base_uart);
++    uart_write_str(&__base_uart, "hello", 5);
++    
      return 0;
  }

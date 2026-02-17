@@ -1,7 +1,7 @@
 // Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2022.2 (win64) Build 3671981 Fri Oct 14 05:00:03 MDT 2022
-// Date        : Tue Feb 10 16:46:34 2026
+// Date        : Tue Feb 17 13:00:29 2026
 // Host        : ECIT01684 running 64-bit major release  (build 9200)
 // Command     : write_verilog -force -mode funcsim
 //               c:/Users/2640084/Desktop/ubuntu/shared/projects/cheshire-env-nvdla/vivado/cheshire_genesys2/cheshire_genesys2.gen/sources_1/ip/clk_wiz_0/clk_wiz_0_sim_netlist.v
@@ -21,8 +21,7 @@ module clk_wiz_0
     clk_out5,
     reset,
     locked,
-    clk_in1_p,
-    clk_in1_n);
+    clk_in1);
   output clk_out1;
   output clk_out2;
   output clk_out3;
@@ -30,11 +29,9 @@ module clk_wiz_0
   output clk_out5;
   input reset;
   output locked;
-  input clk_in1_p;
-  input clk_in1_n;
+  input clk_in1;
 
-  (* DIFF_TERM = 0 *) (* IBUF_LOW_PWR *) wire clk_in1_n;
-  (* DIFF_TERM = 0 *) (* IBUF_LOW_PWR *) wire clk_in1_p;
+  wire clk_in1;
   wire clk_out1;
   wire clk_out2;
   wire clk_out3;
@@ -44,8 +41,7 @@ module clk_wiz_0
   wire reset;
 
   clk_wiz_0_clk_wiz inst
-       (.clk_in1_n(clk_in1_n),
-        .clk_in1_p(clk_in1_p),
+       (.clk_in1(clk_in1),
         .clk_out1(clk_out1),
         .clk_out2(clk_out2),
         .clk_out3(clk_out3),
@@ -63,8 +59,7 @@ module clk_wiz_0_clk_wiz
     clk_out5,
     reset,
     locked,
-    clk_in1_p,
-    clk_in1_n);
+    clk_in1);
   output clk_out1;
   output clk_out2;
   output clk_out3;
@@ -72,12 +67,9 @@ module clk_wiz_0_clk_wiz
   output clk_out5;
   input reset;
   output locked;
-  input clk_in1_p;
-  input clk_in1_n;
+  input clk_in1;
 
-  wire clk_in1_clk_wiz_0;
-  wire clk_in1_n;
-  wire clk_in1_p;
+  wire clk_in1;
   wire clk_out1;
   wire clk_out1_clk_wiz_0;
   wire clk_out2;
@@ -109,18 +101,6 @@ module clk_wiz_0_clk_wiz
   BUFG clkf_buf
        (.I(clkfbout_clk_wiz_0),
         .O(clkfbout_buf_clk_wiz_0));
-  (* BOX_TYPE = "PRIMITIVE" *) 
-  (* CAPACITANCE = "DONT_CARE" *) 
-  (* IBUF_DELAY_VALUE = "0" *) 
-  (* IFD_DELAY_VALUE = "AUTO" *) 
-  IBUFDS #(
-    .CCIO_EN_M("TRUE"),
-    .CCIO_EN_S("TRUE"),
-    .IOSTANDARD("DEFAULT")) 
-    clkin1_ibufgds
-       (.I(clk_in1_p),
-        .IB(clk_in1_n),
-        .O(clk_in1_clk_wiz_0));
   (* BOX_TYPE = "PRIMITIVE" *) 
   BUFG clkout1_buf
        (.I(clk_out1_clk_wiz_0),
@@ -196,7 +176,7 @@ module clk_wiz_0_clk_wiz
         .CLKFBOUT(clkfbout_clk_wiz_0),
         .CLKFBOUTB(NLW_mmcm_adv_inst_CLKFBOUTB_UNCONNECTED),
         .CLKFBSTOPPED(NLW_mmcm_adv_inst_CLKFBSTOPPED_UNCONNECTED),
-        .CLKIN1(clk_in1_clk_wiz_0),
+        .CLKIN1(clk_in1),
         .CLKIN2(1'b0),
         .CLKINSEL(1'b1),
         .CLKINSTOPPED(NLW_mmcm_adv_inst_CLKINSTOPPED_UNCONNECTED),

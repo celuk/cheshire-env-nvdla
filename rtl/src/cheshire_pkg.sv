@@ -134,6 +134,7 @@ package cheshire_pkg;
     bit     SerialLink;
     bit     Vga;
     bit     Usb;
+    bit     Nvdla;
     bit     AxiRt;
     bit     Clic;
     bit     IrqRouter;
@@ -212,12 +213,14 @@ package cheshire_pkg;
     axi_err_intr_t cores;
     axi_err_intr_t dma;
     axi_err_intr_t vga;
+    axi_err_intr_t nvdla;
   } cheshire_bus_err_intr_t;
 
   // Defined interrupts
   typedef struct packed {
     cheshire_bus_err_intr_t bus_err;
     logic [31:0] gpio;
+    logic nvdla;
     logic usb;
     logic spih_spi_event;
     logic spih_error;
@@ -277,6 +280,7 @@ package cheshire_pkg;
   localparam doub_bt AmBrom   = 'h0200_0000;  // Base of reg peripherals
   localparam doub_bt AmRegs   = 'h0300_0000;
   localparam doub_bt AmLlc    = 'h0300_1000;
+  localparam doub_bt AmNvdla  = 'h4000_0000;
   localparam doub_bt AmSlink  = 'h0300_6000;
   localparam doub_bt AmBusErr = 'h0300_9000;
   localparam doub_bt AmSpm    = 'h1000_0000;  // Cached region at bottom, uncached on top
@@ -289,7 +293,8 @@ package cheshire_pkg;
   // Reg bus error unit indices
   localparam int unsigned RegBusErrVga        = 0;
   localparam int unsigned RegBusErrDma        = 1;
-  localparam int unsigned RegBusErrCoresBase  = 2;
+  localparam int unsigned RegBusErrNvdla      = 2;
+  localparam int unsigned RegBusErrCoresBase  = 3;
 
   // AXI Xbar master indices
   typedef struct packed {
@@ -299,6 +304,8 @@ package cheshire_pkg;
     aw_bt slink;
     aw_bt vga;
     aw_bt usb;
+    aw_bt nvdla;
+    aw_bt [2**MaxCoresWidth-1:0] regwriter;
     aw_bt ext_base;
     aw_bt num_in;
   } axi_in_t;
@@ -306,12 +313,14 @@ package cheshire_pkg;
   function automatic axi_in_t gen_axi_in(cheshire_cfg_t cfg);
     axi_in_t ret = '{default: '0};
     int unsigned i = 0;
-    for (int j = 0; j < cfg.NumCores; j++) begin ret.cores[i] = i; i++; end
+    for (int j = 0; j < cfg.NumCores; j++) begin ret.cores[j] = i; i++; end
+    for (int j = 0; j < cfg.NumCores; j++) begin ret.regwriter[j] = i; i++; end
     ret.dbg = i;
     if (cfg.Dma)        begin i++; ret.dma   = i; end
     if (cfg.SerialLink) begin i++; ret.slink = i; end
     if (cfg.Vga)        begin i++; ret.vga   = i; end
     if (cfg.Usb)        begin i++; ret.usb   = i; end
+    if (cfg.Nvdla)      begin i++; ret.nvdla = i; end
     i++;
     ret.ext_base = i;
     ret.num_in = i + cfg.AxiExtNumMst;
@@ -333,6 +342,7 @@ package cheshire_pkg;
     aw_bt spm;
     aw_bt dma;
     aw_bt slink;
+    aw_bt nvdla;
     aw_bt ext_base;
     aw_bt num_out;
     aw_bt num_rules;
@@ -360,6 +370,8 @@ package cheshire_pkg;
     if (cfg.Dma)          begin i++; r++; ret.dma = i; ret.map[r] = '{i, 'h0100_0000, 'h0100_1000}; end
     if (cfg.SerialLink)   begin i++; r++; ret.slink = i;
         ret.map[r] = '{i, cfg.SlinkRegionStart, cfg.SlinkRegionEnd}; end
+    if (cfg.Nvdla)        begin i++; r++; ret.nvdla = i;
+        ret.map[r] = '{i, AmNvdla, AmNvdla + 'h40000}; end
     // External port indices start after internal ones
     i++; r++;
     ret.ext_base  = i;
@@ -424,7 +436,7 @@ package cheshire_pkg;
     if (cfg.Clic) for (int j = 0; j < cfg.NumCores; j++) begin
       i++; ret.clic[j]    = i; r++; ret.map[r] = '{i, AmClic + j*'h40000, AmClic + (j+1)*'h40000};
     end
-    if (cfg.BusErr) for (int j = 0; j < 2 + cfg.NumCores; j++) begin
+    if (cfg.BusErr) for (int j = 0; j < 3 + cfg.NumCores; j++) begin
       i++; ret.bus_err[j] = i; r++; ret.map[r] = '{i, AmBusErr + j*'h40,  AmBusErr + (j+1)*'h40};
     end
     i++; r++;
@@ -504,7 +516,7 @@ package cheshire_pkg;
       RVH                   : 1,
       RVZCB                 : 1,
       XFVec                 : 0,
-      CvxifEn               : 0,
+      CvxifEn               : 1,
       ZiCondExtEn           : 1,
       RVSCLIC               : cfg.Clic,
       RVF                   : 1,
@@ -543,7 +555,7 @@ package cheshire_pkg;
       NrCachedRegionRules   : 3,   // CachedSPM, LLCOut, ExtCIE
       CachedRegionAddrBase  : {AmSpm,   cfg.LlcOutRegionStart,  CieBase},
       CachedRegionLength    : {SizeSpm, SizeLlcOut,             cfg.Cva6ExtCieLength},
-      MaxOutstandingStores  : 7,
+      MaxOutstandingStores  : 0,
       DebugEn               : 1,
       NonIdemPotenceEn      : 0,
       AxiBurstWriteEn       : 0
@@ -569,8 +581,8 @@ package cheshire_pkg;
     Cva6ExtCieOnTop   : 0,
     // Harts
     NumCores          : 1,
-    CoreMaxTxns       : 8,
-    CoreMaxTxnsPerId  : 4,
+    CoreMaxTxns       : 2,
+    CoreMaxTxnsPerId  : 2,
     CoreUserAmoOffs   : 0, // Convention: lower AMO bits for cores, MSB for serial link
     // Interrupts
     NumExtInIntrs     : 0,
@@ -580,43 +592,44 @@ package cheshire_pkg;
     ClicIntCtlBits    : 8,
     NumExtIntrSyncs   : 2,
     // Interconnect
-    AddrWidth         : 48,
+    AddrWidth         : 32,
     AxiDataWidth      : 64,
     AxiUserWidth      : 2,  // AMO(2)
-    AxiMstIdWidth     : 2,
-    AxiMaxMstTrans    : 24,
-    AxiMaxSlvTrans    : 24,
+    AxiMstIdWidth     : 4,
+    AxiMaxMstTrans    : 1,
+    AxiMaxSlvTrans    : 1,
     AxiUserAmoMsb     : 1, // Convention: lower AMO bits for cores, MSB for serial link
     AxiUserAmoLsb     : 0, // Convention: lower AMO bits for cores, MSB for serial link
     AxiUserErrBits    : 0,
     AxiUserErrLsb     : 0,
     AxiUserDefault    : 0,
-    RegMaxReadTxns    : 8,
-    RegMaxWriteTxns   : 8,
+    RegMaxReadTxns    : 1,
+    RegMaxWriteTxns   : 1,
     RegAmoNumCuts     : 1,
     RegAmoPostCut     : 1,
     RegAdaptMemCut    : 1,
     // RTC
-    RtcFreq           : 32768,
+    RtcFreq           : 1000000, // 1 MHz
     // Features
     Bootrom           : 1,
     Uart              : 1,
-    I2c               : 1,
-    SpiHost           : 1,
-    Gpio              : 1,
-    Dma               : 1,
-    SerialLink        : 1,
-    Vga               : 1,
-    Usb               : 1,
+    I2c               : 0,
+    SpiHost           : 0,
+    Gpio              : 0,
+    Dma               : 0,
+    SerialLink        : 0,
+    Vga               : 0,
+    Usb               : 0,
+    Nvdla             : 1,
     AxiRt             : 0,
     Clic              : 0,
     IrqRouter         : 0,
     BusErr            : 1,
     // Debug
     DbgIdCode         : CheshireIdCode,
-    DbgMaxReqs        : 4,
-    DbgMaxReadTxns    : 4,
-    DbgMaxWriteTxns   : 4,
+    DbgMaxReqs        : 1,
+    DbgMaxReadTxns    : 1,
+    DbgMaxWriteTxns   : 1,
     DbgAmoNumCuts     : 1,
     DbgAmoPostCut     : 1,
     // LLC: 128 KiB, up to 2 GiB DRAM
@@ -624,8 +637,8 @@ package cheshire_pkg;
     LlcSetAssoc       : 8,
     LlcNumLines       : 256,
     LlcNumBlocks      : 8,
-    LlcMaxReadTxns    : 16,
-    LlcMaxWriteTxns   : 16,
+    LlcMaxReadTxns    : 1,
+    LlcMaxWriteTxns   : 1,
     LlcAmoNumCuts     : 1,
     LlcAmoPostCut     : 1,
     LlcOutConnect     : 1,
@@ -638,10 +651,10 @@ package cheshire_pkg;
     VgaHCountWidth    : 24, // TODO: Default is 32; is this needed?
     VgaVCountWidth    : 24, // TODO: See above
     VgaBufferDepth    : 16,
-    VgaMaxReadTxns    : 24,
+    VgaMaxReadTxns    : 1,
     // Serial Link: map other chip's lower 32bit to 'h1_000_0000
-    SlinkMaxTxnsPerId : 4,
-    SlinkMaxUniqIds   : 4,
+    SlinkMaxTxnsPerId : 1,
+    SlinkMaxUniqIds   : 1,
     SlinkMaxClkDiv    : 1024,
     SlinkRegionStart  : 64'h1_0000_0000,
     SlinkRegionEnd    : 64'h2_0000_0000,
@@ -649,12 +662,12 @@ package cheshire_pkg;
     SlinkTxAddrDomain : 'h0000_0000,
     SlinkUserAmoBit   : 1,  // Convention: lower AMO bits for cores, MSB for serial link
     // USB config
-    UsbDmaMaxReads    : 16,
+    UsbDmaMaxReads    : 1,
     UsbAddrMask       : 'hFFFF_FFFF,
     UsbAddrDomain     : 'h0000_0000,
     // DMA config
-    DmaConfMaxReadTxns  : 4,
-    DmaConfMaxWriteTxns : 4,
+    DmaConfMaxReadTxns  : 1,
+    DmaConfMaxWriteTxns : 1,
     DmaConfAmoNumCuts   : 1,
     DmaConfAmoPostCut   : 1,
     DmaConfEnableTwoD   : 1,

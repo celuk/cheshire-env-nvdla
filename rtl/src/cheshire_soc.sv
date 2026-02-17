@@ -8,7 +8,7 @@
 // Thomas Benz <tbenz@iis.ee.ethz.ch>
 // Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 
-module cheshire_soc import cheshire_pkg::*; #(
+module cheshire_soc import cheshire_pkg::*; import cvxif_pkg::*; #(
   // Cheshire config
   parameter cheshire_cfg_t Cfg = '0,
   // Debug info for external harts
@@ -209,16 +209,15 @@ module cheshire_soc import cheshire_pkg::*; #(
     addr_t end_addr;
   } addr_rule_t;
 
-  // Generate address map
-  function automatic addr_rule_t [AxiOut.num_rules-1:0] gen_axi_map();
-    addr_rule_t [AxiOut.num_rules-1:0] ret;
-    for (int i = 0; i < AxiOut.num_rules; ++i)
-      ret[i] = '{idx: AxiOut.map[i].idx,
-          start_addr: AxiOut.map[i].start, end_addr: AxiOut.map[i].pte};
-    return ret;
-  endfunction
-
-  localparam addr_rule_t [AxiOut.num_rules-1:0] AxiMap = gen_axi_map();
+  wire addr_rule_t [AxiOut.num_rules-1:0] AxiMap;
+  genvar i_axi;
+  generate
+    for (i_axi = 0; i_axi < AxiOut.num_rules; i_axi++) begin : gen_axi_map
+      assign AxiMap[i_axi] = '{idx: AxiOut.map[i_axi].idx,
+                              start_addr: AxiOut.map[i_axi].start,
+                              end_addr: AxiOut.map[i_axi].pte};
+    end
+  endgenerate
 
   // Connectivity of Xbar
   axi_mst_req_t [AxiIn.num_in-1:0]    axi_in_req, axi_rt_in_req;
@@ -297,16 +296,15 @@ module cheshire_soc import cheshire_pkg::*; #(
   // Generate indices and get maps for all ports
   localparam reg_out_t  RegOut = gen_reg_out(Cfg);
 
-  // Generate Reg address map
-  function automatic addr_rule_t [RegOut.num_rules-1:0] gen_reg_map();
-    addr_rule_t [RegOut.num_rules-1:0] ret;
-    for (int i = 0; i < RegOut.num_rules; ++i)
-      ret[i] = '{idx: RegOut.map[i].idx,
-          start_addr: RegOut.map[i].start, end_addr: RegOut.map[i].pte};
-    return ret;
-  endfunction
-
-  localparam addr_rule_t [RegOut.num_rules-1:0] RegMap = gen_reg_map();
+  wire addr_rule_t [RegOut.num_rules-1:0] RegMap;
+  genvar i_reg;
+  generate
+    for (i_reg = 0; i_reg < RegOut.num_rules; i_reg++) begin : gen_reg_map
+      assign RegMap[i_reg] = '{idx: RegOut.map[i_reg].idx,
+                              start_addr: RegOut.map[i_reg].start,
+                              end_addr: RegOut.map[i_reg].pte};
+    end
+  endgenerate
 
   logic [cf_math_pkg::idx_width(RegOut.num_out)-1:0] reg_select;
 
@@ -599,6 +597,63 @@ module cheshire_soc import cheshire_pkg::*; #(
     logic [7:0]        clic_irq_level;
     riscv::priv_lvl_t  clic_irq_priv;
 
+    // CVXIF connection
+    cvxif_pkg::cvxif_req_t  cvxif_req;
+    cvxif_pkg::cvxif_resp_t cvxif_resp;
+
+    // Regwriter AXI connection
+    axi_mst_req_t regwriter_req;
+    axi_mst_rsp_t regwriter_rsp;
+    
+    assign axi_in_req[AxiIn.regwriter[i]] = regwriter_req;
+    assign regwriter_rsp = axi_in_rsp[AxiIn.regwriter[i]];
+
+    regwriter #(
+        .AXI_ADDR_WIDTH ( Cfg.AddrWidth ),
+        .AXI_DATA_WIDTH ( Cfg.AxiDataWidth ),
+        .AXI_ID_WIDTH   ( Cfg.AxiMstIdWidth ),
+        .X_ID_WIDTH     ( 4 )
+    ) i_regwriter (
+        .clk_i,
+        .rst_ni,
+        .cvxif_req_i       ( cvxif_req       ),
+        .cvxif_resp_o      ( cvxif_resp      ),
+
+        .m_axi_awid        ( regwriter_req.aw.id ),
+        .m_axi_awaddr      ( regwriter_req.aw.addr ),
+        .m_axi_awlen       ( regwriter_req.aw.len ),
+        .m_axi_awsize      ( regwriter_req.aw.size ),
+        .m_axi_awburst     ( regwriter_req.aw.burst ),
+        .m_axi_awvalid     ( regwriter_req.aw_valid ),
+        .m_axi_awready     ( regwriter_rsp.aw_ready ),
+        
+        .m_axi_wdata       ( regwriter_req.w.data ),
+        .m_axi_wstrb       ( regwriter_req.w.strb ),
+        .m_axi_wlast       ( regwriter_req.w.last ),
+        .m_axi_wvalid      ( regwriter_req.w_valid ),
+        .m_axi_wready      ( regwriter_rsp.w_ready ),
+        
+        .m_axi_bid         ( regwriter_rsp.b.id ),
+        .m_axi_bresp       ( regwriter_rsp.b.resp ),
+        .m_axi_bvalid      ( regwriter_rsp.b_valid ),
+        .m_axi_bready      ( regwriter_req.b_ready ),
+
+        .m_axi_arid        ( regwriter_req.ar.id ),
+        .m_axi_araddr      ( regwriter_req.ar.addr ),
+        .m_axi_arlen       ( regwriter_req.ar.len ),
+        .m_axi_arsize      ( regwriter_req.ar.size ),
+        .m_axi_arburst     ( regwriter_req.ar.burst ),
+        .m_axi_arvalid     ( regwriter_req.ar_valid ),
+        .m_axi_arready     ( regwriter_rsp.ar_ready ),
+        
+        .m_axi_rid         ( regwriter_rsp.r.id ),
+        .m_axi_rdata       ( regwriter_rsp.r.data ),
+        .m_axi_rresp       ( regwriter_rsp.r.resp ),
+        .m_axi_rlast       ( regwriter_rsp.r.last ),
+        .m_axi_rvalid      ( regwriter_rsp.r_valid ),
+        .m_axi_rready      ( regwriter_req.r_ready )
+    );
+
     cva6 #(
       .CVA6Cfg        ( Cva6Cfg ),
       .axi_ar_chan_t  ( axi_cva6_ar_chan_t ),
@@ -626,8 +681,8 @@ module cheshire_soc import cheshire_pkg::*; #(
       .clic_kill_req_i  ( clic_irq_kill_req ),
       .clic_kill_ack_o  ( clic_irq_kill_ack ),
       .rvfi_probes_o    ( ),
-      .cvxif_req_o      ( ),
-      .cvxif_resp_i     ( '0 ),
+      .cvxif_req_o      ( cvxif_req      ),
+      .cvxif_resp_i     ( cvxif_resp     ),
       .noc_req_o        ( core_out_req ),
       .noc_resp_i       ( core_out_rsp )
     );
@@ -1002,6 +1057,7 @@ module cheshire_soc import cheshire_pkg::*; #(
       serial_link : Cfg.SerialLink,
       vga         : Cfg.Vga,
       usb         : Cfg.Usb,
+      //nvdla       : Cfg.Nvdla,
       axirt       : Cfg.AxiRt,
       clic        : Cfg.Clic,
       irq_router  : Cfg.IrqRouter,
@@ -1198,7 +1254,7 @@ module cheshire_soc import cheshire_pkg::*; #(
   if (Cfg.Uart) begin : gen_uart
 
     reg_uart_wrap #(
-      .AddrWidth  ( Cfg.AddrWidth ),
+      .AddrWidth  ( 32 ),
       .reg_req_t  ( reg_req_t ),
       .reg_rsp_t  ( reg_rsp_t )
     ) i_uart (
@@ -1712,6 +1768,212 @@ module cheshire_soc import cheshire_pkg::*; #(
 
     assign intr.intn.usb = 0;
 
+  end
+
+  localparam int unsigned NvdlaIdWidth = 8;
+  typedef logic [NvdlaIdWidth-1:0] nvdla_id_t;
+
+  `CHESHIRE_TYPEDEF_AXI_CT(nvdla_axi, addr_t, nvdla_id_t, axi_data_t, axi_strb_t, axi_user_t)
+
+  if (Cfg.Nvdla) begin : gen_nvdla
+
+    nvdla_axi_req_t nvdla_raw_req;
+    nvdla_axi_rsp_t nvdla_raw_rsp;
+    axi_mst_req_t   axi_nvdla_mst_req;
+
+    logic [NvdlaIdWidth-1:0] nvdla_awid, nvdla_arid;
+    logic [63:0] nvdla_awaddr, nvdla_araddr, nvdla_wdata;
+    logic [7:0]  nvdla_awlen, nvdla_arlen, nvdla_wstrb;
+    logic [2:0]  nvdla_awsize, nvdla_arsize;
+    logic [1:0]  nvdla_awburst, nvdla_arburst;
+    logic        nvdla_awvalid, nvdla_wvalid, nvdla_wlast, nvdla_arvalid;
+    logic        nvdla_bready, nvdla_rready;
+    logic        nvdla_awready, nvdla_wready, nvdla_arready;
+    logic [NvdlaIdWidth-1:0] nvdla_bid, nvdla_rid;
+    logic [1:0]  nvdla_bresp, nvdla_rresp;
+    logic        nvdla_bvalid, nvdla_rvalid, nvdla_rlast;
+    logic [63:0] nvdla_rdata;
+
+    nvdla_wrapper_axi #(
+        .AXI_ID_WIDTH ( NvdlaIdWidth )
+    ) i_nvdla_wrapper (
+        .clk        ( clk_i ),
+        .rstn       ( rst_ni ),
+        .m_axi_awid   ( nvdla_awid ),
+        .m_axi_awaddr ( nvdla_awaddr ),
+        .m_axi_awlen  ( nvdla_awlen ),
+        .m_axi_awsize ( nvdla_awsize ),
+        .m_axi_awburst( nvdla_awburst ),
+        .m_axi_awvalid( nvdla_awvalid ),
+        .m_axi_wdata  ( nvdla_wdata ),
+        .m_axi_wstrb  ( nvdla_wstrb ),
+        .m_axi_wlast  ( nvdla_wlast ),
+        .m_axi_wvalid ( nvdla_wvalid ),
+        .m_axi_bready ( nvdla_bready ),
+        .m_axi_arid   ( nvdla_arid ),
+        .m_axi_araddr ( nvdla_araddr ),
+        .m_axi_arlen  ( nvdla_arlen ),
+        .m_axi_arsize ( nvdla_arsize ),
+        .m_axi_arburst( nvdla_arburst ),
+        .m_axi_arvalid( nvdla_arvalid ),
+        .m_axi_rready ( nvdla_rready ),
+        .m_axi_awready( nvdla_awready ),
+        .m_axi_wready ( nvdla_wready ),
+        .m_axi_bid    ( nvdla_bid ),
+        .m_axi_bresp  ( nvdla_bresp ),
+        .m_axi_bvalid ( nvdla_bvalid ),
+        .m_axi_arready( nvdla_arready ),
+        .m_axi_rid    ( nvdla_rid ),
+        .m_axi_rdata  ( nvdla_rdata ),
+        .m_axi_rresp  ( nvdla_rresp ),
+        .m_axi_rlast  ( nvdla_rlast ),
+        .m_axi_rvalid ( nvdla_rvalid ),
+        .s_axi_awid   ( axi_out_req[AxiOut.nvdla].aw.id ),
+        .s_axi_awaddr ( axi_out_req[AxiOut.nvdla].aw.addr - AmNvdla ),
+        .s_axi_awlen  ( axi_out_req[AxiOut.nvdla].aw.len ),
+        .s_axi_awsize ( axi_out_req[AxiOut.nvdla].aw.size ),
+        .s_axi_awburst( axi_out_req[AxiOut.nvdla].aw.burst ),
+        .s_axi_awprot ( axi_out_req[AxiOut.nvdla].aw.prot ),
+        .s_axi_awvalid( axi_out_req[AxiOut.nvdla].aw_valid ),
+        .s_axi_awready( axi_out_rsp[AxiOut.nvdla].aw_ready ),
+        .s_axi_wdata  ( axi_out_req[AxiOut.nvdla].w.data ),
+        .s_axi_wstrb  ( axi_out_req[AxiOut.nvdla].w.strb ),
+        .s_axi_wlast  ( axi_out_req[AxiOut.nvdla].w.last ),
+        .s_axi_wvalid ( axi_out_req[AxiOut.nvdla].w_valid ),
+        .s_axi_wready ( axi_out_rsp[AxiOut.nvdla].w_ready ),
+        .s_axi_bid    ( axi_out_rsp[AxiOut.nvdla].b.id ),
+        .s_axi_bresp  ( axi_out_rsp[AxiOut.nvdla].b.resp ),
+        .s_axi_bvalid ( axi_out_rsp[AxiOut.nvdla].b_valid ),
+        .s_axi_bready ( axi_out_req[AxiOut.nvdla].b_ready ),
+        .s_axi_arid   ( axi_out_req[AxiOut.nvdla].ar.id ),
+        .s_axi_araddr ( axi_out_req[AxiOut.nvdla].ar.addr - AmNvdla ),
+        .s_axi_arlen  ( axi_out_req[AxiOut.nvdla].ar.len ),
+        .s_axi_arsize ( axi_out_req[AxiOut.nvdla].ar.size ),
+        .s_axi_arburst( axi_out_req[AxiOut.nvdla].ar.burst ),
+        .s_axi_arprot ( axi_out_req[AxiOut.nvdla].ar.prot ),
+        .s_axi_arvalid( axi_out_req[AxiOut.nvdla].ar_valid ),
+        .s_axi_arready( axi_out_rsp[AxiOut.nvdla].ar_ready ),
+        .s_axi_rid    ( axi_out_rsp[AxiOut.nvdla].r.id ),
+        .s_axi_rdata  ( axi_out_rsp[AxiOut.nvdla].r.data ),
+        .s_axi_rresp  ( axi_out_rsp[AxiOut.nvdla].r.resp ),
+        .s_axi_rlast  ( axi_out_rsp[AxiOut.nvdla].r.last ),
+        .s_axi_rvalid ( axi_out_rsp[AxiOut.nvdla].r_valid ),
+        .s_axi_rready ( axi_out_req[AxiOut.nvdla].r_ready ),
+        .dla_intr     ( intr.intn.nvdla )
+    );
+
+    assign nvdla_raw_req.aw.id    = nvdla_awid;
+    assign nvdla_raw_req.aw.addr  = nvdla_awaddr;
+    assign nvdla_raw_req.aw.len   = nvdla_awlen;
+    assign nvdla_raw_req.aw.size  = nvdla_awsize;
+    assign nvdla_raw_req.aw.burst = nvdla_awburst;
+    assign nvdla_raw_req.aw.lock  = '0;
+    assign nvdla_raw_req.aw.cache = '0;
+    assign nvdla_raw_req.aw.prot  = '0;
+    assign nvdla_raw_req.aw.qos   = '0;
+    assign nvdla_raw_req.aw.region= '0;
+    assign nvdla_raw_req.aw.atop  = '0;
+    assign nvdla_raw_req.aw.user  = '0;
+    assign nvdla_raw_req.aw_valid = nvdla_awvalid;
+
+    assign nvdla_raw_req.w.data   = nvdla_wdata;
+    assign nvdla_raw_req.w.strb   = nvdla_wstrb;
+    assign nvdla_raw_req.w.last   = nvdla_wlast;
+    assign nvdla_raw_req.w.user   = '0;
+    assign nvdla_raw_req.w_valid  = nvdla_wvalid;
+
+    assign nvdla_raw_req.ar.id    = nvdla_arid;
+    assign nvdla_raw_req.ar.addr  = nvdla_araddr;
+    assign nvdla_raw_req.ar.len   = nvdla_arlen;
+    assign nvdla_raw_req.ar.size  = nvdla_arsize;
+    assign nvdla_raw_req.ar.burst = nvdla_arburst;
+    assign nvdla_raw_req.ar.lock  = '0;
+    assign nvdla_raw_req.ar.cache = '0;
+    assign nvdla_raw_req.ar.prot  = '0;
+    assign nvdla_raw_req.ar.qos   = '0;
+    assign nvdla_raw_req.ar.region= '0;
+    assign nvdla_raw_req.ar.user  = '0;
+    assign nvdla_raw_req.ar_valid = nvdla_arvalid;
+
+    assign nvdla_raw_req.b_ready  = nvdla_bready;
+    assign nvdla_raw_req.r_ready  = nvdla_rready;
+
+    assign nvdla_awready = nvdla_raw_rsp.aw_ready;
+    assign nvdla_wready  = nvdla_raw_rsp.w_ready;
+    assign nvdla_bid     = nvdla_raw_rsp.b.id;
+    assign nvdla_bresp   = nvdla_raw_rsp.b.resp;
+    assign nvdla_bvalid  = nvdla_raw_rsp.b_valid;
+    assign nvdla_arready = nvdla_raw_rsp.ar_ready;
+    assign nvdla_rid     = nvdla_raw_rsp.r.id;
+    assign nvdla_rdata   = nvdla_raw_rsp.r.data;
+    assign nvdla_rresp   = nvdla_raw_rsp.r.resp;
+    assign nvdla_rlast   = nvdla_raw_rsp.r.last;
+    assign nvdla_rvalid  = nvdla_raw_rsp.r_valid;
+
+    // Serialize NVDLA IDs (8bit) to match Cheshire AXI master ID width (2bit)
+    axi_id_serialize #(
+      .AxiSlvPortIdWidth      ( NvdlaIdWidth ),
+      .AxiSlvPortMaxTxns      ( Cfg.CoreMaxTxns ),
+      .AxiMstPortIdWidth      ( Cfg.AxiMstIdWidth ),
+      .AxiMstPortMaxUniqIds   ( 2 ** Cfg.AxiMstIdWidth ),
+      .AxiMstPortMaxTxnsPerId ( Cfg.CoreMaxTxnsPerId ),
+      .AxiAddrWidth           ( Cfg.AddrWidth ),
+      .AxiDataWidth           ( Cfg.AxiDataWidth ),
+      .AxiUserWidth           ( Cfg.AxiUserWidth ),
+      .AtopSupport            ( 0 ),
+      .slv_req_t              ( nvdla_axi_req_t ),
+      .slv_resp_t             ( nvdla_axi_rsp_t ),
+      .mst_req_t              ( axi_mst_req_t ),
+      .mst_resp_t             ( axi_mst_rsp_t )
+    ) i_nvdla_id_serialize (
+      .clk_i,
+      .rst_ni,
+      .slv_req_i  ( nvdla_raw_req ),
+      .slv_resp_o ( nvdla_raw_rsp ),
+      .mst_req_o  ( axi_nvdla_mst_req ),
+      .mst_resp_i ( axi_in_rsp[AxiIn.nvdla] )
+    );
+
+    always_comb begin
+      axi_in_req[AxiIn.nvdla]         = axi_nvdla_mst_req;
+      axi_in_req[AxiIn.nvdla].aw.user = Cfg.AxiUserDefault;
+      axi_in_req[AxiIn.nvdla].w.user  = Cfg.AxiUserDefault;
+      axi_in_req[AxiIn.nvdla].ar.user = Cfg.AxiUserDefault;
+    end
+
+    if (Cfg.BusErr) begin : gen_nvdla_bus_err
+      axi_err_unit_wrap #(
+        .AddrWidth          ( Cfg.AddrWidth     ),
+        .IdWidth            ( Cfg.AxiMstIdWidth ),
+        .UserErrBits        ( Cfg.AxiUserErrBits ),
+        .UserErrBitsOffset  ( Cfg.AxiUserErrLsb ),
+        .NumOutstanding     ( Cfg.DmaNumAxInFlight ),
+        .NumStoredErrors    ( 4 ),
+        .DropOldest         ( 1'b0 ),
+        .axi_req_t          ( axi_mst_req_t ),
+        .axi_rsp_t          ( axi_mst_rsp_t ),
+        .reg_req_t          ( reg_req_t ),
+        .reg_rsp_t          ( reg_rsp_t )
+      ) i_nvdla_bus_err (
+        .clk_i,
+        .rst_ni,
+        .testmode_i ( test_mode_i ),
+        .axi_req_i  ( axi_in_req[AxiIn.nvdla] ),
+        .axi_rsp_i  ( axi_in_rsp[AxiIn.nvdla] ),
+        .err_irq_o  ( intr.intn.bus_err.nvdla ),
+        .reg_req_i  ( reg_out_req[RegOut.bus_err[RegBusErrNvdla]] ),
+        .reg_rsp_o  ( reg_out_rsp[RegOut.bus_err[RegBusErrNvdla]] )
+      );
+    end
+
+  end else begin : gen_no_nvdla
+
+    assign intr.intn.nvdla = 0;
+
+  end
+  
+  if (!(Cfg.Nvdla && Cfg.BusErr)) begin : gen_nvdla_bus_err_tie
+    assign intr.intn.bus_err.nvdla = '0;
   end
 
   //////////////////

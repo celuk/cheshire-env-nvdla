@@ -254,6 +254,20 @@ module dram_wrapper #(
   wire init_calib_complete;
   wire mmcm_locked;
 
+
+  initial begin
+    $display("[DRAM_WRAPPER] Simulation Started (block 1).");
+  end
+
+
+  // Watchdog for calibration
+  initial begin
+    #500ms;
+    if (!init_calib_complete) begin
+        $display("[DRAM_WRAPPER] FATAL: Calibration Timed Out at %t", $time);
+    end
+  end
+
   assign dram_axi_clk = ui_clk;
   assign dram_rst_o   = ui_clk_sync_rst;
 
@@ -347,7 +361,7 @@ module dram_wrapper #(
     .ui_clk                         (ui_clk),
     .ui_clk_sync_rst                (ui_clk_sync_rst),
     .mmcm_locked                    (mmcm_locked),
-    .aresetn                        (~ui_clk_sync_rst),
+    .aresetn                        (soc_resetn_i),
     .app_sr_req                     (1'b0),
     .app_ref_req                    (1'b0),
     .app_zq_req                     (1'b0),
@@ -362,9 +376,9 @@ module dram_wrapper #(
     .s_axi_awsize                   (cdc_dram_req.aw.size),
     .s_axi_awburst                  (cdc_dram_req.aw.burst),
     .s_axi_awlock                   (1'b0),
-    .s_axi_awcache                  (4'b0011),
+    .s_axi_awcache                  (cdc_dram_req.aw.cache),
     .s_axi_awprot                   (cdc_dram_req.aw.prot),
-    .s_axi_awqos                    (4'b0),
+    .s_axi_awqos                    (cdc_dram_req.aw.qos),
     .s_axi_awvalid                  (cdc_dram_req.aw_valid),
     .s_axi_awready                  (cdc_dram_rsp.aw_ready),
 
@@ -388,9 +402,9 @@ module dram_wrapper #(
     .s_axi_arsize                   (cdc_dram_req.ar.size),
     .s_axi_arburst                  (cdc_dram_req.ar.burst),
     .s_axi_arlock                   (1'b0),
-    .s_axi_arcache                  (4'b0011),
+    .s_axi_arcache                  (cdc_dram_req.ar.cache),
     .s_axi_arprot                   (cdc_dram_req.ar.prot),
-    .s_axi_arqos                    (4'b0),
+    .s_axi_arqos                    (cdc_dram_req.ar.qos),
     .s_axi_arvalid                  (cdc_dram_req.ar_valid),
     .s_axi_arready                  (cdc_dram_rsp.ar_ready),
 
@@ -406,6 +420,21 @@ module dram_wrapper #(
     .sys_clk_i                      (clk_ref),
     .sys_rst                        (~soc_resetn_i)
   );
+
+  initial begin
+    $display("[%0t] DRAM_WRAPPER: Starting simulation.", $time);
+    wait(soc_resetn_i === 1'b1);
+    $display("[%0t] DRAM_WRAPPER: soc_resetn_i released. Waiting for calibration...", $time);
+    
+    // Monitor ui_clk_sync_rst transitions
+    fork
+        forever @(posedge ui_clk_sync_rst) $display("[%0t] DRAM_WRAPPER: ui_clk_sync_rst asserted (MIG in reset/calib).", $time);
+        forever @(negedge ui_clk_sync_rst) $display("[%0t] DRAM_WRAPPER: ui_clk_sync_rst de-asserted (MIG Ready).", $time);
+    join_none
+
+    wait(init_calib_complete === 1'b1);
+    $display("[%0t] DRAM_WRAPPER: init_calib_complete asserted. DDR3 Initialized.", $time);
+  end
 
 `else
   assign dram_axi_clk = soc_clk_i;

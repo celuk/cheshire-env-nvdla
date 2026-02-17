@@ -813,6 +813,7 @@ def run_test(simulator: str, test_file: Path, top_module: str, waves: bool, cfil
         + list(["../../rtl/src/nvdla_wrapper_axi.sv"])
         + list(["../../rtl/src/regwriter.sv"])
         + list(["../../rtl/sim/ddr3.v"])
+        + list(["../../rtl/sim/ddr3_model.sv"])
         + submodule_verilog_files
         + submodule_system_verilog_files
         + list([Path(SCRIPT_DIR / "../../nvdla/block-nvdla-sifive/vsrc/defines/defs.v")])

@@ -9,6 +9,22 @@ index 4c8e9b8..b6b7ecb 100644
 +
 +*mem_init.txt
 +*.hex
+diff --git a/cheshire.mk b/cheshire.mk
+index f838911..b61c1c0 100644
+--- a/cheshire.mk
++++ b/cheshire.mk
+@@ -141,7 +141,10 @@ $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.elf: $(CHS_ROOT)/hw/bootrom/cheshire_boo
+ $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.sv: $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.bin $(CHS_ROOT)/util/gen_bootrom.py
+ 	$(CHS_ROOT)/util/gen_bootrom.py --sv-module cheshire_bootrom $< > $@
+ 
+-CHS_BOOTROM_ALL += $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.sv $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.dump
++$(CHS_ROOT)/../rtl/src/cheshire_bootrom.sv: $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.bin $(CHS_ROOT)/util/gen_bootrom.py
++	$(CHS_ROOT)/util/gen_bootrom.py --sv-module cheshire_bootrom $< > $@
++
++CHS_BOOTROM_ALL += $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.sv $(CHS_ROOT)/../rtl/src/cheshire_bootrom.sv $(CHS_ROOT)/hw/bootrom/cheshire_bootrom.dump
+ 
+ ##############
+ # Simulation #
 diff --git a/hw/bootrom/cheshire_bootrom.c b/hw/bootrom/cheshire_bootrom.c
 index 43bae50..a3eddbf 100644
 --- a/hw/bootrom/cheshire_bootrom.c

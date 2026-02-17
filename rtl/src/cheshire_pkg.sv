@@ -581,8 +581,8 @@ package cheshire_pkg;
     Cva6ExtCieOnTop   : 0,
     // Harts
     NumCores          : 1,
-    CoreMaxTxns       : 2,
-    CoreMaxTxnsPerId  : 2,
+    CoreMaxTxns       : `ifdef GENESYS2 8 `else 2 `endif,
+    CoreMaxTxnsPerId  : `ifdef GENESYS2 4 `else 2 `endif,
     CoreUserAmoOffs   : 0, // Convention: lower AMO bits for cores, MSB for serial link
     // Interrupts
     NumExtInIntrs     : 0,
@@ -596,15 +596,15 @@ package cheshire_pkg;
     AxiDataWidth      : 64,
     AxiUserWidth      : 2,  // AMO(2)
     AxiMstIdWidth     : 4,
-    AxiMaxMstTrans    : 1,
-    AxiMaxSlvTrans    : 1,
+    AxiMaxMstTrans    : `ifdef GENESYS2 24 `else 1 `endif,
+    AxiMaxSlvTrans    : `ifdef GENESYS2 24 `else 1 `endif,
     AxiUserAmoMsb     : 1, // Convention: lower AMO bits for cores, MSB for serial link
     AxiUserAmoLsb     : 0, // Convention: lower AMO bits for cores, MSB for serial link
     AxiUserErrBits    : 0,
     AxiUserErrLsb     : 0,
     AxiUserDefault    : 0,
-    RegMaxReadTxns    : 1,
-    RegMaxWriteTxns   : 1,
+    RegMaxReadTxns    : `ifdef GENESYS2 8 `else 1 `endif,
+    RegMaxWriteTxns   : `ifdef GENESYS2 8 `else 1 `endif,
     RegAmoNumCuts     : 1,
     RegAmoPostCut     : 1,
     RegAdaptMemCut    : 1,
@@ -627,9 +627,9 @@ package cheshire_pkg;
     BusErr            : 1,
     // Debug
     DbgIdCode         : CheshireIdCode,
-    DbgMaxReqs        : 1,
-    DbgMaxReadTxns    : 1,
-    DbgMaxWriteTxns   : 1,
+    DbgMaxReqs        : `ifdef GENESYS2 4 `else 1 `endif,
+    DbgMaxReadTxns    : `ifdef GENESYS2 4 `else 1 `endif,
+    DbgMaxWriteTxns   : `ifdef GENESYS2 4 `else 1 `endif,
     DbgAmoNumCuts     : 1,
     DbgAmoPostCut     : 1,
     // LLC: 128 KiB, up to 2 GiB DRAM
@@ -637,8 +637,8 @@ package cheshire_pkg;
     LlcSetAssoc       : 8,
     LlcNumLines       : 256,
     LlcNumBlocks      : 8,
-    LlcMaxReadTxns    : 1,
-    LlcMaxWriteTxns   : 1,
+    LlcMaxReadTxns    : `ifdef GENESYS2 16 `else 1 `endif,
+    LlcMaxWriteTxns   : `ifdef GENESYS2 16 `else 1 `endif,
     LlcAmoNumCuts     : 1,
     LlcAmoPostCut     : 1,
     LlcOutConnect     : 1,

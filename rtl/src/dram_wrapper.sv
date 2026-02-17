@@ -94,8 +94,8 @@ module dram_wrapper #(
     AddrWidth     : 30,
     DataWidth     : 64,
     StrobeWidth   : 8,
-    MaxUniqIds    : 4,    // TODO: suboptimal, but limited by CVA6/LLC
-    MaxTxns       : 1    // TODO: suboptimal, but limited by CVA6/LLC
+    MaxUniqIds    : `ifdef GENESYS2 8 `else 4 `endif,    // TODO: suboptimal, but limited by CVA6/LLC
+    MaxTxns       : `ifdef GENESYS2 24 `else 1 `endif    // TODO: suboptimal, but limited by CVA6/LLC
   };
 
   localparam SocDataWidth = $bits(soc_req_i.w.data);
@@ -249,6 +249,8 @@ module dram_wrapper #(
   assign cdc_dram_req_ar_addr = cdc_dram_req.ar.addr[cfg.AddrWidth-1:0];
 
 `ifdef GENESYS2
+  wire dram_clk_i = clk_ref;
+  wire sys_rst_i  = ~soc_resetn_i;
   wire ui_clk;
   wire ui_clk_sync_rst;
   wire init_calib_complete;
@@ -353,6 +355,7 @@ module dram_wrapper #(
     .ddr3_dqs_n                     (ddr3_dqs_n),
     .ddr3_dqs_p                     (ddr3_dqs_p),
     .init_calib_complete            (init_calib_complete),
+    .device_temp                    (),
     .ddr3_cs_n                      (ddr3_cs_n),
     .ddr3_dm                        (ddr3_dm),
     .ddr3_odt                       (ddr3_odt),
@@ -375,7 +378,7 @@ module dram_wrapper #(
     .s_axi_awlen                    (cdc_dram_req.aw.len),
     .s_axi_awsize                   (cdc_dram_req.aw.size),
     .s_axi_awburst                  (cdc_dram_req.aw.burst),
-    .s_axi_awlock                   (1'b0),
+    .s_axi_awlock                   (cdc_dram_req.aw.lock),
     .s_axi_awcache                  (cdc_dram_req.aw.cache),
     .s_axi_awprot                   (cdc_dram_req.aw.prot),
     .s_axi_awqos                    (cdc_dram_req.aw.qos),
@@ -401,7 +404,7 @@ module dram_wrapper #(
     .s_axi_arlen                    (cdc_dram_req.ar.len),
     .s_axi_arsize                   (cdc_dram_req.ar.size),
     .s_axi_arburst                  (cdc_dram_req.ar.burst),
-    .s_axi_arlock                   (1'b0),
+    .s_axi_arlock                   (cdc_dram_req.ar.lock),
     .s_axi_arcache                  (cdc_dram_req.ar.cache),
     .s_axi_arprot                   (cdc_dram_req.ar.prot),
     .s_axi_arqos                    (cdc_dram_req.ar.qos),
@@ -417,8 +420,8 @@ module dram_wrapper #(
     .s_axi_rready                   (cdc_dram_req.r_ready),
 
     // System Clock Ports
-    .sys_clk_i                      (clk_ref),
-    .sys_rst                        (~soc_resetn_i)
+    .sys_clk_i                      (dram_clk_i),
+    .sys_rst                        (sys_rst_i)
   );
 
   initial begin

@@ -433,39 +433,30 @@ module ddr3 (
 
         // Preload section
     `ifdef mem_init
-        //in = $fopen("mem_init.txt","r");
-
-        //in = $fopen("/home/shc/projects/cheshire-linux-nvdla/riscv-opensbi-port/build/platform/template/firmware/fw_dynamic_mem_init.txt","r");
-        
         in = $fopen("../../../cheshire/sw/tests/helloworld.mem_init.txt","r");
-        //in = $fopen("../../../fw_dynamic_mem_init.txt","r");
-
-        //in = $fopen("/home/shc/projects/cva-soc/tests/demo/demo_mem_init.txt","r");
-        //in = $fopen("/home/shc/projects/riscv-linux-boot/opensbi/build/platform/template/firmware/fw_dynamic_mem_init.txt","r");
-        
-        //in = $fopen("/home/shc/projects/clones/riscv-opensbi-port/build/platform/template/firmware/fw_dynamic_mem_init.txt","r");
-        //in = $fopen("/home/shc/projects/cva-soc/tests/clint/clint_mem_init.txt","r");
-        //in = $fopen("/home/shc/projects/cva-soc/tests/interrupt/interrupt_mem_init.txt","r");
-
-        //in = $fopen("/home/shc/projects/temp/tekno-kizil/testler/riscv-tests/isa/rv32ua-p-lrsc_mem_init.txt","r");
-        //in = $fopen("/home/shc/projects/cva-soc/tests/atomics_lrsc/atomics_lrsc_mem_init.txt","r");
-        while (! $feof(in)) begin
-            //fio_status = $fscanf(in, "%h %s %h", addr, char, data); // TODO:replace
-            fio_status = $fscanf(in, "%h %h", addr, data);
-            if (fio_status != -1) begin // Check for blank line or EOF
-                bank = addr [27:25]; //[BA_BITS + ROW_BITS + COL_BITS - 1 : ROW_BITS + COL_BITS];
-                row = addr [24:11]; //[ROW_BITS + COL_BITS - 1 : COL_BITS];
-                col = {addr [10:2], 1'b0}; //[COL_BITS - 1 : 0];
-                memory_write (bank, row, col, data);
-                // Next 4 lines are for debug only
-                //$display ("MEMORY_WRITE: Bank = %h, Row = %h, Col = %h, Data = %h", bank, row, col, data);
-                //data = 'hx; // This is to reset data to verify memory_read
-                //memory_read(bank, row, col, data);
-                //$display ("MEMORY_READ: Bank = %h, Row = %h, Col = %h, Data = %h", bank, row, col, data);
+        if (in == 0) begin
+            $display("%m: ERROR: mem_init file could not be opened!");
+        end else begin
+            $display("%m: mem_init file opened successfully (fd=%0d).", in);
+            i = 0;
+            while (! $feof(in)) begin
+                fio_status = $fscanf(in, "%h %h", addr, data);
+                if (fio_status != -1) begin
+                    bank = addr [27:25];
+                    row = addr [24:11];
+                    col = {addr [10:2], 1'b0};
+                    //bank = addr [BA_BITS + ROW_BITS + COL_BITS - 1 : ROW_BITS + COL_BITS];
+                    //row = addr [ROW_BITS + COL_BITS - 1 : COL_BITS];
+                    //col = addr [COL_BITS - 1 : 0];
+                    memory_write (bank, row, col, data);
+                    if (i < 3)
+                        $display("%m: mem_init[%0d]: addr=%08h bank=%0h row=%04h col=%04h data=%032h", i, addr, bank, row, col, data);
+                    i = i + 1;
+                end
             end
+            $display("%m: mem_init loaded %0d entries.", i);
+            $fclose(in);
         end
-        $fclose(in);
-        //$finish;
     `endif
     end
 `else

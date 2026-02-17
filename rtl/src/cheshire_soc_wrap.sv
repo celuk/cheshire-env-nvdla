@@ -341,6 +341,62 @@ module cheshire_soc_wrap import cheshire_pkg::*;
   assign spih_sd_i = spih_sd;
 
   `ifdef DRAM_SIM
+    `ifdef GENESYS2
+    wire ddr3_reset_n;
+    wire [0:0] ddr3_cke;
+    wire ddr3_ck_p;
+    wire ddr3_ck_n;
+    wire [0:0] ddr3_cs_n;
+    wire ddr3_ras_n;
+    wire ddr3_cas_n;
+    wire ddr3_we_n;
+    wire [2:0] ddr3_ba;
+    wire [14:0] ddr3_addr;
+    wire [0:0] ddr3_odt;
+    wire [3:0] ddr3_dm;
+    wire [3:0] ddr3_dqs_p;
+    wire [3:0] ddr3_dqs_n;
+    wire [31:0] ddr3_dq;
+
+    // Two x16 DDR3 chips for 32-bit data bus
+    ddr3 ddr3_chip0 (
+      .rst_n  (ddr3_reset_n),
+      .ck     (ddr3_ck_p),
+      .ck_n   (ddr3_ck_n),
+      .cke    (ddr3_cke),
+      .cs_n   (ddr3_cs_n),
+      .ras_n  (ddr3_ras_n),
+      .cas_n  (ddr3_cas_n),
+      .we_n   (ddr3_we_n),
+      .dm_tdqs(ddr3_dm[1:0]),
+      .ba     (ddr3_ba),
+      .addr   (ddr3_addr[13:0]),
+      .dq     (ddr3_dq[15:0]),
+      .dqs    (ddr3_dqs_p[1:0]),
+      .dqs_n  (ddr3_dqs_n[1:0]),
+      .tdqs_n (),
+      .odt    (ddr3_odt)
+    );
+
+    ddr3 ddr3_chip1 (
+      .rst_n  (ddr3_reset_n),
+      .ck     (ddr3_ck_p),
+      .ck_n   (ddr3_ck_n),
+      .cke    (ddr3_cke),
+      .cs_n   (ddr3_cs_n),
+      .ras_n  (ddr3_ras_n),
+      .cas_n  (ddr3_cas_n),
+      .we_n   (ddr3_we_n),
+      .dm_tdqs(ddr3_dm[3:2]),
+      .ba     (ddr3_ba),
+      .addr   (ddr3_addr[13:0]),
+      .dq     (ddr3_dq[31:16]),
+      .dqs    (ddr3_dqs_p[3:2]),
+      .dqs_n  (ddr3_dqs_n[3:2]),
+      .tdqs_n (),
+      .odt    (ddr3_odt)
+    );
+    `else
     wire ddr3_reset_n;
     wire ddr3_cke;
     wire ddr3_ck_p;
@@ -375,6 +431,7 @@ module cheshire_soc_wrap import cheshire_pkg::*;
       .tdqs_n (),
       .odt    (ddr3_odt)
     );
+    `endif
   `endif
 
   dram_wrapper #(

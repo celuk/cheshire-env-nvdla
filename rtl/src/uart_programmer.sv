@@ -245,7 +245,7 @@ module uart_programmer (
    end
 
    // Output assignments
-   assign prog_mode_led_o = 1'b0;
+   assign prog_mode_led_o = (state_prog == SequenceDramWriteProgram);
    assign system_reset_o = dram_prog_sys_rst_n;
    assign ram_prog_rd_en = (state_prog != SequenceDramWriteFinish);
 

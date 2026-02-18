@@ -398,6 +398,91 @@ module cheshire_soc_wrap import cheshire_pkg::*;
       .tdqs_n (),
       .odt    (ddr3_odt)
     );
+
+    // ---------------------------------------------------------------
+    // Post-calibration memory init (simulation only)
+    // MIG calibration overwrites row 0, so we must load program data
+    // AFTER calibration via the UART write interface (goes through MIG,
+    // which correctly splits data between the two x16 chips).
+    // ---------------------------------------------------------------
+
+    initial begin
+      integer fd, status, word_count;
+      reg [31:0] addr;
+      reg [127:0] data128;
+
+      // Wait for calibration to complete
+      wait(dram_controller.init_calib_complete === 1'b1);
+      // Wait for post-calibration MIG activity to settle
+      #200000; // 200 ns
+      $display("[%0t] SIM_MEM_INIT: Starting post-calibration memory load...", $time);
+
+      // Force uart_dram_mode=1: this holds the SoC/CPU in reset
+      // (rst_n = rst_ni & system_reset_o & !uart_dram_mode & pll_locked)
+      // while keeping dram_wrapper active
+      // (soc_resetn_i = ... || uart_dram_mode)
+      force uart_dram_mode = 1'b1;
+
+      fd = $fopen("../../../cheshire/sw/tests/helloworld.mem_init.txt", "r");
+      if (fd == 0) begin
+        $display("[%0t] SIM_MEM_INIT: ERROR: Could not open mem_init file!", $time);
+      end else begin
+        word_count = 0;
+        while (!$feof(fd)) begin
+          status = $fscanf(fd, "%h %h", addr, data128);
+          if (status > 0) begin
+            // Each init line: 128 bits = 4 x 32-bit words at consecutive addresses
+            // addr is byte address, each line covers 16 bytes
+            // Write word 0 (bits [31:0])
+            @(posedge clkwiz_o);
+            force uart_dram_write_we   = 1'b1;
+            force uart_dram_write_addr = addr;
+            force uart_dram_write_data = data128[31:0];
+            @(posedge clkwiz_o);
+            force uart_dram_write_we   = 1'b0;
+            wait(dram_controller.u_st == 2'd0);
+            @(posedge clkwiz_o);
+            // Write word 1 (bits [63:32])
+            force uart_dram_write_we   = 1'b1;
+            force uart_dram_write_addr = addr + 4;
+            force uart_dram_write_data = data128[63:32];
+            @(posedge clkwiz_o);
+            force uart_dram_write_we   = 1'b0;
+            wait(dram_controller.u_st == 2'd0);
+            @(posedge clkwiz_o);
+            // Write word 2 (bits [95:64])
+            force uart_dram_write_we   = 1'b1;
+            force uart_dram_write_addr = addr + 8;
+            force uart_dram_write_data = data128[95:64];
+            @(posedge clkwiz_o);
+            force uart_dram_write_we   = 1'b0;
+            wait(dram_controller.u_st == 2'd0);
+            @(posedge clkwiz_o);
+            // Write word 3 (bits [127:96])
+            force uart_dram_write_we   = 1'b1;
+            force uart_dram_write_addr = addr + 12;
+            force uart_dram_write_data = data128[127:96];
+            @(posedge clkwiz_o);
+            force uart_dram_write_we   = 1'b0;
+            wait(dram_controller.u_st == 2'd0);
+            @(posedge clkwiz_o);
+
+            word_count = word_count + 4;
+            if (word_count <= 16)
+              $display("[%0t] SIM_MEM_INIT: addr=0x%08h data=0x%032h", $time, addr, data128);
+          end
+        end
+        $fclose(fd);
+        $display("[%0t] SIM_MEM_INIT: Loaded %0d 32-bit words (%0d bytes) into DDR3.", $time, word_count, word_count * 4);
+      end
+
+      // Release SoC from reset — CPU can now fetch from DRAM
+      release uart_dram_write_we;
+      release uart_dram_write_addr;
+      release uart_dram_write_data;
+      release uart_dram_mode;
+      $display("[%0t] SIM_MEM_INIT: SoC reset released, CPU starting.", $time);
+    end
     `else
     wire ddr3_reset_n;
     wire ddr3_cke;

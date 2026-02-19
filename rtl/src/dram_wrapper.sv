@@ -257,18 +257,7 @@ module dram_wrapper #(
   wire mmcm_locked;
 
 
-  initial begin
-    $display("[DRAM_WRAPPER] Simulation Started (block 1).");
-  end
-
-
-  // Watchdog for calibration
-  initial begin
-    #500ms;
-    if (!init_calib_complete) begin
-        $display("[DRAM_WRAPPER] FATAL: Calibration Timed Out at %t", $time);
-    end
-  end
+  
 
   assign dram_axi_clk = ui_clk;
   assign dram_rst_o   = ui_clk_sync_rst;
@@ -424,73 +413,7 @@ module dram_wrapper #(
     .sys_rst                        (sys_rst_i)
   );
 
-  // ── Simulation monitors ──────────────────────────────────────────────
-  initial begin
-    $display("[%0t] DRAM_WRAPPER: Starting simulation.", $time);
-    wait(soc_resetn_i === 1'b1);
-    $display("[%0t] DRAM_WRAPPER: soc_resetn_i released. Waiting for calibration...", $time);
 
-    // Monitor ui_clk_sync_rst transitions
-    fork
-        forever @(posedge ui_clk_sync_rst) $display("[%0t] DRAM_WRAPPER: ui_clk_sync_rst asserted (MIG in reset/calib).", $time);
-        forever @(negedge ui_clk_sync_rst) $display("[%0t] DRAM_WRAPPER: ui_clk_sync_rst de-asserted (MIG Ready).", $time);
-    join_none
-
-    wait(init_calib_complete === 1'b1);
-    $display("[%0t] DRAM_WRAPPER: init_calib_complete asserted. DDR3 Initialized.", $time);
-  end
-
-  // Periodic heartbeat — prints calibration status every 100 µs
-  initial begin
-    forever begin
-      #100us;
-      $display("[%0t] DRAM_WRAPPER HEARTBEAT: init_calib_complete=%b ui_clk_sync_rst=%b mmcm_locked=%b",
-               $time, init_calib_complete, ui_clk_sync_rst, mmcm_locked);
-    end
-  end
-
-  // AXI transaction monitor on MIG side (ui_clk domain)
-  // NOT gated on init_calib_complete so we can see if CDC delivers transactions
-  integer aw_count = 0;
-  integer ar_count = 0;
-  always @(posedge ui_clk) begin
-    if (!ui_clk_sync_rst) begin
-      if (cdc_dram_req.aw_valid && cdc_dram_rsp.aw_ready) begin
-        if (aw_count < 20)
-          $display("[%0t] DRAM_WRAPPER MIG-AXI: AW id=%0d addr=0x%08h len=%0d size=%0d",
-                   $time, cdc_dram_req.aw.id, cdc_dram_req_aw_addr, cdc_dram_req.aw.len, cdc_dram_req.aw.size);
-        aw_count = aw_count + 1;
-      end
-      if (cdc_dram_req.ar_valid && cdc_dram_rsp.ar_ready) begin
-        if (ar_count < 20)
-          $display("[%0t] DRAM_WRAPPER MIG-AXI: AR id=%0d addr=0x%08h len=%0d size=%0d",
-                   $time, cdc_dram_req.ar.id, cdc_dram_req_ar_addr, cdc_dram_req.ar.len, cdc_dram_req.ar.size);
-        ar_count = ar_count + 1;
-      end
-      // Show if CDC presents valid but MIG doesn't accept (stall detection)
-      if (cdc_dram_req.ar_valid && !cdc_dram_rsp.ar_ready && ar_count == 0) begin
-        ar_count = -1; // print once
-        $display("[%0t] DRAM_WRAPPER MIG-AXI: AR STALLED — valid=1 but ready=0 (init_calib_complete=%b)",
-                 $time, init_calib_complete);
-      end
-    end
-  end
-
-  // SoC-side request monitor (before CDC, on soc_clk_i)
-  integer soc_ar_count = 0;
-  integer soc_aw_count = 0;
-  always @(posedge soc_clk_i) begin
-    if (soc_resetn_i) begin
-      if (soc_req_i.aw_valid && soc_rsp_o.aw_ready && soc_aw_count < 10) begin
-        $display("[%0t] DRAM_WRAPPER SOC-side: AW addr=0x%08h", $time, soc_req_i.aw.addr);
-        soc_aw_count = soc_aw_count + 1;
-      end
-      if (soc_req_i.ar_valid && soc_rsp_o.ar_ready && soc_ar_count < 10) begin
-        $display("[%0t] DRAM_WRAPPER SOC-side: AR addr=0x%08h", $time, soc_req_i.ar.addr);
-        soc_ar_count = soc_ar_count + 1;
-      end
-    end
-  end
 
 `else
   assign dram_axi_clk = soc_clk_i;

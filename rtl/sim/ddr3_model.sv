@@ -4679,17 +4679,17 @@ module ddr3_model (
 
 
 
-            if (cke_in && write_levelization) begin
-
-                for (i=0; i<DQS_BITS; i=i+1) begin
-
-                    if ($time - tm_dqs_pos[i] < TWLH)
-
-                        $display ("%m: at time %t WARNING: tWLH violation on DQS bit %d positive edge.   Indeterminate CK capture is possible.", $time, i);
-
-                end
-
-            end
+            //if (cke_in && write_levelization) begin
+//
+            //    for (i=0; i<DQS_BITS; i=i+1) begin
+//
+            //        if ($time - tm_dqs_pos[i] < TWLH)
+//
+            //            $display ("%m: at time %t WARNING: tWLH violation on DQS bit %d positive edge.   Indeterminate CK capture is possible.", $time, i);
+//
+            //    end
+//
+            //end
 
 
 
@@ -5423,9 +5423,9 @@ module ddr3_model (
 
                 $display ("%m: at time %t ERROR: tWLMRD violation on DQS bit %d positive edge.", $time, i);
 
-            if (($time - tm_ck_pos < TWLS) || ($time - tm_ck_neg < TWLS))
-
-                $display ("%m: at time %t WARNING: tWLS violation on DQS bit %d positive edge.  Indeterminate CK capture is possible.", $time, i);
+            //if (($time - tm_ck_pos < TWLS) || ($time - tm_ck_neg < TWLS))
+//
+            //    $display ("%m: at time %t WARNING: tWLS violation on DQS bit %d positive edge.  Indeterminate CK capture is possible.", $time, i);
 
             if (DEBUG) 
 

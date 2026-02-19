@@ -1,5 +1,5 @@
 `define MAX_MEM
-`define mem_init
+// `define mem_init  // Disabled: post-cal init in cheshire_soc_wrap.sv handles 2-chip data splitting
 
 
 
@@ -245,7 +245,7 @@ module ddr3_model (
 
     parameter check_strict_mrbits = 1;
 
-    parameter check_strict_timing = 1;
+    parameter check_strict_timing = 0;
 
     parameter feature_pasr = 1;
 

@@ -5,7 +5,7 @@ set_property IOSTANDARD LVDS [get_ports clk_p]
 set_property PACKAGE_PIN AD11 [get_ports clk_n]
 set_property IOSTANDARD LVDS [get_ports clk_n]
 create_clock -period 5.000 -name clk_200mhz_p [get_ports clk_p]
-#set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_nets sys_clk]
+set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_nets sys_clk]
 
 # PMOD1_5_LS
 #set_property PACKAGE_PIN Y20 [get_ports uart_rx_i]

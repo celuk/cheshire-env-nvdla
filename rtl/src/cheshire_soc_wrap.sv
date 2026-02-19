@@ -136,11 +136,11 @@ module cheshire_soc_wrap import cheshire_pkg::*;
      wire rst_n = rst_ni & system_reset_o & !uart_dram_mode & pll_locked; // & !uart_dram_mode
   `elsif GENESYS2
      wire pll_locked;
+     wire clk100;
+     wire clk_ddr;
+     wire clk_ref;
+     wire clk_ddr_dqs;
      wire clk_i;
-     wire clk100 = clk_i;
-     wire clk_ddr = clk_i;
-     wire clk_ref = clk_i;
-     wire clk_ddr_dqs = clk_i;
      
      wire sys_clk;
      IBUFDS #(
@@ -152,14 +152,17 @@ module cheshire_soc_wrap import cheshire_pkg::*;
      );
 
      clk_wiz_0 u_pll (
-      .clk_in1  ( sys_clk ),
-      .reset    ( ~rst_ni ),
-      .locked   ( pll_locked ),
-      .clk_50   ( clk_i ),
-      .clk_48   ( ),
-      .clk_20   ( ),
-      .clk_10   ( )
-    );
+        .clk_in1(sys_clk),
+        //.clk_in1_p(clk_p),
+        //.clk_in1_n(clk_n),
+        .reset(~rst_ni),
+        .clk_out1(clk100),
+        .clk_out2(clk_ddr),
+        .clk_out3(clk_ref),
+        .clk_out4(clk_ddr_dqs),
+        .clk_out5(clk_i),
+        .locked(pll_locked)
+     );
 
      wire clkwiz_o = clk_i;
      wire rst_n = rst_ni & system_reset_o & !uart_dram_mode & pll_locked;
@@ -167,7 +170,7 @@ module cheshire_soc_wrap import cheshire_pkg::*;
      // For GENESYS2, MIG needs the raw 200 MHz IBUFDS output (sys_clk),
      // NOT a PLL-derived clock. The MIG has its own internal MMCM;
      // cascading PLLs causes jitter issues and calibration failures.
-     wire dram_ref_clk = sys_clk;
+     wire dram_ref_clk = clk_ref; //sys_clk;
   `else
      wire clkwiz_o = clk_i;
      wire rst_n = rst_ni & system_reset_o;

@@ -1,5 +1,6 @@
 `define MAX_MEM
-`define mem_init
+// mem_init is now triggered by MEM_INIT_FILE parameter, not a define
+// `define mem_init
 
 
 
@@ -254,6 +255,11 @@ module ddr3_model (
     parameter feature_odt_hi = 0;
 
     parameter PERTCKAVG=TDLLK;
+
+    // Path to mem_init file; empty string disables loading
+    parameter MEM_INIT_FILE = "";
+    // Delay before loading mem_init (ps). Must exceed MIG calibration time.
+    parameter MEM_INIT_DELAY = 100_000_000; // 100 us
 
    
 
@@ -849,63 +855,37 @@ module ddr3_model (
 
 
 
-        // Preload section
-
-    `ifdef mem_init
-
-        in = $fopen("../../../cheshire/sw/tests/helloworld.mem_init.txt","r");
-
-        if (in == 0) begin
-
-            $display("%m: ERROR: mem_init file could not be opened!");
-
-        end else begin
-
-            integer cnt;
-
-            cnt = 0;
-
-            $display("%m: mem_init file opened successfully (fd=%0d).", in);
-
-            while (! $feof(in)) begin
-
-                fio_status = $fscanf(in, "%h %h", addr, data);
-
-                if (fio_status > 0) begin
-
-                    bank = addr [BA_BITS + ROW_BITS + COL_BITS - 1 : ROW_BITS + COL_BITS];
-
-                    row = addr [ROW_BITS + COL_BITS - 1 : COL_BITS];
-
-                    col = addr [COL_BITS - 1 : 0];
-
-                    memory_write (bank, row, col, data);
-
-                    if (cnt < 5) begin
-
-                        $display ("%m: mem_init[%0d]: addr=%08h bank=%0h row=%04h col=%04h data=%032h", cnt, addr, bank, row, col, data);
-
-                        data = 'hx;
-
-                        memory_read(bank, row, col, data);
-
-                        $display ("%m: mem_init[%0d] readback: data=%032h", cnt, data);
-
+        // Preload section — uses MEM_INIT_FILE parameter instead of `mem_init define.
+        // Loading is DELAYED to avoid MIG calibration overwriting the init data.
+        if (MEM_INIT_FILE != "") begin
+            #(MEM_INIT_DELAY);
+            in = $fopen(MEM_INIT_FILE, "r");
+            if (in == 0) begin
+                $display("%m: ERROR: mem_init file '%s' could not be opened!", MEM_INIT_FILE);
+            end else begin
+                integer cnt;
+                cnt = 0;
+                $display("%m: mem_init file opened successfully (fd=%0d).", in);
+                while (! $feof(in)) begin
+                    fio_status = $fscanf(in, "%h %h", addr, data);
+                    if (fio_status > 0) begin
+                        bank = addr [BA_BITS + ROW_BITS + COL_BITS - 1 : ROW_BITS + COL_BITS];
+                        row = addr [ROW_BITS + COL_BITS - 1 : COL_BITS];
+                        col = addr [COL_BITS - 1 : 0];
+                        memory_write (bank, row, col, data);
+                        if (cnt < 5) begin
+                            $display ("%m: mem_init[%0d]: addr=%08h bank=%0h row=%04h col=%04h data=%032h", cnt, addr, bank, row, col, data);
+                            data = 'hx;
+                            memory_read(bank, row, col, data);
+                            $display ("%m: mem_init[%0d] readback: data=%032h", cnt, data);
+                        end
+                        cnt = cnt + 1;
                     end
-
-                    cnt = cnt + 1;
-
                 end
-
+                $display("%m: mem_init loaded %0d entries.", cnt);
+                $fclose(in);
             end
-
-            $display("%m: mem_init loaded %0d entries.", cnt);
-
-            $fclose(in);
-
         end
-
-    `endif
 
     end
 

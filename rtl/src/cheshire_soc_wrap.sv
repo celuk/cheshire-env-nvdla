@@ -166,6 +166,11 @@ module cheshire_soc_wrap import cheshire_pkg::*;
 
      wire clkwiz_o = clk_i;
      wire rst_n = rst_ni & system_reset_o & !uart_dram_mode & pll_locked;
+
+     // For GENESYS2, MIG needs the raw 200 MHz IBUFDS output (sys_clk),
+     // NOT a PLL-derived clock. The MIG has its own internal MMCM;
+     // cascading PLLs causes jitter issues and calibration failures.
+     wire dram_ref_clk = sys_clk;
   `else
      wire clkwiz_o = clk_i;
      wire rst_n = rst_ni & system_reset_o;
@@ -450,7 +455,11 @@ module cheshire_soc_wrap import cheshire_pkg::*;
 
     .clk100       ( clk100 ),
     .clk_ddr      ( clk_ddr ),
+    `ifdef GENESYS2
+    .clk_ref      ( dram_ref_clk ),  // Raw 200 MHz from IBUFDS for MIG
+    `else
     .clk_ref      ( clk_ref ),
+    `endif
     .clk_ddr_dqs  ( clk_ddr_dqs ),
 
     .uart_dram_write_we_i   ( uart_dram_write_we ),

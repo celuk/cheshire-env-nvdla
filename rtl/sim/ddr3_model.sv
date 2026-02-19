@@ -1,5 +1,5 @@
 `define MAX_MEM
-// `define mem_init  // Disabled: post-cal init in cheshire_soc_wrap.sv handles 2-chip data splitting
+`define mem_init
 
 
 

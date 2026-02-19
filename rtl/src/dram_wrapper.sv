@@ -479,7 +479,6 @@ module dram_wrapper #(
   // SoC-side request monitor (before CDC, on soc_clk_i)
   integer soc_ar_count = 0;
   integer soc_aw_count = 0;
-  integer r_count = 0;
   always @(posedge soc_clk_i) begin
     if (soc_resetn_i) begin
       if (soc_req_i.aw_valid && soc_rsp_o.aw_ready && soc_aw_count < 10) begin
@@ -490,15 +489,6 @@ module dram_wrapper #(
         $display("[%0t] DRAM_WRAPPER SOC-side: AR addr=0x%08h", $time, soc_req_i.ar.addr);
         soc_ar_count = soc_ar_count + 1;
       end
-    end
-  end
-
-  // R channel monitor on MIG side (ui_clk domain)
-  always @(posedge ui_clk) begin
-    if (!ui_clk_sync_rst && cdc_dram_rsp.r_valid && cdc_dram_req.r_ready && r_count < 20) begin
-      $display("[%0t] DRAM_WRAPPER MIG-AXI: R id=%0d data=0x%016h resp=%0d last=%0b",
-               $time, cdc_dram_rsp.r.id, cdc_dram_rsp.r.data, cdc_dram_rsp.r.resp, cdc_dram_rsp.r.last);
-      r_count = r_count + 1;
     end
   end
 

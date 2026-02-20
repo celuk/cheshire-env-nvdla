@@ -2,10 +2,10 @@
 `define ASSERTS_OFF 1
 `define TARGET_SYNTHESIS
 
-//`define DRAM_SIM
+`define DRAM_SIM
 //`define SIM
-`define GENESYS2
-//`define ZC706
+//`define GENESYS2
+`define ZC706
 
 `define CPU_CLK 50_000_000
 `define BAUD_RATE 921600

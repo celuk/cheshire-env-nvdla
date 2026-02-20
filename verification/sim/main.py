@@ -828,7 +828,7 @@ def run_test(simulator: str, test_file: Path, top_module: str, waves: bool, cfil
         + list([Path(SCRIPT_DIR / "../../nvdla/block-nvdla-sifive/hw/vmod/vlibs/nv_assert_vld_credit_max.vlib")])
         + list([Path(SCRIPT_DIR / "../../nvdla/block-nvdla-sifive/hw/vmod/vlibs/nv_assert_at_time_interval.vlib")])
         + list([Path(SCRIPT_DIR / "../../nvdla/block-nvdla-sifive/hw/vmod/vlibs/nv_assert_hold_throughout_event_interval.vlib")])
-        + list(["../../vivado/cheshire_genesys2/cheshire_genesys2.gen/sources_1/ip/clk_wiz_0/clk_wiz_0_sim_netlist.v"])
+        + list(["../../vivado/cheshire_zc706/cheshire_zc706.gen/sources_1/ip/clk_wiz_0/clk_wiz_0_sim_netlist.v"])
         + list(filter(lambda x: not x.endswith("mig_7series_0_mig.v"), glob.glob(str(SCRIPT_DIR / "../../vivado/cheshire_genesys2/cheshire_genesys2.gen/sources_1/ip/mig_7series_0/mig_7series_0/user_design/rtl/**/*.v"), recursive=True)))
         + list([f"{VIVADO_PATH}/data/verilog/src/glbl.v"])
         #+ list([f"{VIVADO_PATH}/data/verilog/src/unisims/OBUFDS.v"])
@@ -955,9 +955,7 @@ def run_test(simulator: str, test_file: Path, top_module: str, waves: bool, cfil
                              "+define+TARGET_TEST",
                              "+define+TARGET_VCS",
                              #"+define+TARGET_CV64A6_FLAMINGO",
-                             "+define+TARGET_CV64A6_IMAFDCSCLIC_SV39",
-                             "+define+DRAM_SIM",
-                             "+define+SIM",
+                             "+define+TARGET_CV64A6_IMAFDCSCLIC_SV39"
         ] #'+incdir+"../../../vivado/cva_soc_zc706/cva_soc_zc706.gen/sources_1/ip/clk_wiz_0"']
         if DRAM_SIM: #if "dram" in cfile:
             runner_build_args.extend(["-f", f"{VIVADO_PATH}/data/secureip/secureip_cell.list.f"])

@@ -8,6 +8,8 @@
 // Thomas Benz <tbenz@iis.ee.ethz.ch>
 // Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 
+`include "header.vh"
+
 package cheshire_pkg;
 
   ///////////

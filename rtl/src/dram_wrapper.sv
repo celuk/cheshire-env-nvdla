@@ -256,47 +256,61 @@ module dram_wrapper #(
   wire init_calib_complete;
   wire mmcm_locked;
 
-
-  
-
   assign dram_axi_clk = ui_clk;
   assign dram_rst_o   = ui_clk_sync_rst;
 
-  typedef enum logic [1:0] { U_IDLE, U_AW, U_W, U_B } uart_st_t;
+  typedef enum logic [2:0] { U_IDLE, U_AR, U_R, U_AW, U_W, U_B } uart_st_t;
   uart_st_t u_st;
 
   reg [29:0] u_addr;
   reg [63:0] u_wdata;
-  reg [7:0]  u_wstrb;
+  reg [31:0] u_new_data;
+  reg        u_upper;
 
   always_ff @(posedge soc_clk_i) begin
     if (!soc_resetn_i) begin
-      u_st    <= U_IDLE;
-      u_addr  <= '0;
-      u_wdata <= '0;
-      u_wstrb <= '0;
+      u_st       <= U_IDLE;
+      u_addr     <= '0;
+      u_wdata    <= '0;
+      u_new_data <= '0;
+      u_upper    <= '0;
     end else begin
       case (u_st)
         U_IDLE: begin
           if (uart_dram_write_we_i) begin
-            // 8-byte aligned address (MIG does not support narrow bursts)
-            u_addr  <= {uart_dram_write_addr_i[29:3], 3'b000};
-            // Place 32-bit data in correct half of 64-bit word
-            u_wdata <= uart_dram_write_addr_i[2] ?
-                       {uart_dram_write_data_i, 32'h0} :
-                       {32'h0, uart_dram_write_data_i};
-            u_wstrb <= uart_dram_write_addr_i[2] ? 8'hF0 : 8'h0F;
-            u_st    <= U_AW;
+            // 8-byte aligned address for RMW
+            u_addr     <= {uart_dram_write_addr_i[29:3], 3'b000};
+            u_new_data <= uart_dram_write_data_i;
+            u_upper    <= uart_dram_write_addr_i[2];
+            u_st       <= U_AR;
           end
         end
+        // RMW read phase: issue AXI read
+        U_AR: begin
+          if (pre_cdc_rsp.ar_ready)
+            u_st <= U_R;
+        end
+        // RMW read phase: capture read data & merge with new 32-bit word
+        U_R: begin
+          if (pre_cdc_rsp.r_valid) begin
+            if (u_upper)
+              u_wdata <= {u_new_data, pre_cdc_rsp.r.data[31:0]};
+            else
+              u_wdata <= {pre_cdc_rsp.r.data[63:32], u_new_data};
+            u_st <= U_AW;
+          end
+        end
+        // RMW write phase: issue AXI write address
         U_AW: begin
           if (pre_cdc_rsp.aw_ready)
             u_st <= U_W;
         end
+        // RMW write phase: issue AXI write data (full 64-bit, all strobes)
         U_W: begin
           if (pre_cdc_rsp.w_ready)
             u_st <= U_B;
         end
+        // RMW write phase: wait for write response
         U_B: begin
           if (pre_cdc_rsp.b_valid)
             u_st <= U_IDLE;
@@ -311,14 +325,24 @@ module dram_wrapper #(
   always_comb begin
     if (uart_active) begin
       pre_cdc_req          = '0;
+      // Read address channel (RMW read phase)
+      pre_cdc_req.ar_valid = (u_st == U_AR);
+      pre_cdc_req.ar.addr  = SocAddrWidth'(u_addr);
+      pre_cdc_req.ar.size  = 3'd3;  // 8 bytes
+      pre_cdc_req.ar.burst = 2'd1;  // INCR
+      // Read data channel
+      pre_cdc_req.r_ready  = (u_st == U_R);
+      // Write address channel (RMW write phase)
       pre_cdc_req.aw_valid = (u_st == U_AW);
       pre_cdc_req.aw.addr  = SocAddrWidth'(u_addr);
       pre_cdc_req.aw.size  = 3'd3;  // 8 bytes
       pre_cdc_req.aw.burst = 2'd1;  // INCR
+      // Write data channel — full 64-bit word, all strobes enabled
       pre_cdc_req.w_valid  = (u_st == U_W);
       pre_cdc_req.w.data   = u_wdata;
-      pre_cdc_req.w.strb   = u_wstrb;
+      pre_cdc_req.w.strb   = 8'hFF;
       pre_cdc_req.w.last   = 1'b1;
+      // Write response channel
       pre_cdc_req.b_ready  = (u_st == U_B);
     end else begin
       pre_cdc_req = iresizer_cdc_req;

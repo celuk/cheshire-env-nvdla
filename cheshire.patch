@@ -1,5 +1,28 @@
+diff --git a/.github/Dockerfile b/.github/Dockerfile
+old mode 100644
+new mode 100755
+diff --git a/.github/verible.waiver b/.github/verible.waiver
+old mode 100644
+new mode 100755
+diff --git a/.github/workflows/build.yml b/.github/workflows/build.yml
+old mode 100644
+new mode 100755
+diff --git a/.github/workflows/docker-image.yml b/.github/workflows/docker-image.yml
+old mode 100644
+new mode 100755
+diff --git a/.github/workflows/gitlab-ci.yml b/.github/workflows/gitlab-ci.yml
+old mode 100644
+new mode 100755
+diff --git a/.github/workflows/lint.yml b/.github/workflows/lint.yml
+old mode 100644
+new mode 100755
+diff --git a/.github/workflows/publish-docs.yml b/.github/workflows/publish-docs.yml
+old mode 100644
+new mode 100755
 diff --git a/.gitignore b/.gitignore
-index 4c8e9b8..48037a2 100644
+old mode 100644
+new mode 100755
+index 4c8e9b8..48037a2
 --- a/.gitignore
 +++ b/.gitignore
 @@ -53,3 +53,6 @@ target/xilinx/build
@@ -9,8 +32,143 @@ index 4c8e9b8..48037a2 100644
 +
 +*mem_init*.txt
 +*.hex
+diff --git a/.gitlab-ci.yml b/.gitlab-ci.yml
+old mode 100644
+new mode 100755
+diff --git a/.gitmodules b/.gitmodules
+old mode 100644
+new mode 100755
+diff --git a/Bender.lock b/Bender.lock
+old mode 100644
+new mode 100755
+diff --git a/Bender.yml b/Bender.yml
+old mode 100644
+new mode 100755
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+old mode 100644
+new mode 100755
+diff --git a/LICENSE b/LICENSE
+old mode 100644
+new mode 100755
+diff --git a/Makefile b/Makefile
+old mode 100644
+new mode 100755
+diff --git a/README.md b/README.md
+old mode 100644
+new mode 100755
+diff --git a/cheshire.mk b/cheshire.mk
+old mode 100644
+new mode 100755
+index f838911..24c7069
+--- a/cheshire.mk
++++ b/cheshire.mk
+@@ -19,18 +19,55 @@ VLOGAN_ARGS ?= -kdb -nc -assert svaext +v2k -timescale=1ns/1ps
+ CHS_BENDER_RTL_FLAGS ?= -t rtl -t cva6 -t cv64a6_imafdcsclic_sv39
+ 
+ # Define used paths (prefixed to avoid name conflicts)
+-CHS_ROOT      ?= $(shell $(BENDER) path cheshire)
++CHS_BENDER_ROOT ?= $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
++CHS_ROOT      ?= $(CHS_BENDER_ROOT)
++
++# Helper to find the latest checkout for a package without calling bender path
++find_pkg = $(firstword $(wildcard $(CHS_ROOT)/.bender/git/checkouts/$(1)-*))
++
++CHS_REG_DIR   := $(call find_pkg,register_interface)
++CHS_SLINK_DIR := $(call find_pkg,serial_link)
++CHS_LLC_DIR   := $(call find_pkg,axi_llc)
++
++# Define paths used in dependencies
++OTPROOT           := $(call find_pkg,opentitan_peripherals)
++CLINTROOT         := $(call find_pkg,clint)
++AXIRTROOT         := $(call find_pkg,axi_rt)
++AXI_VGA_ROOT      := $(call find_pkg,axi_vga)
++IDMA_ROOT         := $(call find_pkg,idma)
++DRAM_RTL_SIM_ROOT := $(call find_pkg,dram_rtl_sim)
++
++# Fallback to bender if not found (e.g. first run)
++ifeq ($(CHS_REG_DIR),)
+ CHS_REG_DIR   := $(shell $(BENDER) path register_interface)
++endif
++ifeq ($(CHS_SLINK_DIR),)
+ CHS_SLINK_DIR := $(shell $(BENDER) path serial_link)
++endif
++ifeq ($(CHS_LLC_DIR),)
+ CHS_LLC_DIR   := $(shell $(BENDER) path axi_llc)
+-
+-# Define paths used in dependencies
+-OTPROOT           := $(shell $(BENDER) path opentitan_peripherals)
+-CLINTROOT         := $(shell $(BENDER) path clint)
+-AXIRTROOT         := $(shell $(BENDER) path axi_rt)
+-AXI_VGA_ROOT      := $(shell $(BENDER) path axi_vga)
+-IDMA_ROOT         := $(shell $(BENDER) path idma)
++endif
++ifeq ($(OTPROOT),)
++OTPROOT       := $(shell $(BENDER) path opentitan_peripherals)
++endif
++ifeq ($(CLINTROOT),)
++CLINTROOT     := $(shell $(BENDER) path clint)
++endif
++ifeq ($(AXIRTROOT),)
++AXIRTROOT     := $(shell $(BENDER) path axi_rt)
++endif
++ifeq ($(AXI_VGA_ROOT),)
++AXI_VGA_ROOT  := $(shell $(BENDER) path axi_vga)
++endif
++ifeq ($(IDMA_ROOT),)
++IDMA_ROOT     := $(shell $(BENDER) path idma)
++endif
++ifeq ($(DRAM_RTL_SIM_ROOT),)
+ DRAM_RTL_SIM_ROOT := $(shell $(BENDER) path dram_rtl_sim)
++endif
++
++export OTPROOT CLINTROOT AXIRTROOT AXI_VGA_ROOT IDMA_ROOT DRAM_RTL_SIM_ROOT
++export CHS_REG_DIR CHS_SLINK_DIR CHS_LLC_DIR
+ 
+ REGTOOL ?= $(CHS_REG_DIR)/vendor/lowrisc_opentitan/util/regtool.py
+ 
+@@ -112,7 +149,7 @@ $(AXI_VGA_ROOT)/.generated:
+ # Custom serial link
+ $(CHS_SLINK_DIR)/.generated: $(CHS_ROOT)/hw/serial_link.hjson
+ 	cp $< $(dir $@)/src/regs/serial_link_single_channel.hjson
+-	flock -x $@ $(MAKE) -C $(CHS_SLINK_DIR) update-regs BENDER="$(BENDER)" && touch $@
++	flock -x $@ $(MAKE) -C $(CHS_SLINK_DIR) update-regs REGGEN="$(REGTOOL)" && touch $@
+ 
+ # iDMA
+ include $(IDMA_ROOT)/idma.mk
+diff --git a/docs/gs.md b/docs/gs.md
+old mode 100644
+new mode 100755
+diff --git a/docs/img/arch.svg b/docs/img/arch.svg
+old mode 100644
+new mode 100755
+diff --git a/docs/tg/index.md b/docs/tg/index.md
+old mode 100644
+new mode 100755
+diff --git a/docs/tg/integr.md b/docs/tg/integr.md
+old mode 100644
+new mode 100755
+diff --git a/docs/tg/sim.md b/docs/tg/sim.md
+old mode 100644
+new mode 100755
+diff --git a/docs/tg/xilinx.md b/docs/tg/xilinx.md
+old mode 100644
+new mode 100755
+diff --git a/docs/um/arch.md b/docs/um/arch.md
+old mode 100644
+new mode 100755
+diff --git a/docs/um/index.md b/docs/um/index.md
+old mode 100644
+new mode 100755
+diff --git a/docs/um/sw.md b/docs/um/sw.md
+old mode 100644
+new mode 100755
+diff --git a/hw/bootrom/cheshire_bootrom.S b/hw/bootrom/cheshire_bootrom.S
+old mode 100644
+new mode 100755
 diff --git a/hw/bootrom/cheshire_bootrom.c b/hw/bootrom/cheshire_bootrom.c
-index 43bae50..a3eddbf 100644
+old mode 100644
+new mode 100755
+index 43bae50..a3eddbf
 --- a/hw/bootrom/cheshire_bootrom.c
 +++ b/hw/bootrom/cheshire_bootrom.c
 @@ -33,6 +33,76 @@ int boot_passive(uint64_t core_freq) {
@@ -100,8 +258,13 @@ index 43bae50..a3eddbf 100644
      case 1:
          return boot_spi_sdcard(core_freq, rtc_freq);
      case 2:
+diff --git a/hw/bootrom/cheshire_bootrom.ld b/hw/bootrom/cheshire_bootrom.ld
+old mode 100644
+new mode 100755
 diff --git a/hw/bootrom/cheshire_bootrom.sv b/hw/bootrom/cheshire_bootrom.sv
-index 6f97ad5..8aea1bc 100644
+old mode 100644
+new mode 100755
+index 6f97ad5..4041191
 --- a/hw/bootrom/cheshire_bootrom.sv
 +++ b/hw/bootrom/cheshire_bootrom.sv
 @@ -51,7 +51,7 @@ module cheshire_bootrom #(
@@ -2181,8 +2344,8 @@ index 6f97ad5..8aea1bc 100644
 +            256: data_o = 32'h80824501 /* 0x0400 */;
 +            257: data_o = 32'hb77987ae /* 0x0404 */;
 +            258: data_o = 32'h80824549 /* 0x0408 */;
-+            259: data_o = 32'h07b7c925 /* 0x040c */;
-+            260: data_o = 32'h553300e1 /* 0x0410 */;
++            259: data_o = 32'h27b7c925 /* 0x040c */;
++            260: data_o = 32'h5533001c /* 0x0410 */;
 +            261: data_o = 32'h279702f5 /* 0x0414 */;
 +            262: data_o = 32'h87930100 /* 0x0418 */;
 +            263: data_o = 32'h8223bea7 /* 0x041c */;
@@ -3942,21 +4105,160 @@ index 6f97ad5..8aea1bc 100644
              2013: data_o = 32'h00000000 /* 0x1f74 */;
              2014: data_o = 32'h00000000 /* 0x1f78 */;
              2015: data_o = 32'h00000000 /* 0x1f7c */;
+diff --git a/hw/cheshire_idma_wrap.sv b/hw/cheshire_idma_wrap.sv
+old mode 100644
+new mode 100755
+diff --git a/hw/cheshire_pkg.sv b/hw/cheshire_pkg.sv
+old mode 100644
+new mode 100755
+diff --git a/hw/cheshire_soc.sv b/hw/cheshire_soc.sv
+old mode 100644
+new mode 100755
+diff --git a/hw/future/UsbOhciAxi4.v b/hw/future/UsbOhciAxi4.v
+old mode 100644
+new mode 100755
+diff --git a/hw/future/spinal_usb_ohci.sv b/hw/future/spinal_usb_ohci.sv
+old mode 100644
+new mode 100755
+diff --git a/hw/include/cheshire/typedef.svh b/hw/include/cheshire/typedef.svh
+old mode 100644
+new mode 100755
+diff --git a/hw/regs/cheshire_reg_pkg.sv b/hw/regs/cheshire_reg_pkg.sv
+old mode 100644
+new mode 100755
+diff --git a/hw/regs/cheshire_reg_top.sv b/hw/regs/cheshire_reg_top.sv
+old mode 100644
+new mode 100755
+diff --git a/hw/regs/cheshire_regs.hjson b/hw/regs/cheshire_regs.hjson
+old mode 100644
+new mode 100755
+diff --git a/hw/rv_plic.cfg.hjson b/hw/rv_plic.cfg.hjson
+old mode 100644
+new mode 100755
+diff --git a/hw/serial_link.hjson b/hw/serial_link.hjson
+old mode 100644
+new mode 100755
+diff --git a/mkdocs.yml b/mkdocs.yml
+old mode 100644
+new mode 100755
+diff --git a/requirements.txt b/requirements.txt
+old mode 100644
+new mode 100755
+diff --git a/sw/boot/.gitignore b/sw/boot/.gitignore
+old mode 100644
+new mode 100755
+diff --git a/sw/boot/cheshire.dtsi b/sw/boot/cheshire.dtsi
+old mode 100644
+new mode 100755
+diff --git a/sw/boot/cheshire.genesys2.dts b/sw/boot/cheshire.genesys2.dts
+old mode 100644
+new mode 100755
+diff --git a/sw/boot/cheshire.genesys2_vga.dts b/sw/boot/cheshire.genesys2_vga.dts
+old mode 100644
+new mode 100755
+diff --git a/sw/boot/cheshire.vcu128.dts b/sw/boot/cheshire.vcu128.dts
+old mode 100644
+new mode 100755
+diff --git a/sw/boot/flash.c b/sw/boot/flash.c
+old mode 100644
+new mode 100755
+diff --git a/sw/boot/zsl.c b/sw/boot/zsl.c
+old mode 100644
+new mode 100755
+diff --git a/sw/include/dif/clint.h b/sw/include/dif/clint.h
+old mode 100644
+new mode 100755
+diff --git a/sw/include/dif/dma.h b/sw/include/dif/dma.h
+old mode 100644
+new mode 100755
+diff --git a/sw/include/dif/uart.h b/sw/include/dif/uart.h
+old mode 100644
+new mode 100755
+diff --git a/sw/include/gpt.h b/sw/include/gpt.h
+old mode 100644
+new mode 100755
+diff --git a/sw/include/hal/i2c_24fc1025.h b/sw/include/hal/i2c_24fc1025.h
+old mode 100644
+new mode 100755
+diff --git a/sw/include/hal/spi_s25fs512s.h b/sw/include/hal/spi_s25fs512s.h
+old mode 100644
+new mode 100755
+diff --git a/sw/include/hal/spi_sdcard.h b/sw/include/hal/spi_sdcard.h
+old mode 100644
+new mode 100755
+diff --git a/sw/include/hal/uart_debug.h b/sw/include/hal/uart_debug.h
+old mode 100644
+new mode 100755
 diff --git a/sw/include/params.h b/sw/include/params.h
-index 40f7db4..d6d088e 100644
---- a/sw/include/params.h
-+++ b/sw/include/params.h
-@@ -34,7 +34,7 @@ extern void *__base_spm;
- extern void *__base_dram;
- 
- // Default boot baudrate
--static const uint32_t __BOOT_BAUDRATE = 115200;
-+static const uint32_t __BOOT_BAUDRATE = 921600; //115200;
- 
- // Maximum number of LBAs to copy to SPM for boot (48 KiB)
- static const uint64_t __BOOT_SPM_MAX_LBAS = 2 * 48;
+old mode 100644
+new mode 100755
+diff --git a/sw/include/regs/axi_llc.h b/sw/include/regs/axi_llc.h
+old mode 100644
+new mode 100755
+diff --git a/sw/include/regs/axi_rt.h b/sw/include/regs/axi_rt.h
+old mode 100644
+new mode 100755
+diff --git a/sw/include/regs/axi_vga.h b/sw/include/regs/axi_vga.h
+old mode 100644
+new mode 100755
+diff --git a/sw/include/regs/cheshire.h b/sw/include/regs/cheshire.h
+old mode 100644
+new mode 100755
+diff --git a/sw/include/regs/clint.h b/sw/include/regs/clint.h
+old mode 100644
+new mode 100755
+diff --git a/sw/include/regs/idma.h b/sw/include/regs/idma.h
+old mode 100644
+new mode 100755
+diff --git a/sw/include/regs/serial_link.h b/sw/include/regs/serial_link.h
+old mode 100644
+new mode 100755
+diff --git a/sw/include/smp.h b/sw/include/smp.h
+old mode 100644
+new mode 100755
+diff --git a/sw/include/util.h b/sw/include/util.h
+old mode 100644
+new mode 100755
+diff --git a/sw/lib/crt0.S b/sw/lib/crt0.S
+old mode 100644
+new mode 100755
+diff --git a/sw/lib/dif/clint.c b/sw/lib/dif/clint.c
+old mode 100644
+new mode 100755
+diff --git a/sw/lib/dif/uart.c b/sw/lib/dif/uart.c
+old mode 100644
+new mode 100755
+diff --git a/sw/lib/gpt.c b/sw/lib/gpt.c
+old mode 100644
+new mode 100755
+diff --git a/sw/lib/hal/i2c_24fc1025.c b/sw/lib/hal/i2c_24fc1025.c
+old mode 100644
+new mode 100755
+diff --git a/sw/lib/hal/spi_s25fs512s.c b/sw/lib/hal/spi_s25fs512s.c
+old mode 100644
+new mode 100755
+diff --git a/sw/lib/hal/spi_sdcard.c b/sw/lib/hal/spi_sdcard.c
+old mode 100644
+new mode 100755
+diff --git a/sw/lib/hal/uart_debug.c b/sw/lib/hal/uart_debug.c
+old mode 100644
+new mode 100755
+diff --git a/sw/link/common.ldh b/sw/link/common.ldh
+old mode 100644
+new mode 100755
+diff --git a/sw/link/dram.ld b/sw/link/dram.ld
+old mode 100644
+new mode 100755
+diff --git a/sw/link/rom.ld b/sw/link/rom.ld
+old mode 100644
+new mode 100755
+diff --git a/sw/link/spm.ld b/sw/link/spm.ld
+old mode 100644
+new mode 100755
 diff --git a/sw/sw.mk b/sw/sw.mk
-index baa9ee4..a21618c 100644
+old mode 100644
+new mode 100755
+index baa9ee4..a21618c
 --- a/sw/sw.mk
 +++ b/sw/sw.mk
 @@ -23,7 +23,7 @@ CHS_SW_DTB_TGUID := BA442F61-2AEF-42DE-9233-E4D75D3ACB9D
@@ -3968,8 +4270,28 @@ index baa9ee4..a21618c 100644
  CHS_SW_CCFLAGS ?= $(CHS_SW_FLAGS) -ggdb -mcmodel=medany -mexplicit-relocs -fno-builtin -fverbose-asm -pipe
  CHS_SW_LDFLAGS ?= $(CHS_SW_FLAGS) -nostartfiles -Wl,--gc-sections -Wl,-L$(CHS_SW_LD_DIR)
  CHS_SW_ARFLAGS ?= --plugin=$(CHS_SW_LTOPLUG)
+diff --git a/sw/tests/axirt_budget.spm.c b/sw/tests/axirt_budget.spm.c
+old mode 100644
+new mode 100755
+diff --git a/sw/tests/axirt_budget_isolate.spm.c b/sw/tests/axirt_budget_isolate.spm.c
+old mode 100644
+new mode 100755
+diff --git a/sw/tests/axirt_hello.spm.c b/sw/tests/axirt_hello.spm.c
+old mode 100644
+new mode 100755
+diff --git a/sw/tests/clic_basic.spm.S b/sw/tests/clic_basic.spm.S
+old mode 100644
+new mode 100755
+diff --git a/sw/tests/clic_multiple.spm.S b/sw/tests/clic_multiple.spm.S
+old mode 100644
+new mode 100755
+diff --git a/sw/tests/dma_2d.spm.c b/sw/tests/dma_2d.spm.c
+old mode 100644
+new mode 100755
 diff --git a/sw/tests/helloworld.c b/sw/tests/helloworld.c
-index d946624..8c13ee5 100644
+old mode 100644
+new mode 100755
+index d946624..8c13ee5
 --- a/sw/tests/helloworld.c
 +++ b/sw/tests/helloworld.c
 @@ -13,11 +13,11 @@
@@ -3987,3 +4309,78 @@ index d946624..8c13ee5 100644
 +    
      return 0;
  }
+diff --git a/sw/tests/spm_uncached.spm.c b/sw/tests/spm_uncached.spm.c
+old mode 100644
+new mode 100755
+diff --git a/target/sim/src/elfloader.cpp b/target/sim/src/elfloader.cpp
+old mode 100644
+new mode 100755
+diff --git a/target/sim/src/fixture_cheshire_soc.sv b/target/sim/src/fixture_cheshire_soc.sv
+old mode 100644
+new mode 100755
+diff --git a/target/sim/src/tb_cheshire_pkg.sv b/target/sim/src/tb_cheshire_pkg.sv
+old mode 100644
+new mode 100755
+diff --git a/target/sim/src/tb_cheshire_soc.sv b/target/sim/src/tb_cheshire_soc.sv
+old mode 100644
+new mode 100755
+diff --git a/target/sim/src/vip_cheshire_soc.sv b/target/sim/src/vip_cheshire_soc.sv
+old mode 100644
+new mode 100755
+diff --git a/target/sim/vsim/start.cheshire_soc.tcl b/target/sim/vsim/start.cheshire_soc.tcl
+old mode 100644
+new mode 100755
+diff --git a/target/xilinx/constraints/cheshire.xdc b/target/xilinx/constraints/cheshire.xdc
+old mode 100644
+new mode 100755
+diff --git a/target/xilinx/constraints/genesys2.xdc b/target/xilinx/constraints/genesys2.xdc
+old mode 100644
+new mode 100755
+diff --git a/target/xilinx/constraints/vcu128.xdc b/target/xilinx/constraints/vcu128.xdc
+old mode 100644
+new mode 100755
+diff --git a/target/xilinx/scripts/common.tcl b/target/xilinx/scripts/common.tcl
+old mode 100644
+new mode 100755
+diff --git a/target/xilinx/scripts/impl_ip.tcl b/target/xilinx/scripts/impl_ip.tcl
+old mode 100644
+new mode 100755
+diff --git a/target/xilinx/scripts/impl_sys.tcl b/target/xilinx/scripts/impl_sys.tcl
+old mode 100644
+new mode 100755
+diff --git a/target/xilinx/scripts/util/flash.tcl b/target/xilinx/scripts/util/flash.tcl
+old mode 100644
+new mode 100755
+diff --git a/target/xilinx/scripts/util/program.tcl b/target/xilinx/scripts/util/program.tcl
+old mode 100644
+new mode 100755
+diff --git a/target/xilinx/src/cheshire_top_xilinx.sv b/target/xilinx/src/cheshire_top_xilinx.sv
+old mode 100644
+new mode 100755
+diff --git a/target/xilinx/src/dram_wrapper_xilinx.sv b/target/xilinx/src/dram_wrapper_xilinx.sv
+old mode 100644
+new mode 100755
+diff --git a/target/xilinx/src/fan_ctrl.sv b/target/xilinx/src/fan_ctrl.sv
+old mode 100644
+new mode 100755
+diff --git a/target/xilinx/src/ips/genesys2.mig7s.prj b/target/xilinx/src/ips/genesys2.mig7s.prj
+old mode 100644
+new mode 100755
+diff --git a/target/xilinx/src/phy_definitions.svh b/target/xilinx/src/phy_definitions.svh
+old mode 100644
+new mode 100755
+diff --git a/target/xilinx/xilinx.mk b/target/xilinx/xilinx.mk
+old mode 100644
+new mode 100755
+diff --git a/util/flash_disk.gdb b/util/flash_disk.gdb
+old mode 100644
+new mode 100755
+diff --git a/util/openocd.common.tcl b/util/openocd.common.tcl
+old mode 100644
+new mode 100755
+diff --git a/util/openocd.genesys2.tcl b/util/openocd.genesys2.tcl
+old mode 100644
+new mode 100755
+diff --git a/util/openocd.hs2.tcl b/util/openocd.hs2.tcl
+old mode 100644
+new mode 100755

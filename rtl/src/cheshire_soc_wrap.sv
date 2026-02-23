@@ -366,7 +366,8 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     // Two x16 DDR3 chips to form 32-bit data bus (matching MIG DQ_WIDTH=32, MEMORY_WIDTH=16)
     // Chip 0: DQ[15:0], DQS[1:0], DM[1:0] — carries lower 16 bits of each 32-bit word
     ddr3_model #(
-      .MEM_INIT_FILE("../../../cheshire/sw/tests/helloworld.mem_init_chip0.txt")
+      //.MEM_INIT_FILE("../../../cheshire/sw/tests/helloworld.mem_init_chip0.txt")
+    .MEM_INIT_FILE("")
     ) ddr3_chip0 (
       .rst_n  (ddr3_reset_n),
       .ck     (ddr3_ck_p),
@@ -388,7 +389,8 @@ module cheshire_soc_wrap import cheshire_pkg::*;
 
     // Chip 1: DQ[31:16], DQS[3:2], DM[3:2] — carries upper 16 bits of each 32-bit word
     ddr3_model #(
-      .MEM_INIT_FILE("../../../cheshire/sw/tests/helloworld.mem_init_chip1.txt")
+      //.MEM_INIT_FILE("../../../cheshire/sw/tests/helloworld.mem_init_chip1.txt")
+    .MEM_INIT_FILE("")
     ) ddr3_chip1 (
       .rst_n  (ddr3_reset_n),
       .ck     (ddr3_ck_p),

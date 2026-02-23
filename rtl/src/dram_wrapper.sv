@@ -280,6 +280,14 @@ module dram_wrapper #(
   logic [31:0] rom_addr;
   logic [31:0] rom_data;
 
+  typedef enum logic [2:0] { U_IDLE, U_AR, U_R, U_AW, U_W, U_B } uart_st_t;
+  uart_st_t u_st;
+
+  reg [29:0] u_addr;
+  reg [63:0] u_wdata;
+  reg [31:0] u_new_data;
+  reg        u_upper;
+
   always_ff @(posedge soc_clk_i) begin
     if (!soc_resetn_i) begin
       rom_idx <= '0;
@@ -308,14 +316,6 @@ module dram_wrapper #(
   wire internal_we = uart_dram_write_we_i | rom_we;
   wire [31:0] internal_addr = rom_we ? rom_addr : uart_dram_write_addr_i;
   wire [31:0] internal_data = rom_we ? rom_data : uart_dram_write_data_i;
-
-  typedef enum logic [2:0] { U_IDLE, U_AR, U_R, U_AW, U_W, U_B } uart_st_t;
-  uart_st_t u_st;
-
-  reg [29:0] u_addr;
-  reg [63:0] u_wdata;
-  reg [31:0] u_new_data;
-  reg        u_upper;
 
   always_ff @(posedge soc_clk_i) begin
     if (!soc_resetn_i) begin

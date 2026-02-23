@@ -259,6 +259,56 @@ module dram_wrapper #(
   assign dram_axi_clk = ui_clk;
   assign dram_rst_o   = ui_clk_sync_rst;
 
+  // ---------------------------------------------------------
+  // FPGA ROM Loader for testing DRAM
+  // ---------------------------------------------------------
+  logic [31:0] init_rom [0:255];
+  initial begin
+    $readmemh("../../../cheshire/sw/tests/helloworld.dram.hex", init_rom);
+  end
+
+  logic [2:0] calib_sync;
+  always_ff @(posedge soc_clk_i) begin
+    if (!soc_resetn_i) calib_sync <= '0;
+    else calib_sync <= {calib_sync[1:0], init_calib_complete};
+  end
+  wire calib_done = calib_sync[2];
+
+  logic [8:0] rom_idx;
+  logic rom_loading;
+  logic rom_we;
+  logic [31:0] rom_addr;
+  logic [31:0] rom_data;
+
+  always_ff @(posedge soc_clk_i) begin
+    if (!soc_resetn_i) begin
+      rom_idx <= '0;
+      rom_loading <= 1'b1;
+      rom_we <= 1'b0;
+      rom_addr <= 32'h8000_0000;
+      rom_data <= '0;
+    end else begin
+      rom_we <= 1'b0;
+      if (calib_done && rom_loading) begin
+        // Wait for UART FSM to be idle and not currently writing
+        if (u_st == U_IDLE && !rom_we) begin
+          if (rom_idx == 9'd216) begin
+            rom_loading <= 1'b0; // Done loading
+          end else begin
+            rom_we <= 1'b1;
+            rom_addr <= 32'h8000_0000 + {21'b0, rom_idx, 2'b00};
+            rom_data <= init_rom[rom_idx];
+            rom_idx <= rom_idx + 1;
+          end
+        end
+      end
+    end
+  end
+
+  wire internal_we = uart_dram_write_we_i | rom_we;
+  wire [31:0] internal_addr = rom_we ? rom_addr : uart_dram_write_addr_i;
+  wire [31:0] internal_data = rom_we ? rom_data : uart_dram_write_data_i;
+
   typedef enum logic [2:0] { U_IDLE, U_AR, U_R, U_AW, U_W, U_B } uart_st_t;
   uart_st_t u_st;
 
@@ -277,11 +327,11 @@ module dram_wrapper #(
     end else begin
       case (u_st)
         U_IDLE: begin
-          if (uart_dram_write_we_i) begin
+          if (internal_we) begin
             // 8-byte aligned address for RMW
-            u_addr     <= {uart_dram_write_addr_i[29:3], 3'b000};
-            u_new_data <= uart_dram_write_data_i;
-            u_upper    <= uart_dram_write_addr_i[2];
+            u_addr     <= {internal_addr[29:3], 3'b000};
+            u_new_data <= internal_data;
+            u_upper    <= internal_addr[2];
             u_st       <= U_AR;
           end
         end

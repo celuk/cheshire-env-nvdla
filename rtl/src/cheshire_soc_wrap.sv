@@ -21,6 +21,7 @@ module cheshire_soc_wrap import cheshire_pkg::*;
 
   input  wire program_rx_i,
   output wire prog_mode_led_o,
+  output wire init_calib_done_o,
    
   output wire uart_tx_o
 
@@ -151,8 +152,15 @@ module cheshire_soc_wrap import cheshire_pkg::*;
        .O  ( sys_clk   )
      );
 
+     wire sys_clk_bufg;
+     // Buffer sys_clk to drive multiple clock regions (Backbone routing)
+     BUFG u_bufg_sys_clk (
+        .I ( sys_clk ),
+        .O ( sys_clk_bufg )
+     );
+
      clk_wiz_0 u_pll (
-        .clk_in1(sys_clk),
+        .clk_in1(sys_clk_bufg),
         //.clk_in1_p(clk_p),
         //.clk_in1_n(clk_n),
         .reset(~rst_ni),
@@ -170,7 +178,7 @@ module cheshire_soc_wrap import cheshire_pkg::*;
      // For GENESYS2, MIG needs the raw 200 MHz IBUFDS output (sys_clk),
      // NOT a PLL-derived clock. The MIG has its own internal MMCM;
      // cascading PLLs causes jitter issues and calibration failures.
-     wire dram_ref_clk = clk_ref; //sys_clk;
+     wire dram_ref_clk = sys_clk_bufg; // Use the raw buffered clock
   `else
      wire clkwiz_o = clk_i;
      wire rst_n = rst_ni & system_reset_o;
@@ -467,6 +475,8 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     .clk_ref      ( clk_ref ),
     `endif
     .clk_ddr_dqs  ( clk_ddr_dqs ),
+
+    .init_calib_done_o      ( init_calib_done_o ),
 
     .uart_dram_write_we_i   ( uart_dram_write_we ),
     .uart_dram_write_addr_i ( uart_dram_write_addr ),

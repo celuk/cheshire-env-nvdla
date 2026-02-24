@@ -53,7 +53,7 @@ set_property CLOCK_DEDICATED_ROUTE FALSE $all_in_mux
 set_property CLOCK_BUFFER_TYPE NONE $all_in_mux
 
 set SOC_TCK 20.0
-set soc_clk [get_clocks -of_objects [get_pins u_pll/clk_out5]]
+set soc_clk [get_clocks -of_objects [get_pins i_soc_clk_bufg/O]]
 
 
 set JTAG_TCK 100.0

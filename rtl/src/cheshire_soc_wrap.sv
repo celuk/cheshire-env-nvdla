@@ -136,11 +136,10 @@ module cheshire_soc_wrap import cheshire_pkg::*;
      wire clkwiz_o = clk_i;
      wire rst_n = rst_ni & system_reset_o & !uart_dram_mode & pll_locked; // & !uart_dram_mode
   `elsif GENESYS2
-     wire pll_locked;
-     wire clk100;
-     wire clk_ddr;
-     wire clk_ref;
-     wire clk_ddr_dqs;
+      wire clk100 = 1'b0;
+      wire clk_ddr = 1'b0;
+      wire clk_ref = 1'b0;
+      wire clk_ddr_dqs = 1'b0;
      wire clk_i;
      
      wire sys_clk;
@@ -152,33 +151,35 @@ module cheshire_soc_wrap import cheshire_pkg::*;
        .O  ( sys_clk   )
      );
 
-     wire sys_clk_bufg;
-     // Buffer sys_clk to drive multiple clock regions (Backbone routing)
-     BUFG u_bufg_sys_clk (
-        .I ( sys_clk ),
-        .O ( sys_clk_bufg )
-     );
+     logic [1:0] soc_clk_div_q;
+     always_ff @(posedge sys_clk) begin
+       soc_clk_div_q <= soc_clk_div_q + 1'b1;
+     end
 
-     clk_wiz_0 u_pll (
-        .clk_in1(sys_clk_bufg),
-        //.clk_in1_p(clk_p),
-        //.clk_in1_n(clk_n),
-        .reset(~rst_ni),
-        .clk_out1(clk100),
-        .clk_out2(clk_ddr),
-        .clk_out3(clk_ref),
-        .clk_out4(clk_ddr_dqs),
-        .clk_out5(clk_i),
-        .locked(pll_locked)
+     wire soc_clk_div = soc_clk_div_q[1];
+     BUFG i_soc_clk_bufg (
+       .I ( soc_clk_div ),
+       .O ( clk_i )
      );
 
      wire clkwiz_o = clk_i;
-     wire rst_n = rst_ni & system_reset_o & !uart_dram_mode & pll_locked;
+
+    wire async_rst_n = rst_ni & system_reset_o & !uart_dram_mode;
+     
+     // Use rstgen for safe reset synchronization
+     wire rst_n;
+     rstgen i_rstgen (
+       .clk_i       ( clkwiz_o    ),
+       .rst_ni      ( async_rst_n ),
+       .test_mode_i ( 1'b0        ),
+       .rst_no      ( rst_n       ),
+       .init_no     (             )
+     );
 
      // For GENESYS2, MIG needs the raw 200 MHz IBUFDS output (sys_clk),
      // NOT a PLL-derived clock. The MIG has its own internal MMCM;
      // cascading PLLs causes jitter issues and calibration failures.
-     wire dram_ref_clk = sys_clk_bufg; // Use the raw buffered clock
+     wire dram_ref_clk = sys_clk; // Use the raw buffered clock
   `else
      wire clkwiz_o = clk_i;
      wire rst_n = rst_ni & system_reset_o;
@@ -464,7 +465,7 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     .axi_soc_req_t     ( axi_llc_req_t     ),
     .axi_soc_resp_t    ( axi_llc_rsp_t     )
   ) dram_controller (
-    .soc_resetn_i ( (rst_ni & system_reset_o & pll_locked) || uart_dram_mode ),
+    .soc_resetn_i ( rst_n || uart_dram_mode ),
     .soc_clk_i    ( clkwiz_o ),
 
     .clk100       ( clk100 ),

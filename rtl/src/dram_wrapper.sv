@@ -34,6 +34,8 @@ module dram_wrapper #(
   input  logic [31:0] uart_dram_write_data_i,
   input  logic        uart_dram_write_rst_i,
 
+  output logic        init_calib_done_o,
+
   // PHY interfaces
 
   output        ddr3_ck_p,
@@ -258,6 +260,8 @@ module dram_wrapper #(
 
   assign dram_axi_clk = ui_clk;
   assign dram_rst_o   = ui_clk_sync_rst;
+
+  assign init_calib_done_o = init_calib_complete;
 
   // ---------------------------------------------------------
   // FPGA ROM Loader for testing DRAM

@@ -21,54 +21,19 @@ module dram_wrapper #(
   parameter type axi_soc_req_t     = logic,
   parameter type axi_soc_resp_t    = logic
 ) (
+  // System reset
+  input  logic  sys_rst_i,
+  input  logic  dram_clk_i,
+  // Controller reset
   input  logic  soc_resetn_i,
   input  logic  soc_clk_i,
-
-  input  logic  clk100,
-  input  logic  clk_ddr,
-  input  logic  clk_ref,
-  input  logic  clk_ddr_dqs,
-
-  input  logic        uart_dram_write_we_i,
-  input  logic [31:0] uart_dram_write_addr_i,
-  input  logic [31:0] uart_dram_write_data_i,
-  input  logic        uart_dram_write_rst_i,
-
-  output logic        init_calib_done_o,
-
   // PHY interfaces
-
-  output        ddr3_ck_p,
-  output        ddr3_ck_n,
-  `ifdef GENESYS2
-  inout  [31:0] ddr3_dq,
-  inout  [3:0]  ddr3_dqs_n,
-  inout  [3:0]  ddr3_dqs_p,
-  output [14:0] ddr3_addr,
-  output [2:0]  ddr3_ba,
-  output        ddr3_ras_n,
-  output        ddr3_cas_n,
-  output        ddr3_we_n,
-  output        ddr3_reset_n,
-  output [0:0]  ddr3_cke,
-  output [0:0]  ddr3_cs_n,
-  output [3:0]  ddr3_dm,
-  output [0:0]  ddr3_odt,
-  `else
-  inout  [15:0] ddr3_dq,
-  inout  [1:0]  ddr3_dqs_n,
-  inout  [1:0]  ddr3_dqs_p,
-  output [13:0] ddr3_addr,
-  output [2:0]  ddr3_ba,
-  output        ddr3_ras_n,
-  output        ddr3_cas_n,
-  output        ddr3_we_n,
-  output        ddr3_reset_n,
-  output        ddr3_cke,
-  output        ddr3_cs_n,
-  output [1:0]  ddr3_dm,
-  output        ddr3_odt,
-  `endif
+`ifdef USE_DDR4
+  `DDR4_INTF
+`endif
+`ifdef USE_DDR3
+  `DDR3_INTF
+`endif
   // DRAM AXI interface
   input  axi_soc_req_t  soc_req_i,
   output axi_soc_resp_t soc_rsp_o
@@ -89,16 +54,31 @@ module dram_wrapper #(
     integer MaxTxns;
   } dram_cfg_t;
 
+`ifdef TARGET_VCU128
   localparam dram_cfg_t cfg = '{
-    EnCdc         : `ifdef GENESYS2 1 `else 0 `endif,    // 200 MHz AXI (cf. CCdcLogDepth)
+    EnCdc         : 1,    // 333 MHz AXI (cf. CdcLogDepth)
+    CdcLogDepth   : 5,
+    IdWidth       : 8,
+    AddrWidth     : 32,
+    DataWidth     : 512,
+    StrobeWidth   : 64,
+    MaxUniqIds    : 8,    // TODO: suboptimal, but limited by CVA6/LLC
+    MaxTxns       : 24    // TODO: suboptimal, but limited by CVA6/LLC
+  };
+`endif
+
+`ifdef TARGET_GENESYS2
+  localparam dram_cfg_t cfg = '{
+    EnCdc         : 1,    // 200 MHz AXI (cf. CCdcLogDepth)
     CdcLogDepth   : 5,
     IdWidth       : 4,    // Fixed
     AddrWidth     : 30,
     DataWidth     : 64,
     StrobeWidth   : 8,
-    MaxUniqIds    : `ifdef GENESYS2 8 `else 4 `endif,    // TODO: suboptimal, but limited by CVA6/LLC
-    MaxTxns       : `ifdef GENESYS2 24 `else 1 `endif    // TODO: suboptimal, but limited by CVA6/LLC
+    MaxUniqIds    : 8,    // TODO: suboptimal, but limited by CVA6/LLC
+    MaxTxns       : 24    // TODO: suboptimal, but limited by CVA6/LLC
   };
+`endif
 
   localparam SocDataWidth = $bits(soc_req_i.w.data);
   localparam SocIdWidth   = $bits(soc_req_i.ar.id);
@@ -239,180 +219,146 @@ module dram_wrapper #(
   assign cdc_dram_req_aw_addr = cdc_dram_req.aw.addr[cfg.AddrWidth-1:0];
   assign cdc_dram_req_ar_addr = cdc_dram_req.ar.addr[cfg.AddrWidth-1:0];
 
-`ifdef GENESYS2
-  wire dram_clk_i = clk_ref;
-  wire sys_rst_i  = ~soc_resetn_i;
-  wire ui_clk;
-  wire ui_clk_sync_rst;
-  wire init_calib_complete;
+  /////////////////////////
+  //  Instiantiate DDR4  //
+  /////////////////////////
 
-  assign dram_axi_clk = ui_clk;
-  assign dram_rst_o   = ui_clk_sync_rst;
-
-  assign init_calib_done_o = init_calib_complete;
-
-  // MIG 7 Series — directly connected to CDC output (ui_clk domain)
-  mig_7series_0 i_dram (
-    // Memory interface ports
-    .ddr3_addr                      (ddr3_addr),
-    .ddr3_ba                        (ddr3_ba),
-    .ddr3_cas_n                     (ddr3_cas_n),
-    .ddr3_ck_n                      (ddr3_ck_n),
-    .ddr3_ck_p                      (ddr3_ck_p),
-    .ddr3_cke                       (ddr3_cke),
-    .ddr3_ras_n                     (ddr3_ras_n),
-    .ddr3_reset_n                   (ddr3_reset_n),
-    .ddr3_we_n                      (ddr3_we_n),
-    .ddr3_dq                        (ddr3_dq),
-    .ddr3_dqs_n                     (ddr3_dqs_n),
-    .ddr3_dqs_p                     (ddr3_dqs_p),
-    .init_calib_complete            (init_calib_complete),
-    .device_temp                    (),
-    .ddr3_cs_n                      (ddr3_cs_n),
-    .ddr3_dm                        (ddr3_dm),
-    .ddr3_odt                       (ddr3_odt),
-
-    // Application interface ports
-    .ui_clk                         (ui_clk),
-    .ui_clk_sync_rst                (ui_clk_sync_rst),
-    .mmcm_locked                    (),
-    .aresetn                        (soc_resetn_i),
-    .app_sr_req                     (1'b0),
-    .app_ref_req                    (1'b0),
-    .app_zq_req                     (1'b0),
-    .app_sr_active                  (),
-    .app_ref_ack                    (),
-    .app_zq_ack                     (),
-
-    // Slave Interface Write Address Ports
-    .s_axi_awid                     (cdc_dram_req.aw.id),
-    .s_axi_awaddr                   (cdc_dram_req_aw_addr),
-    .s_axi_awlen                    (cdc_dram_req.aw.len),
-    .s_axi_awsize                   (cdc_dram_req.aw.size),
-    .s_axi_awburst                  (cdc_dram_req.aw.burst),
-    .s_axi_awlock                   (cdc_dram_req.aw.lock),
-    .s_axi_awcache                  (cdc_dram_req.aw.cache),
-    .s_axi_awprot                   (cdc_dram_req.aw.prot),
-    .s_axi_awqos                    (cdc_dram_req.aw.qos),
-    .s_axi_awvalid                  (cdc_dram_req.aw_valid),
-    .s_axi_awready                  (cdc_dram_rsp.aw_ready),
-
-    // Slave Interface Write Data Ports
-    .s_axi_wdata                    (cdc_dram_req.w.data),
-    .s_axi_wstrb                    (cdc_dram_req.w.strb),
-    .s_axi_wlast                    (cdc_dram_req.w.last),
-    .s_axi_wvalid                   (cdc_dram_req.w_valid),
-    .s_axi_wready                   (cdc_dram_rsp.w_ready),
-
-    // Slave Interface Write Response Ports
-    .s_axi_bid                      (cdc_dram_rsp.b.id),
-    .s_axi_bresp                    (cdc_dram_rsp.b.resp),
-    .s_axi_bvalid                   (cdc_dram_rsp.b_valid),
-    .s_axi_bready                   (cdc_dram_req.b_ready),
-
-    // Slave Interface Read Address Ports
-    .s_axi_arid                     (cdc_dram_req.ar.id),
-    .s_axi_araddr                   (cdc_dram_req_ar_addr),
-    .s_axi_arlen                    (cdc_dram_req.ar.len),
-    .s_axi_arsize                   (cdc_dram_req.ar.size),
-    .s_axi_arburst                  (cdc_dram_req.ar.burst),
-    .s_axi_arlock                   (cdc_dram_req.ar.lock),
-    .s_axi_arcache                  (cdc_dram_req.ar.cache),
-    .s_axi_arprot                   (cdc_dram_req.ar.prot),
-    .s_axi_arqos                    (cdc_dram_req.ar.qos),
-    .s_axi_arvalid                  (cdc_dram_req.ar_valid),
-    .s_axi_arready                  (cdc_dram_rsp.ar_ready),
-
-    // Slave Interface Read Data Ports
-    .s_axi_rid                      (cdc_dram_rsp.r.id),
-    .s_axi_rdata                    (cdc_dram_rsp.r.data),
-    .s_axi_rresp                    (cdc_dram_rsp.r.resp),
-    .s_axi_rlast                    (cdc_dram_rsp.r.last),
-    .s_axi_rvalid                   (cdc_dram_rsp.r_valid),
-    .s_axi_rready                   (cdc_dram_req.r_ready),
-
-    // System Clock Ports
-    .sys_clk_i                      (dram_clk_i),
-    .sys_rst                        (sys_rst_i)
+`ifdef USE_DDR4
+  ddr4 i_dram (
+    // Reset
+    .sys_rst                    ( sys_rst_i    ),  // Active high
+    .c0_sys_clk_i               ( dram_clk_i   ),
+    .c0_ddr4_aresetn            ( soc_resetn_i ),
+    // Clock and reset out
+    .c0_ddr4_ui_clk             ( dram_axi_clk ),
+    .c0_ddr4_ui_clk_sync_rst    ( dram_rst_o   ),
+    // AXI
+    .c0_ddr4_s_axi_awid         ( cdc_dram_req.aw.id    ),
+    .c0_ddr4_s_axi_awaddr       ( cdc_dram_req_aw_addr  ),
+    .c0_ddr4_s_axi_awlen        ( cdc_dram_req.aw.len   ),
+    .c0_ddr4_s_axi_awsize       ( cdc_dram_req.aw.size  ),
+    .c0_ddr4_s_axi_awburst      ( cdc_dram_req.aw.burst ),
+    .c0_ddr4_s_axi_awlock       ( cdc_dram_req.aw.lock  ),
+    .c0_ddr4_s_axi_awcache      ( cdc_dram_req.aw.cache ),
+    .c0_ddr4_s_axi_awprot       ( cdc_dram_req.aw.prot  ),
+    .c0_ddr4_s_axi_awqos        ( cdc_dram_req.aw.qos   ),
+    .c0_ddr4_s_axi_awvalid      ( cdc_dram_req.aw_valid ),
+    .c0_ddr4_s_axi_awready      ( cdc_dram_rsp.aw_ready ),
+    .c0_ddr4_s_axi_wdata        ( cdc_dram_req.w.data   ),
+    .c0_ddr4_s_axi_wstrb        ( cdc_dram_req.w.strb   ),
+    .c0_ddr4_s_axi_wlast        ( cdc_dram_req.w.last   ),
+    .c0_ddr4_s_axi_wvalid       ( cdc_dram_req.w_valid  ),
+    .c0_ddr4_s_axi_wready       ( cdc_dram_rsp.w_ready  ),
+    .c0_ddr4_s_axi_bready       ( cdc_dram_req.b_ready  ),
+    .c0_ddr4_s_axi_bid          ( cdc_dram_rsp.b.id     ),
+    .c0_ddr4_s_axi_bresp        ( cdc_dram_rsp.b.resp   ),
+    .c0_ddr4_s_axi_bvalid       ( cdc_dram_rsp.b_valid  ),
+    .c0_ddr4_s_axi_arid         ( cdc_dram_req.ar.id    ),
+    .c0_ddr4_s_axi_araddr       ( cdc_dram_req_ar_addr  ),
+    .c0_ddr4_s_axi_arlen        ( cdc_dram_req.ar.len   ),
+    .c0_ddr4_s_axi_arsize       ( cdc_dram_req.ar.size  ),
+    .c0_ddr4_s_axi_arburst      ( cdc_dram_req.ar.burst ),
+    .c0_ddr4_s_axi_arlock       ( cdc_dram_req.ar.lock  ),
+    .c0_ddr4_s_axi_arcache      ( cdc_dram_req.ar.cache ),
+    .c0_ddr4_s_axi_arprot       ( cdc_dram_req.ar.prot  ),
+    .c0_ddr4_s_axi_arqos        ( cdc_dram_req.ar.qos   ),
+    .c0_ddr4_s_axi_arvalid      ( cdc_dram_req.ar_valid ),
+    .c0_ddr4_s_axi_arready      ( cdc_dram_rsp.ar_ready ),
+    .c0_ddr4_s_axi_rready       ( cdc_dram_req.r_ready  ),
+    .c0_ddr4_s_axi_rid          ( cdc_dram_rsp.r.id     ),
+    .c0_ddr4_s_axi_rdata        ( cdc_dram_rsp.r.data   ),
+    .c0_ddr4_s_axi_rresp        ( cdc_dram_rsp.r.resp   ),
+    .c0_ddr4_s_axi_rlast        ( cdc_dram_rsp.r.last   ),
+    .c0_ddr4_s_axi_rvalid       ( cdc_dram_rsp.r_valid  ),
+    // TODO: Shouldn't we map this to an external reg port?
+    // AXI control
+    .c0_ddr4_s_axi_ctrl_awvalid ( '0 ),
+    .c0_ddr4_s_axi_ctrl_awready ( ),
+    .c0_ddr4_s_axi_ctrl_awaddr  ( '0 ),
+    .c0_ddr4_s_axi_ctrl_wvalid  ( '0 ),
+    .c0_ddr4_s_axi_ctrl_wready  ( ),
+    .c0_ddr4_s_axi_ctrl_wdata   ( '0 ),
+    .c0_ddr4_s_axi_ctrl_bvalid  ( ),
+    .c0_ddr4_s_axi_ctrl_bready  ( '0 ),
+    .c0_ddr4_s_axi_ctrl_bresp   ( ),
+    .c0_ddr4_s_axi_ctrl_arvalid ( '0 ),
+    .c0_ddr4_s_axi_ctrl_arready ( ),
+    .c0_ddr4_s_axi_ctrl_araddr  ( '0 ),
+    .c0_ddr4_s_axi_ctrl_rvalid  ( ),
+    .c0_ddr4_s_axi_ctrl_rready  ( '0 ),
+    .c0_ddr4_s_axi_ctrl_rdata   ( ),
+    .c0_ddr4_s_axi_ctrl_rresp   ( ),
+    .c0_ddr4_interrupt          ( ),
+    // Others
+    .c0_init_calib_complete     ( ),
+    .addn_ui_clkout1            ( dram_clk_o ),
+    .dbg_clk                    ( ),
+    .dbg_bus                    ( ),
+    // PHY
+    .*
   );
-
-
-
-`else
-  assign dram_axi_clk = soc_clk_i;
-  assign dram_rst_o   = ~soc_resetn_i;
-
-  dram_controller_axi #(
-    .AXI_ID_WIDTH  ( cfg.IdWidth ),
-    .AXI_ADDR_WIDTH( cfg.AddrWidth ),
-    .AXI_DATA_WIDTH( cfg.DataWidth )
-  ) dram_controller (
-    .clk_i(soc_clk_i),
-    .rst_ni(soc_resetn_i),
-    
-    .s_axi_awvalid(cdc_dram_req.aw_valid),
-    .s_axi_awready(cdc_dram_rsp.aw_ready),
-    .s_axi_awaddr(cdc_dram_req_aw_addr),
-    .s_axi_awid(cdc_dram_req.aw.id),
-    .s_axi_awlen(cdc_dram_req.aw.len),
-    .s_axi_awsize(cdc_dram_req.aw.size),
-    .s_axi_awburst(cdc_dram_req.aw.burst),
-    .s_axi_awprot(cdc_dram_req.aw.prot),
-
-    .s_axi_wvalid(cdc_dram_req.w_valid),
-    .s_axi_wready(cdc_dram_rsp.w_ready),
-    .s_axi_wdata(cdc_dram_req.w.data),
-    .s_axi_wstrb(cdc_dram_req.w.strb),
-    .s_axi_wlast(cdc_dram_req.w.last),
-
-    .s_axi_bvalid(cdc_dram_rsp.b_valid),
-    .s_axi_bready(cdc_dram_req.b_ready),
-    .s_axi_bid(cdc_dram_rsp.b.id),
-    .s_axi_bresp(cdc_dram_rsp.b.resp),
-
-    .s_axi_arvalid(cdc_dram_req.ar_valid),
-    .s_axi_arready(cdc_dram_rsp.ar_ready),
-    .s_axi_araddr(cdc_dram_req_ar_addr),
-    .s_axi_arid(cdc_dram_req.ar.id),
-    .s_axi_arlen(cdc_dram_req.ar.len),
-    .s_axi_arsize(cdc_dram_req.ar.size),
-    .s_axi_arburst(cdc_dram_req.ar.burst),
-    .s_axi_arprot(cdc_dram_req.ar.prot),
-
-    .s_axi_rvalid(cdc_dram_rsp.r_valid),
-    .s_axi_rready(cdc_dram_req.r_ready),
-    .s_axi_rid(cdc_dram_rsp.r.id),
-    .s_axi_rdata(cdc_dram_rsp.r.data),
-    .s_axi_rresp(cdc_dram_rsp.r.resp),
-    .s_axi_rlast(cdc_dram_rsp.r.last),
-
-    .ddr3_reset_n(ddr3_reset_n),
-    .ddr3_cke(ddr3_cke),
-    .ddr3_ck_p(ddr3_ck_p),
-    .ddr3_ck_n(ddr3_ck_n),
-    .ddr3_cs_n(ddr3_cs_n),
-    .ddr3_ras_n(ddr3_ras_n),
-    .ddr3_cas_n(ddr3_cas_n),
-    .ddr3_we_n(ddr3_we_n),
-    .ddr3_ba(ddr3_ba),
-    .ddr3_addr(ddr3_addr),
-    .ddr3_odt(ddr3_odt),
-    .ddr3_dm(ddr3_dm),
-    .ddr3_dqs_p(ddr3_dqs_p),
-    .ddr3_dqs_n(ddr3_dqs_n),
-    .ddr3_dq(ddr3_dq),
-
-    .clk100(clk100),
-    .clk_ddr(clk_ddr),
-    .clk_ref(clk_ref),
-    .clk_ddr_dqs(clk_ddr_dqs),
-
-    .uart_dram_write_we_i(uart_dram_write_we_i),
-    .uart_dram_write_addr_i(uart_dram_write_addr_i),
-    .uart_dram_write_data_i(uart_dram_write_data_i),
-    .uart_dram_write_rst_i(uart_dram_write_rst_i)
-  );
-
 `endif
+
+  /////////////////////////
+  //  Instiantiate DDR3  //
+  /////////////////////////
+
+`ifdef USE_DDR3
+  mig_7series_0 i_dram (
+    .sys_rst              ( sys_rst_i    ), // Active high
+    .sys_clk_i            ( dram_clk_i   ),
+    .ui_clk               ( dram_axi_clk ),
+    .ui_clk_sync_rst      ( dram_rst_o ),
+    .mmcm_locked          ( ),
+    .app_sr_req           ( '0 ),
+    .app_ref_req          ( '0 ),
+    .app_zq_req           ( '0 ),
+    .app_sr_active        ( ),
+    .app_ref_ack          ( ),
+    .app_zq_ack           ( ),
+    .aresetn              ( soc_resetn_i ),
+    .s_axi_awid           ( cdc_dram_req.aw.id    ),
+    .s_axi_awaddr         ( cdc_dram_req_aw_addr  ),
+    .s_axi_awlen          ( cdc_dram_req.aw.len   ),
+    .s_axi_awsize         ( cdc_dram_req.aw.size  ),
+    .s_axi_awburst        ( cdc_dram_req.aw.burst ),
+    .s_axi_awlock         ( cdc_dram_req.aw.lock  ),
+    .s_axi_awcache        ( cdc_dram_req.aw.cache ),
+    .s_axi_awprot         ( cdc_dram_req.aw.prot  ),
+    .s_axi_awqos          ( cdc_dram_req.aw.qos   ),
+    .s_axi_awvalid        ( cdc_dram_req.aw_valid ),
+    .s_axi_awready        ( cdc_dram_rsp.aw_ready ),
+    .s_axi_wdata          ( cdc_dram_req.w.data   ),
+    .s_axi_wstrb          ( cdc_dram_req.w.strb   ),
+    .s_axi_wlast          ( cdc_dram_req.w.last   ),
+    .s_axi_wvalid         ( cdc_dram_req.w_valid  ),
+    .s_axi_wready         ( cdc_dram_rsp.w_ready  ),
+    .s_axi_bready         ( cdc_dram_req.b_ready  ),
+    .s_axi_bid            ( cdc_dram_rsp.b.id     ),
+    .s_axi_bresp          ( cdc_dram_rsp.b.resp   ),
+    .s_axi_bvalid         ( cdc_dram_rsp.b_valid  ),
+    .s_axi_arid           ( cdc_dram_req.ar.id    ),
+    .s_axi_araddr         ( cdc_dram_req_ar_addr  ),
+    .s_axi_arlen          ( cdc_dram_req.ar.len   ),
+    .s_axi_arsize         ( cdc_dram_req.ar.size  ),
+    .s_axi_arburst        ( cdc_dram_req.ar.burst ),
+    .s_axi_arlock         ( cdc_dram_req.ar.lock  ),
+    .s_axi_arcache        ( cdc_dram_req.ar.cache ),
+    .s_axi_arprot         ( cdc_dram_req.ar.prot  ),
+    .s_axi_arqos          ( cdc_dram_req.ar.qos   ),
+    .s_axi_arvalid        ( cdc_dram_req.ar_valid ),
+    .s_axi_arready        ( cdc_dram_rsp.ar_ready ),
+    .s_axi_rready         ( cdc_dram_req.r_ready  ),
+    .s_axi_rid            ( cdc_dram_rsp.r.id     ),
+    .s_axi_rdata          ( cdc_dram_rsp.r.data   ),
+    .s_axi_rresp          ( cdc_dram_rsp.r.resp   ),
+    .s_axi_rlast          ( cdc_dram_rsp.r.last   ),
+    .s_axi_rvalid         ( cdc_dram_rsp.r_valid  ),
+    .init_calib_complete  ( ),
+    .device_temp          ( ),
+    // PHY
+    .*
+  );
+`endif  // USE_DDR3
 
 endmodule

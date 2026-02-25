@@ -1,241 +1,422 @@
-`timescale 1ns/1ps
-
 `include "cheshire/typedef.svh"
 
 `include "header.vh"
 
-//`default_nettype none
+module cheshire_soc_wrap import cheshire_pkg::*; (
+  input  logic  sys_clk_p,
+  input  logic  sys_clk_n,
 
-module cheshire_soc_wrap import cheshire_pkg::*;
-(
-  `ifdef ZC706
-  input  wire clk_p,
-  input  wire clk_n,
-  `elsif GENESYS2
-  input  wire sys_clk_p,
-  input  wire sys_clk_n,
-  `else
-  input wire clk_i,
-  `endif
-  `ifdef GENESYS2
-  input  logic sys_resetn,
-  `else
-  input  logic rst_ni,
-  `endif
+`ifdef USE_RESET
+  input  logic  sys_reset,
+`endif
+`ifdef USE_RESETN
+  input  logic  sys_resetn,
+`endif
 
-  `ifdef GENESYS2
-  input  wire uart_rx_i,
-  `else
-  input  wire program_rx_i,
-  `endif
-  output wire prog_mode_led_o,
-  output wire init_calib_done_o,
-   
-  output wire uart_tx_o
+`ifdef USE_SWITCHES
+  input logic       test_mode_i,
+  input logic [1:0] boot_mode_i,
+`endif
 
-`ifndef DRAM_SIM
-  // DDR3 Interface
-  ,output logic ddr3_reset_n,
-  output logic ddr3_cke,
-  output logic ddr3_ck_p,
-  output logic ddr3_ck_n,
-  output logic ddr3_cs_n,
-  output logic ddr3_ras_n,
-  output logic ddr3_cas_n,
-  output logic ddr3_we_n,
-  `ifdef GENESYS2
-  output logic [2:0] ddr3_ba,
-  output logic [14:0] ddr3_addr,
-  output logic ddr3_odt,
-  inout  logic [3:0] ddr3_dm,
-  inout  logic [3:0] ddr3_dqs_p,
-  inout  logic [3:0] ddr3_dqs_n,
-  inout  logic [31:0] ddr3_dq
-  `else
-  output logic [2:0] ddr3_ba,
-  output logic [13:0] ddr3_addr,
-  output logic ddr3_odt,
-  inout  logic [1:0] ddr3_dm,
-  inout  logic [1:0] ddr3_dqs_p,
-  inout  logic [1:0] ddr3_dqs_n,
-  inout  logic [15:0] ddr3_dq
+`ifdef USE_JTAG
+  input  logic  jtag_tck_i,
+  input  logic  jtag_tms_i,
+  input  logic  jtag_tdi_i,
+  output logic  jtag_tdo_o,
+`ifdef USE_JTAG_TRSTN
+  input  logic  jtag_trst_ni,
+`endif
+`ifdef USE_JTAG_VDDGND
+  output logic  jtag_vdd_o,
+  output logic  jtag_gnd_o,
   `endif
 `endif
 
-  `ifdef JTAG
-  , input wire jtag_tck_i,
-  input wire jtag_tms_i,
-  input wire jtag_tdi_i,
-  output wire jtag_tdo_o
-  `ifdef GENESYS2
-  , input wire jtag_trst_ni
-  `endif
-  `endif
+`ifdef USE_I2C
+  inout  wire   i2c_scl_io,
+  inout  wire   i2c_sda_io,
+`endif
+
+`ifdef USE_SD
+  input  logic        sd_cd_i,
+  output logic        sd_cmd_o,
+  inout  wire  [3:0]  sd_d_io,
+  output logic        sd_reset_o,
+  output logic        sd_sclk_o,
+`endif
+
+`ifdef USE_FAN
+  input  logic [3:0]  fan_sw,
+  output logic        fan_pwm,
+`endif
+
+`ifdef USE_VGA
+  // VGA Colour signals
+  output logic        vga_hsync_o,
+  output logic        vga_vsync_o,
+  output logic [4:0]  vga_red_o,
+  output logic [5:0]  vga_green_o,
+  output logic [4:0]  vga_blue_o,
+`endif
+
+`ifdef USE_QSPI
+`ifndef USE_STARTUPE3
+`ifndef USE_STARTUPE2
+  // If a STARTUPE2 is present, this is wired there.
+  output wire        spih_sck_o,
+`endif
+  output wire        spih_csb_o,
+  inout  wire  [3:0] spih_sd_io,
+`endif
+`endif
+
+`ifdef USE_DDR4
+  `DDR4_INTF
+`endif
+`ifdef USE_DDR3
+  `DDR3_INTF
+`endif
+
+  output logic  uart_tx_o,
+  input  logic  uart_rx_i,
+
+  inout  wire [UsbNumPorts-1:0] usb_dm_io,
+  inout  wire [UsbNumPorts-1:0] usb_dp_io
 );
 
-  `ifdef GENESYS2
-  wire rst_ni = sys_resetn;
-  wire program_rx_int = uart_rx_i;
+  ///////////////////////
+  //  Cheshire Config  //
+  ///////////////////////
+
+  // Use default config as far as possible
+  function automatic cheshire_cfg_t gen_cheshire_xilinx_cfg();
+    cheshire_cfg_t ret  = DefaultCfg;
+    ret.RtcFreq         = 1000000;
+    ret.SerialLink      = 0;
+  `ifdef USE_USB
+    ret.Usb = 1;
   `else
-  wire program_rx_int = program_rx_i;
+    ret.Usb = 0;
   `endif
+    return ret;
+  endfunction
 
-  logic [1:0] boot_mode_i = 2'b00;
-  logic test_mode = 0;
-  // JTAG
-  logic jtag_tck = jtag_tck_i;
-  logic jtag_trst_n;
-  `ifdef GENESYS2
-  assign jtag_trst_n = jtag_trst_ni;
-  `else
-  assign jtag_trst_n = 1'b1;
-  `endif
-  logic jtag_tms = jtag_tms_i;
-  logic jtag_tdi = jtag_tdi_i;
-  logic jtag_tdo;
-  assign jtag_tdo_o = jtag_tdo;
-  // I2C
-  logic i2c_sda;
-  logic i2c_scl;
-  // SPI Host
-  logic                  spih_sck;
-  logic [SpihNumCs-1:0]  spih_csb;
-  logic [3:0]            spih_sd;
-  // Serial Link
-  logic [SlinkNumChan-1:0]                    slink_rcv_clk_i;
-  logic [SlinkNumChan-1:0]                    slink_rcv_clk_o;
-  logic [SlinkNumChan-1:0][SlinkNumLanes-1:0]  slink_i;
-  logic [SlinkNumChan-1:0][SlinkNumLanes-1:0]  slink_o;
+  // Configure cheshire for FPGA mapping
+  localparam cheshire_cfg_t FPGACfg = gen_cheshire_xilinx_cfg();
+  `CHESHIRE_TYPEDEF_ALL(, FPGACfg)
 
-  `ifndef GENESYS2
-  logic system_reset_o;
-  logic uart_dram_write_we;
-  logic [31:0] uart_dram_write_addr;
-  logic [31:0] uart_dram_write_data;
-  logic uart_dram_write_rst;
-  logic uart_dram_mode;
-  `endif
+  ////////////////////////
+  //  Clock Generation  //
+  ////////////////////////
 
-  `ifdef BASYS3
-     wire clkwiz_o;
-     wire clkwiz_locked;
-     clk_wiz_0 dutclk (
-        .clk_out1(clkwiz_o),
-        .clk_in1(clk_i),
-        .reset(~rst_ni),
-        .locked(clkwiz_locked)
-     );
-     wire rst_n = rst_ni & system_reset_o & clkwiz_locked;
-  `elsif ZC706
-     wire pll_locked;
-     wire clk100;
-     wire clk_ddr;
-     wire clk_ref;
-     wire clk_ddr_dqs;
-     wire clk_i;
-     clk_wiz_0 u_pll
-     //clk_wiz_1 u_pll
-     (
-        .clk_in1_p(clk_p),
-        .clk_in1_n(clk_n)
+  wire sys_clk;
+  wire soc_clk;
+  wire usb_clk;
 
-        ,.reset(~rst_ni)
-
-        // first values for 100mhz, second values for 50mhz
-        ,.clk_out1(clk100)      // 100, 50
-        ,.clk_out2(clk_ddr)     // 400, 200
-        ,.clk_out3(clk_ref)     // 200, 200
-        ,.clk_out4(clk_ddr_dqs) // 400, 200 (phase 90)
-        ,.clk_out5(clk_i)       // 100, 50
-        ,.locked(pll_locked)
-     );
-
-     wire clkwiz_o = clk_i;
-     wire rst_n = rst_ni & system_reset_o & !uart_dram_mode & pll_locked; // & !uart_dram_mode
-  `elsif GENESYS2
-      wire clk100 = '0;
-      wire clk_ddr = '0;
-      wire clk_ref = '0;
-      wire clk_ddr_dqs = '0;
-      wire soc_clk;
-      wire usb_clk;
-     
-     wire sys_clk;
-     IBUFDS #(
-       .IBUF_LOW_PWR ("FALSE")
-     ) i_bufds_sys_clk (
-       .I  ( sys_clk_p ),
-       .IB ( sys_clk_n ),
-       .O  ( sys_clk   )
-     );
-
-     clk_wiz_0 i_clkwiz (
-       .clk_in1  ( sys_clk ),
-       .reset    ( '0 ),
-       .locked   ( ),
-       .clk_50   ( soc_clk ),
-       .clk_48   ( ),
-       .clk_20   ( ),
-       .clk_10   ( )
-     );
-     wire clkwiz_o = soc_clk;
-
-     logic sys_rst;
-     assign sys_rst = ~sys_resetn;
-     
-     // Cheshire-style reset synchronization
-     wire rst_n;
-     rstgen i_rstgen (
-       .clk_i        ( soc_clk  ),
-       .rst_ni       ( ~sys_rst ),
-       .test_mode_i  ( test_mode ),
-       .rst_no       ( rst_n    ),
-       .init_no      (          )
-     );
-
-      wire dram_ref_clk = sys_clk;
-  `else
-     wire clkwiz_o = clk_i;
-     wire rst_n = rst_ni & system_reset_o;
-  `endif
-
-  `ifndef GENESYS2
-  uart_programmer up_dram (
-     .clk_i(clkwiz_o),
-     .rst_ni(rst_ni `ifdef BASYS3 & clkwiz_locked `endif) // pll_locked
-     
-      ,.program_rx_i(program_rx_int)
-     ,.system_reset_o(system_reset_o)
-     ,.prog_mode_led_o(prog_mode_led_o)
-
-     ,.dram_write_we_o(uart_dram_write_we)
-     ,.dram_write_addr_o(uart_dram_write_addr)
-     ,.dram_write_data_o(uart_dram_write_data)
-     ,.dram_write_rst_o(uart_dram_write_rst)
-     ,.dram_mode_o(uart_dram_mode)
+  IBUFDS #(
+    .IBUF_LOW_PWR ("FALSE")
+  ) i_bufds_sys_clk (
+    .I  ( sys_clk_p ),
+    .IB ( sys_clk_n ),
+    .O  ( sys_clk   )
   );
-    `else
-    assign prog_mode_led_o = 1'b0;
-    `endif
-  
-  logic rtc;
-  `ifdef SIM
-  clk_rst_gen #(
-    .ClkPeriod    (100000ns), //( 30518000ns ),
-    .RstClkCycles ( 5 )
-  ) i_clk_rst_rtc (
-    .clk_o  ( rtc ),
-    .rst_no ( )
+
+  clk_wiz_0 i_clkwiz (
+    .clk_in1  ( sys_clk ),
+    .reset    ( '0 ),
+    .locked   ( ),
+    .clk_50   ( soc_clk ),
+    .clk_48   ( usb_clk ),
+    .clk_20   ( ),
+    .clk_10   ( )
   );
-  `else
-  //assign rtc = 1'b0;
+
+  /////////////////////
+  //  System Inputs  //
+  /////////////////////
+
+  // Select SoC reset
+`ifdef USE_RESET
+  logic sys_resetn;
+  assign sys_resetn = ~sys_reset;
+`elsif USE_RESETN
+  logic sys_reset;
+  assign sys_reset  = ~sys_resetn;
+`endif
+
+  // Tie off inputs of no switches
+`ifndef USE_SWITCHES
+  logic       test_mode_i;
+  logic [1:0] boot_mode_i;
+  assign test_mode_i = '0;
+  assign boot_mode_i = '0;
+`endif
+
+  ////////////
+  //  VIOs  //
+  ////////////
+
+  logic       vio_reset, vio_boot_mode_sel;
+  logic [1:0] boot_mode, vio_boot_mode;
+  logic       sys_rst;
+
+`ifdef USE_VIO
+  vio i_vio (
+    .clk        ( soc_clk ),
+    .probe_out0 ( vio_reset         ),
+    .probe_out1 ( vio_boot_mode     ),
+    .probe_out2 ( vio_boot_mode_sel )
+  );
+`else
+  assign vio_reset          = '0;
+  assign vio_boot_mode      = '0;
+  assign vio_boot_mode_sel  = '0;
+`endif
+
+`ifdef USE_RESET
+  assign sys_rst = sys_reset | vio_reset;
+`elsif USE_RESETN
+  assign sys_rst = ~sys_resetn | vio_reset;
+`endif
+  assign boot_mode = vio_boot_mode_sel ? vio_boot_mode : boot_mode_i;
+
+  //////////////////
+  //  Reset Sync  //
+  //////////////////
+
+  wire rst_n;
+
+  rstgen i_rstgen (
+    .clk_i        ( soc_clk     ),
+    .rst_ni       ( ~sys_rst    ),
+    .test_mode_i  ( test_mode_i ),
+    .rst_no       ( rst_n       ),
+    .init_no      ( )
+  );
+
+  ////////////
+  //  JTAG  //
+  ////////////
+
+`ifdef USE_JTAG_VDDGND
+  assign jtag_vdd_o = 1'b1;
+  assign jtag_gnd_o = 1'b0;
+`endif
+`ifndef USE_JTAG_TRSTN
+  logic jtag_trst_ni;
+  assign jtag_trst_ni = 1'b1;
+`endif
+
+  //////////////////
+  // I2C Adaption //
+  //////////////////
+
+  logic i2c_sda_soc_out;
+  logic i2c_sda_soc_in;
+  logic i2c_scl_soc_out;
+  logic i2c_scl_soc_in;
+  logic i2c_sda_en;
+  logic i2c_scl_en;
+
+`ifdef USE_I2C
+  IOBUF #(
+    .DRIVE        ( 12        ),
+    .IBUF_LOW_PWR ( "FALSE"   ),
+    .IOSTANDARD   ( "DEFAULT" ),
+    .SLEW         ( "FAST"    )
+  ) i_scl_iobuf (
+    .O  ( i2c_scl_soc_in  ),
+    .IO ( i2c_scl_io      ),
+    .I  ( i2c_scl_soc_out ),
+    .T  ( ~i2c_scl_en     )
+  );
+
+  IOBUF #(
+    .DRIVE        ( 12        ),
+    .IBUF_LOW_PWR ( "FALSE"   ),
+    .IOSTANDARD   ( "DEFAULT" ),
+    .SLEW         ( "FAST"    )
+  ) i_sda_iobuf (
+    .O  ( i2c_sda_soc_in  ),
+    .IO ( i2c_sda_io      ),
+    .I  ( i2c_sda_soc_out ),
+    .T  ( ~i2c_sda_en     )
+  );
+`endif
+
+  ///////////////
+  // SPI to SD //
+  ///////////////
+
+  logic spi_sck_soc;
+  logic [1:0] spi_cs_soc;
+  logic [3:0] spi_sd_soc_out;
+  logic [3:0] spi_sd_soc_in;
+  // Multiplex between SPI SD mode and QSPI proper
+  logic [3:0] spi_sd_sd_in, spi_sd_spih_in;
+
+  // Choose SoC input based on chip select
+  assign spi_sd_soc_in =
+    ({4{~spi_cs_soc[0]}} & spi_sd_sd_in) | ({4{~spi_cs_soc[1]}} & spi_sd_spih_in);
+
+  logic spi_sck_en;
+  logic [1:0] spi_cs_en;
+  logic [3:0] spi_sd_en;
+
+`ifdef USE_SD
+  // Assert reset low => Apply power to the SD Card
+  assign sd_reset_o       = 1'b0;
+  // SCK  - SD CLK signal
+  assign sd_sclk_o        = spi_sck_en    ? spi_sck_soc       : 1'b1;
+  // CS   - SD DAT3 signal
+  assign sd_d_io[3]       = spi_cs_en[0]  ? spi_cs_soc[0]     : 1'b1;
+  // MOSI - SD CMD signal
+  assign sd_cmd_o         = spi_sd_en[0]  ? spi_sd_soc_out[0] : 1'b1;
+  // MISO - SD DAT0 signal
+  assign spi_sd_sd_in[1]  = sd_d_io[0];
+  // SD DAT1 and DAT2 signal tie-off - Not used for SPI mode
+  assign sd_d_io[2:1]     = 2'b11;
+  // Bind input side of SoC low for output signals
+  assign spi_sd_sd_in[0]  = 1'b0;
+  assign spi_sd_sd_in[2]  = 1'b0;
+  assign spi_sd_sd_in[3]  = 1'b0;
+`endif
+
+  ////////////
+  //  QSPI  //
+  ////////////
+
+`ifdef USE_QSPI
+  logic                 qspi_clk;
+  logic                 qspi_clk_ts;
+  logic [3:0]           qspi_dqi;
+  logic [3:0]           qspi_dqo_ts;
+  logic [3:0]           qspi_dqo;
+  logic [SpihNumCs-1:0] qspi_cs_b;
+  logic [SpihNumCs-1:0] qspi_cs_b_ts;
+
+  assign qspi_clk      = spi_sck_soc;
+  assign qspi_cs_b     = spi_cs_soc;
+  assign qspi_dqo      = spi_sd_soc_out;
+  assign spi_sd_spih_in = qspi_dqi;
+
+  // Tristate enables
+  assign qspi_clk_ts  = ~spi_sck_en;
+  assign qspi_cs_b_ts = ~spi_cs_en;
+  assign qspi_dqo_ts  = ~spi_sd_en;
+
+  // On VCU128/ZCU102, SPI ports are not directly available
+`ifdef USE_STARTUPE3
+  STARTUPE3 #(
+    .PROG_USR("FALSE"),
+    .SIM_CCLK_FREQ(0.0)
+  ) i_startupe3 (
+    .CFGCLK     ( ),
+    .CFGMCLK    ( ),
+    .DI         ( qspi_dqi ),
+    .EOS        ( ),
+    .PREQ       ( ),
+    .DO         ( qspi_dqo ),
+    .DTS        ( qspi_dqo_ts ),
+    .FCSBO      ( qspi_cs_b[1] ),
+    .FCSBTS     ( qspi_cs_b_ts[1] ),
+    .GSR        ( 1'b0 ),
+    .GTS        ( 1'b0 ),
+    .KEYCLEARB  ( 1'b1 ),
+    .PACK       ( 1'b0 ),
+    .USRCCLKO   ( qspi_clk ),
+    .USRCCLKTS  ( qspi_clk_ts ),
+    .USRDONEO   ( 1'b1 ),
+    .USRDONETS  ( 1'b1 )
+  );
+`else
+`ifdef USE_STARTUPE2
+  (*keep="TRUE"*)
+  STARTUPE2 #(
+    .PROG_USR("FALSE"),
+    .SIM_CCLK_FREQ(0.0)
+    ) i_startupe2 (
+    .CFGCLK     ( ),
+    .CFGMCLK    ( ),
+    .EOS        ( ),
+    .PREQ       ( ),
+    .CLK        ( 1'b0 ),
+    .GSR        ( 1'b0 ),
+    .GTS        ( 1'b0 ),
+    .KEYCLEARB  ( 1'b0 ),
+    .PACK       ( 1'b0 ),
+    .USRCCLKO   ( spi_sck_soc ),
+    .USRCCLKTS  ( 1'b0 ),
+    .USRDONEO   ( 1'b0 ),
+    .USRDONETS  ( 1'b0 )
+  );
+`else
+  IOBUF #(
+    .DRIVE        ( 12        ),
+    .IBUF_LOW_PWR ( "FALSE"   ),
+    .IOSTANDARD   ( "DEFAULT" ),
+    .SLEW         ( "FAST"    )
+  ) i_spih_sck_iobuf (
+    .O  (  ),
+    .IO ( spih_sck_o  ),
+    .I  ( spi_sck_soc ),
+    .T  ( ~spi_sck_en )
+  );
+`endif
+
+  IOBUF #(
+    .DRIVE        ( 12        ),
+    .IBUF_LOW_PWR ( "FALSE"   ),
+    .IOSTANDARD   ( "DEFAULT" ),
+    .SLEW         ( "FAST"    )
+  ) i_spih_csb_iobuf (
+    .O  (  ),
+    .IO ( spih_csb_o ),
+    .I  ( spi_cs_soc [1] ),
+    .T  ( ~spi_cs_en [1] )
+  );
+
+  for (genvar i = 0; i < 4; ++i) begin : gen_qspi_iobufs
+    IOBUF #(
+      .DRIVE        ( 12        ),
+      .IBUF_LOW_PWR ( "FALSE"   ),
+      .IOSTANDARD   ( "DEFAULT" ),
+      .SLEW         ( "FAST"    )
+    ) i_spih_sd_iobuf (
+      .O  ( spi_sd_spih_in [i] ),
+      .IO ( spih_sd_io     [i] ),
+      .I  ( spi_sd_soc_out [i] ),
+      .T  ( ~spi_sd_en     [i] )
+    );
+  end
+`endif
+`endif
+
+  ///////////
+  //  USB  //
+  ///////////
+
+  // SoC IOs
+  logic [UsbNumPorts-1:0] usb_dm_i;
+  logic [UsbNumPorts-1:0] usb_dm_o;
+  logic [UsbNumPorts-1:0] usb_dm_oe_o;
+  logic [UsbNumPorts-1:0] usb_dp_i;
+  logic [UsbNumPorts-1:0] usb_dp_o;
+  logic [UsbNumPorts-1:0] usb_dp_oe_o;
+
+  for (genvar i = 0; i < FPGACfg.Usb*UsbNumPorts; ++i) begin : gen_usb_tristate
+    assign usb_dp_io [i] = usb_dp_oe_o[i] ? usb_dp_o[i] : 'z;
+    assign usb_dp_i  [i] = usb_dp_io[i];
+    assign usb_dm_io [i] = usb_dm_oe_o[i] ? usb_dm_o[i] : 'z;
+    assign usb_dm_i  [i] = usb_dm_io[i];
+  end
+
   /////////////////////////
   // "RTC" Clock Divider //
   /////////////////////////
+
   logic rtc_clk_d, rtc_clk_q;
   logic [15:0] counter_d, counter_q;
-
-  assign rtc = rtc_clk_q;
 
   // Divide soc_clk (50 MHz) by 50 => 1 MHz RTC Clock
   always_comb begin
@@ -248,7 +429,7 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     end
   end
 
-  always_ff @(posedge clkwiz_o, negedge rst_n) begin
+  always_ff @(posedge soc_clk, negedge rst_n) begin
     if(~rst_n) begin
       counter_q <= '0;
       rtc_clk_q <= 0;
@@ -257,223 +438,28 @@ module cheshire_soc_wrap import cheshire_pkg::*;
       rtc_clk_q <= rtc_clk_d;
     end
   end
-  `endif
 
-  localparam cheshire_cfg_t WrapCfg = DefaultCfg;
-  `CHESHIRE_TYPEDEF_ALL(, WrapCfg)
+  /////////////////
+  // Fan Control //
+  /////////////////
+
+`ifdef USE_FAN
+  fan_ctrl i_fan_ctrl (
+    .clk_i          ( soc_clk ),
+    .rst_ni         ( rst_n   ),
+    .pwm_setting_i  ( fan_sw  ),
+    .fan_pwm_o      ( fan_pwm )
+  );
+`endif
+
+  //////////////
+  // DRAM MIG //
+  //////////////
 
   axi_llc_req_t axi_llc_mst_req;
   axi_llc_rsp_t axi_llc_mst_rsp;
 
-  logic i2c_sda_o;
-  logic i2c_sda_i;
-  logic i2c_sda_en;
-  logic i2c_scl_o;
-  logic i2c_scl_i;
-  logic i2c_scl_en;
-
-  logic                 spih_sck_o;
-  logic                 spih_sck_en;
-  logic [SpihNumCs-1:0] spih_csb_o;
-  logic [SpihNumCs-1:0] spih_csb_en;
-  logic [3:0]           spih_sd_o;
-  logic [3:0]           spih_sd_i;
-  logic [3:0]           spih_sd_en;
-
-  cheshire_soc #(
-    .Cfg                ( WrapCfg ),
-    .ExtHartinfo        ( '0 ),
-    .axi_ext_llc_req_t  ( axi_llc_req_t ),
-    .axi_ext_llc_rsp_t  ( axi_llc_rsp_t ),
-    .axi_ext_mst_req_t  ( axi_mst_req_t ),
-    .axi_ext_mst_rsp_t  ( axi_mst_rsp_t ),
-    .axi_ext_slv_req_t  ( axi_slv_req_t ),
-    .axi_ext_slv_rsp_t  ( axi_slv_rsp_t ),
-    .reg_ext_req_t      ( reg_req_t ),
-    .reg_ext_rsp_t      ( reg_rsp_t )
-  ) csoc (
-    .clk_i              ( clkwiz_o       ),
-    .rst_ni             ( rst_n     ),
-    .test_mode_i        ( test_mode ),
-    .boot_mode_i        ( boot_mode_i ),
-    .rtc_i              ( rtc       ),
-    .axi_llc_mst_req_o  ( axi_llc_mst_req ),
-    .axi_llc_mst_rsp_i  ( axi_llc_mst_rsp ),
-    .axi_ext_mst_req_i  ( '0 ),
-    .axi_ext_mst_rsp_o  ( ),
-    .axi_ext_slv_req_o  ( ),
-    .axi_ext_slv_rsp_i  ( '0 ),
-    .reg_ext_slv_req_o  (  ),
-    .reg_ext_slv_rsp_i  ( '0 ),
-    .intr_ext_i         ( '0 ),
-    .intr_ext_o         ( ),
-    .xeip_ext_o         ( ),
-    .mtip_ext_o         ( ),
-    .msip_ext_o         ( ),
-    .dbg_active_o       ( ),
-    .dbg_ext_req_o      ( ),
-    .dbg_ext_unavail_i  ( '0 ),
-    .jtag_tck_i         ( jtag_tck    ),
-    .jtag_trst_ni       ( jtag_trst_n ),
-    .jtag_tms_i         ( jtag_tms    ),
-    .jtag_tdi_i         ( jtag_tdi    ),
-    .jtag_tdo_o         ( jtag_tdo    ),
-    .jtag_tdo_oe_o      ( ),
-    .uart_tx_o          ( uart_tx_o ),
-    .uart_rx_i          ( program_rx_int ),
-    .uart_rts_no        ( ),
-    .uart_dtr_no        ( ),
-    .uart_cts_ni        ( 1'b0 ),
-    .uart_dsr_ni        ( 1'b0 ),
-    .uart_dcd_ni        ( 1'b0 ),
-    .uart_rin_ni        ( 1'b0 ),
-    .i2c_sda_o          ( i2c_sda_o  ),
-    .i2c_sda_i          ( i2c_sda_i  ),
-    .i2c_sda_en_o       ( i2c_sda_en ),
-    .i2c_scl_o          ( i2c_scl_o  ),
-    .i2c_scl_i          ( i2c_scl_i  ),
-    .i2c_scl_en_o       ( i2c_scl_en ),
-    .spih_sck_o         ( spih_sck_o  ),
-    .spih_sck_en_o      ( spih_sck_en ),
-    .spih_csb_o         ( spih_csb_o  ),
-    .spih_csb_en_o      ( spih_csb_en ),
-    .spih_sd_o          ( spih_sd_o   ),
-    .spih_sd_en_o       ( spih_sd_en  ),
-    .spih_sd_i          ( spih_sd_i   ),
-    .gpio_i             ( '0 ),
-    .gpio_o             ( ),
-    .gpio_en_o          ( ),
-    .slink_rcv_clk_i    ( slink_rcv_clk_i ),
-    .slink_rcv_clk_o    ( slink_rcv_clk_o ),
-    .slink_i            ( slink_i ),
-    .slink_o            ( slink_o ),
-    .vga_hsync_o        ( ),
-    .vga_vsync_o        ( ),
-    .vga_red_o          ( ),
-    .vga_green_o        ( ),
-    .vga_blue_o         ( ),
-    .usb_clk_i          ( 1'b0 ),
-    .usb_rst_ni         ( 1'b1 ),
-    .usb_dm_i           ( '0 ),
-    .usb_dm_o           ( ),
-    .usb_dm_oe_o        ( ),
-    .usb_dp_i           ( '0 ),
-    .usb_dp_o           ( ),
-    .usb_dp_oe_o        ( )
-  );
-
-  assign i2c_sda = i2c_sda_en ? i2c_sda_o : 1'bz;
-  assign i2c_sda_i = i2c_sda;
-  assign i2c_scl = i2c_scl_en ? i2c_scl_o : 1'bz;
-  assign i2c_scl_i = i2c_scl;
-
-  assign spih_sck = spih_sck_en ? spih_sck_o : 1'bz;
-  assign spih_csb = spih_csb_en;
-  assign spih_sd  = spih_sd_en;
-  assign spih_sd_i = spih_sd;
-
-  `ifdef DRAM_SIM
-    `ifdef GENESYS2
-    wire ddr3_reset_n;
-    wire [0:0] ddr3_cke;
-    wire ddr3_ck_p;
-    wire ddr3_ck_n;
-    wire [0:0] ddr3_cs_n;
-    wire ddr3_ras_n;
-    wire ddr3_cas_n;
-    wire ddr3_we_n;
-    wire [2:0] ddr3_ba;
-    wire [14:0] ddr3_addr;
-    wire [0:0] ddr3_odt;
-    wire [3:0] ddr3_dm;
-    wire [3:0] ddr3_dqs_p;
-    wire [3:0] ddr3_dqs_n;
-    wire [31:0] ddr3_dq;
-
-    // Two x16 DDR3 chips to form 32-bit data bus (matching MIG DQ_WIDTH=32, MEMORY_WIDTH=16)
-    // Chip 0: DQ[15:0], DQS[1:0], DM[1:0] — carries lower 16 bits of each 32-bit word
-    ddr3_model #(
-      //.MEM_INIT_FILE("../../../cheshire/sw/tests/helloworld.mem_init_chip0.txt")
-    .MEM_INIT_FILE("")
-    ) ddr3_chip0 (
-      .rst_n  (ddr3_reset_n),
-      .ck     (ddr3_ck_p),
-      .ck_n   (ddr3_ck_n),
-      .cke    (ddr3_cke),
-      .cs_n   (ddr3_cs_n),
-      .ras_n  (ddr3_ras_n),
-      .cas_n  (ddr3_cas_n),
-      .we_n   (ddr3_we_n),
-      .dm_tdqs(ddr3_dm[1:0]),
-      .ba     (ddr3_ba),
-      .addr   ({1'b0, ddr3_addr}),
-      .dq     (ddr3_dq[15:0]),
-      .dqs    (ddr3_dqs_p[1:0]),
-      .dqs_n  (ddr3_dqs_n[1:0]),
-      .tdqs_n (),
-      .odt    (ddr3_odt)
-    );
-
-    // Chip 1: DQ[31:16], DQS[3:2], DM[3:2] — carries upper 16 bits of each 32-bit word
-    ddr3_model #(
-      //.MEM_INIT_FILE("../../../cheshire/sw/tests/helloworld.mem_init_chip1.txt")
-    .MEM_INIT_FILE("")
-    ) ddr3_chip1 (
-      .rst_n  (ddr3_reset_n),
-      .ck     (ddr3_ck_p),
-      .ck_n   (ddr3_ck_n),
-      .cke    (ddr3_cke),
-      .cs_n   (ddr3_cs_n),
-      .ras_n  (ddr3_ras_n),
-      .cas_n  (ddr3_cas_n),
-      .we_n   (ddr3_we_n),
-      .dm_tdqs(ddr3_dm[3:2]),
-      .ba     (ddr3_ba),
-      .addr   ({1'b0, ddr3_addr}),
-      .dq     (ddr3_dq[31:16]),
-      .dqs    (ddr3_dqs_p[3:2]),
-      .dqs_n  (ddr3_dqs_n[3:2]),
-      .tdqs_n (),
-      .odt    (ddr3_odt)
-    );
-    `else
-    wire ddr3_reset_n;
-    wire ddr3_cke;
-    wire ddr3_ck_p;
-    wire ddr3_ck_n;
-    wire ddr3_cs_n;
-    wire ddr3_ras_n;
-    wire ddr3_cas_n;
-    wire ddr3_we_n;
-    wire [2:0] ddr3_ba;
-    wire [13:0] ddr3_addr;
-    wire ddr3_odt;
-    wire [1:0] ddr3_dm;
-    wire [1:0] ddr3_dqs_p;
-    wire [1:0] ddr3_dqs_n;
-    wire [15:0] ddr3_dq;
-
-    ddr3 ddr3_dut (
-      .rst_n  (ddr3_reset_n),
-      .ck     (ddr3_ck_p),
-      .ck_n   (ddr3_ck_n),
-      .cke    (ddr3_cke),
-      .cs_n   (ddr3_cs_n),
-      .ras_n  (ddr3_ras_n),
-      .cas_n  (ddr3_cas_n),
-      .we_n   (ddr3_we_n),
-      .dm_tdqs(ddr3_dm),
-      .ba     (ddr3_ba),
-      .addr   (ddr3_addr),
-      .dq     (ddr3_dq),
-      .dqs    (ddr3_dqs_p),
-      .dqs_n  (ddr3_dqs_n),
-      .tdqs_n (),
-      .odt    (ddr3_odt)
-    );
-    `endif
-  `endif
-
+`ifdef USE_DDR
   dram_wrapper #(
     .axi_soc_aw_chan_t ( axi_llc_aw_chan_t ),
     .axi_soc_w_chan_t  ( axi_llc_w_chan_t  ),
@@ -483,45 +469,96 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     .axi_soc_req_t     ( axi_llc_req_t     ),
     .axi_soc_resp_t    ( axi_llc_rsp_t     )
   ) i_dram_wrapper (
-    .soc_resetn_i ( rst_n `ifndef GENESYS2 || uart_dram_mode `endif ),
-    .soc_clk_i    ( clkwiz_o ),
-
-    .clk100       ( clk100 ),
-    .clk_ddr      ( clk_ddr ),
-    `ifdef GENESYS2
-    .clk_ref      ( dram_ref_clk ),  // Raw 200 MHz from IBUFDS for MIG
-    `else
-    .clk_ref      ( clk_ref ),
-    `endif
-    .clk_ddr_dqs  ( clk_ddr_dqs ),
-
-    .init_calib_done_o      ( init_calib_done_o ),
-
-    .uart_dram_write_we_i   ( `ifdef GENESYS2 1'b0 `else uart_dram_write_we `endif ),
-    .uart_dram_write_addr_i ( `ifdef GENESYS2 32'b0 `else uart_dram_write_addr `endif ),
-    .uart_dram_write_data_i ( `ifdef GENESYS2 32'b0 `else uart_dram_write_data `endif ),
-    .uart_dram_write_rst_i  ( 0 ),
-
-    // PHY interfaces
-    .ddr3_ck_p    ( ddr3_ck_p ),
-    .ddr3_ck_n    ( ddr3_ck_n ),
-    .ddr3_dq      ( ddr3_dq ),
-    .ddr3_dqs_n   ( ddr3_dqs_n ),
-    .ddr3_dqs_p   ( ddr3_dqs_p ),
-    .ddr3_addr    ( ddr3_addr ),
-    .ddr3_ba      ( ddr3_ba ),
-    .ddr3_ras_n   ( ddr3_ras_n ),
-    .ddr3_cas_n   ( ddr3_cas_n ),
-    .ddr3_we_n    ( ddr3_we_n ),
-    .ddr3_reset_n ( ddr3_reset_n ),
-    .ddr3_cke     ( ddr3_cke ),
-    .ddr3_cs_n    ( ddr3_cs_n ),
-    .ddr3_dm      ( ddr3_dm ),
-    .ddr3_odt     ( ddr3_odt ),
-
-    // DRAM AXI interface
+    .sys_rst_i    ( sys_rst ),
+    .soc_resetn_i ( rst_n   ),
+    .soc_clk_i    ( soc_clk ),
+    .dram_clk_i   ( sys_clk ),
     .soc_req_i    ( axi_llc_mst_req ),
-    .soc_rsp_o    ( axi_llc_mst_rsp )
+    .soc_rsp_o    ( axi_llc_mst_rsp ),
+    .*
+  );
+`endif
+
+  //////////////////
+  // Cheshire SoC //
+  //////////////////
+
+  cheshire_soc #(
+    .Cfg                ( FPGACfg ),
+    .ExtHartinfo        ( '0 ),
+    .axi_ext_llc_req_t  ( axi_llc_req_t ),
+    .axi_ext_llc_rsp_t  ( axi_llc_rsp_t ),
+    .axi_ext_mst_req_t  ( axi_mst_req_t ),
+    .axi_ext_mst_rsp_t  ( axi_mst_rsp_t ),
+    .axi_ext_slv_req_t  ( axi_slv_req_t ),
+    .axi_ext_slv_rsp_t  ( axi_slv_rsp_t ),
+    .reg_ext_req_t      ( reg_req_t ),
+    .reg_ext_rsp_t      ( reg_rsp_t )
+  ) i_cheshire_soc (
+    .clk_i              ( soc_clk ),
+    .rst_ni             ( rst_n   ),
+    .test_mode_i        ( test_mode_i ),
+    .boot_mode_i        ( boot_mode   ),
+    .rtc_i              ( rtc_clk_q       ),
+    .axi_llc_mst_req_o  ( axi_llc_mst_req ),
+    .axi_llc_mst_rsp_i  ( axi_llc_mst_rsp ),
+    .axi_ext_mst_req_i  ( '0 ),
+    .axi_ext_mst_rsp_o  ( ),
+    .axi_ext_slv_req_o  ( ),
+    .axi_ext_slv_rsp_i  ( '0 ),
+    .reg_ext_slv_req_o  ( ),
+    .reg_ext_slv_rsp_i  ( '0 ),
+    .intr_ext_i         ( '0 ),
+    .intr_ext_o         ( ),
+    .xeip_ext_o         ( ),
+    .mtip_ext_o         ( ),
+    .msip_ext_o         ( ),
+    .dbg_active_o       ( ),
+    .dbg_ext_req_o      ( ),
+    .dbg_ext_unavail_i  ( '0 ),
+    .slink_rcv_clk_i    ( 1'b1 ),
+    .slink_rcv_clk_o    ( ),
+    .slink_i            ( '0 ),
+    .slink_o            ( ),
+`ifdef USE_JTAG
+    .jtag_tck_i,
+    .jtag_trst_ni,
+    .jtag_tms_i,
+    .jtag_tdi_i,
+    .jtag_tdo_o,
+    // TODO: connect to the tdo pad
+    .jtag_tdo_oe_o      ( ),
+`endif
+    .i2c_sda_o          ( i2c_sda_soc_out ),
+    .i2c_sda_i          ( i2c_sda_soc_in  ),
+    .i2c_sda_en_o       ( i2c_sda_en      ),
+    .i2c_scl_o          ( i2c_scl_soc_out ),
+    .i2c_scl_i          ( i2c_scl_soc_in  ),
+    .i2c_scl_en_o       ( i2c_scl_en      ),
+    .spih_sck_o         ( spi_sck_soc     ),
+    .spih_sck_en_o      ( spi_sck_en      ),
+    .spih_csb_o         ( spi_cs_soc      ),
+    .spih_csb_en_o      ( spi_cs_en       ),
+    .spih_sd_o          ( spi_sd_soc_out  ),
+    .spih_sd_en_o       ( spi_sd_en       ),
+    .spih_sd_i          ( spi_sd_soc_in   ),
+`ifdef USE_VGA
+    .vga_hsync_o,
+    .vga_vsync_o,
+    .vga_red_o,
+    .vga_green_o,
+    .vga_blue_o,
+`endif
+    .uart_tx_o,
+    .uart_rx_i,
+    .usb_clk_i          ( usb_clk ),
+    .usb_rst_ni         ( rst_n ), // Technically should sync to `usb_clk`, but pulse is long enough
+    .usb_dm_i,
+    .usb_dm_o,
+    .usb_dm_oe_o,
+    .usb_dp_i,
+    .usb_dp_o,
+    .usb_dp_oe_o
   );
 
 endmodule

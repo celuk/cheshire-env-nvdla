@@ -216,7 +216,11 @@ module dram_wrapper #(
   ////////////////////////
 
   `ifdef GENESYS2
-  // For GENESYS2: intermediate signals between UART MUX and CDC (soc_clk_i domain)
+  // For MIG targets: intermediate signals between UART MUX and CDC (soc_clk_i domain)
+  axi_dw_iw_req_t  pre_cdc_req;
+  axi_dw_iw_resp_t pre_cdc_rsp;
+  `elsif ZC706_MIG
+  // For MIG targets: intermediate signals between UART MUX and CDC (soc_clk_i domain)
   axi_dw_iw_req_t  pre_cdc_req;
   axi_dw_iw_resp_t pre_cdc_rsp;
   `endif
@@ -235,6 +239,9 @@ module dram_wrapper #(
       .src_clk_i  ( soc_clk_i    ),
       .src_rst_ni ( soc_resetn_i ),
       `ifdef GENESYS2
+      .src_req_i  ( pre_cdc_req ),
+      .src_resp_o ( pre_cdc_rsp ),
+      `elsif ZC706_MIG
       .src_req_i  ( pre_cdc_req ),
       .src_resp_o ( pre_cdc_rsp ),
       `else
@@ -514,6 +521,149 @@ module dram_wrapper #(
 
   assign dram_axi_clk = ui_clk;
   assign dram_rst_o   = ui_clk_sync_rst;
+
+  // ---------------------------------------------------------
+  // FPGA ROM Loader for testing DRAM
+  // ---------------------------------------------------------
+  logic [31:0] init_rom [0:255];
+  initial begin
+    $readmemh("../../../cheshire/sw/tests/helloworld.dram.hex", init_rom);
+  end
+
+  logic [2:0] calib_sync;
+  always_ff @(posedge soc_clk_i) begin
+    if (!soc_resetn_i) calib_sync <= '0;
+    else calib_sync <= {calib_sync[1:0], init_calib_complete};
+  end
+  wire calib_done = calib_sync[2];
+
+  logic [8:0] rom_idx;
+  logic rom_loading;
+  logic rom_we;
+  logic [31:0] rom_addr;
+  logic [31:0] rom_data;
+
+  typedef enum logic [2:0] { U_IDLE, U_AR, U_R, U_AW, U_W, U_B } uart_st_t;
+  uart_st_t u_st;
+
+  reg [29:0] u_addr;
+  reg [63:0] u_wdata;
+  reg [31:0] u_new_data;
+  reg        u_upper;
+
+  always_ff @(posedge soc_clk_i) begin
+    if (!soc_resetn_i) begin
+      rom_idx <= '0;
+      rom_loading <= 1'b1;
+      rom_we <= 1'b0;
+      rom_addr <= 32'h8000_0000;
+      rom_data <= '0;
+    end else begin
+      rom_we <= 1'b0;
+      if (calib_done && rom_loading) begin
+        // Wait for UART FSM to be idle and not currently writing
+        if (u_st == U_IDLE && !rom_we) begin
+          if (rom_idx == 9'd216) begin
+            rom_loading <= 1'b0; // Done loading
+          end else begin
+            rom_we <= 1'b1;
+            rom_addr <= 32'h8000_0000 + {21'b0, rom_idx, 2'b00};
+            rom_data <= init_rom[rom_idx];
+            rom_idx <= rom_idx + 1;
+          end
+        end
+      end
+    end
+  end
+
+  wire internal_we = uart_dram_write_we_i | rom_we;
+  wire [31:0] internal_addr = rom_we ? rom_addr : uart_dram_write_addr_i;
+  wire [31:0] internal_data = rom_we ? rom_data : uart_dram_write_data_i;
+
+  always_ff @(posedge soc_clk_i) begin
+    if (!soc_resetn_i) begin
+      u_st       <= U_IDLE;
+      u_addr     <= '0;
+      u_wdata    <= '0;
+      u_new_data <= '0;
+      u_upper    <= '0;
+    end else begin
+      case (u_st)
+        U_IDLE: begin
+          if (internal_we) begin
+            // 8-byte aligned address for RMW
+            u_addr     <= {internal_addr[29:3], 3'b000};
+            u_new_data <= internal_data;
+            u_upper    <= internal_addr[2];
+            u_st       <= U_AR;
+          end
+        end
+        // RMW read phase: issue AXI read
+        U_AR: begin
+          if (pre_cdc_rsp.ar_ready)
+            u_st <= U_R;
+        end
+        // RMW read phase: capture read data & merge with new 32-bit word
+        U_R: begin
+          if (pre_cdc_rsp.r_valid) begin
+            if (u_upper)
+              u_wdata <= {u_new_data, pre_cdc_rsp.r.data[31:0]};
+            else
+              u_wdata <= {pre_cdc_rsp.r.data[63:32], u_new_data};
+            u_st <= U_AW;
+          end
+        end
+        // RMW write phase: issue AXI write address
+        U_AW: begin
+          if (pre_cdc_rsp.aw_ready)
+            u_st <= U_W;
+        end
+        // RMW write phase: issue AXI write data (full 64-bit, all strobes)
+        U_W: begin
+          if (pre_cdc_rsp.w_ready)
+            u_st <= U_B;
+        end
+        // RMW write phase: wait for write response
+        U_B: begin
+          if (pre_cdc_rsp.b_valid)
+            u_st <= U_IDLE;
+        end
+      endcase
+    end
+  end
+
+  wire uart_active = (u_st != U_IDLE);
+
+  // MUX: UART FSM or SoC (via IW converter) -> CDC input (all on soc_clk_i)
+  always_comb begin
+    if (uart_active) begin
+      pre_cdc_req          = '0;
+      // Read address channel (RMW read phase)
+      pre_cdc_req.ar_valid = (u_st == U_AR);
+      pre_cdc_req.ar.addr  = SocAddrWidth'(u_addr);
+      pre_cdc_req.ar.size  = 3'd3;  // 8 bytes
+      pre_cdc_req.ar.burst = 2'd1;  // INCR
+      // Read data channel
+      pre_cdc_req.r_ready  = (u_st == U_R);
+      // Write address channel (RMW write phase)
+      pre_cdc_req.aw_valid = (u_st == U_AW);
+      pre_cdc_req.aw.addr  = SocAddrWidth'(u_addr);
+      pre_cdc_req.aw.size  = 3'd3;  // 8 bytes
+      pre_cdc_req.aw.burst = 2'd1;  // INCR
+      // Write data channel — full 64-bit word, all strobes enabled
+      pre_cdc_req.w_valid  = (u_st == U_W);
+      pre_cdc_req.w.data   = u_wdata;
+      pre_cdc_req.w.strb   = 8'hFF;
+      pre_cdc_req.w.last   = 1'b1;
+      // Write response channel
+      pre_cdc_req.b_ready  = (u_st == U_B);
+    end else begin
+      pre_cdc_req = iresizer_cdc_req;
+    end
+  end
+
+  // Route CDC responses back to IW converter
+  assign iresizer_cdc_rsp = pre_cdc_rsp;
 
   // MIG 7 Series — directly connected to CDC output (ui_clk domain)
   mig_7series_0 u_mig_7series_0 (

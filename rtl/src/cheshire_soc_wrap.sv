@@ -12,14 +12,22 @@ module cheshire_soc_wrap import cheshire_pkg::*;
   input  wire clk_p,
   input  wire clk_n,
   `elsif GENESYS2
-  input  wire clk_p,
-  input  wire clk_n,
+  input  wire sys_clk_p,
+  input  wire sys_clk_n,
   `else
   input wire clk_i,
   `endif
+  `ifdef GENESYS2
+  input  logic sys_resetn,
+  `else
   input  logic rst_ni,
+  `endif
 
+  `ifdef GENESYS2
+  input  wire uart_rx_i,
+  `else
   input  wire program_rx_i,
+  `endif
   output wire prog_mode_led_o,
   output wire init_calib_done_o,
    
@@ -65,6 +73,13 @@ module cheshire_soc_wrap import cheshire_pkg::*;
   `endif
 );
 
+  `ifdef GENESYS2
+  wire rst_ni = sys_resetn;
+  wire program_rx_int = uart_rx_i;
+  `else
+  wire program_rx_int = program_rx_i;
+  `endif
+
   logic [1:0] boot_mode_i = 2'b00;
   logic test_mode = 0;
   // JTAG
@@ -92,12 +107,14 @@ module cheshire_soc_wrap import cheshire_pkg::*;
   logic [SlinkNumChan-1:0][SlinkNumLanes-1:0]  slink_i;
   logic [SlinkNumChan-1:0][SlinkNumLanes-1:0]  slink_o;
 
+  `ifndef GENESYS2
   logic system_reset_o;
   logic uart_dram_write_we;
   logic [31:0] uart_dram_write_addr;
   logic [31:0] uart_dram_write_data;
   logic uart_dram_write_rst;
   logic uart_dram_mode;
+  `endif
 
   `ifdef BASYS3
      wire clkwiz_o;
@@ -136,60 +153,58 @@ module cheshire_soc_wrap import cheshire_pkg::*;
      wire clkwiz_o = clk_i;
      wire rst_n = rst_ni & system_reset_o & !uart_dram_mode & pll_locked; // & !uart_dram_mode
   `elsif GENESYS2
-      wire clk100 = 1'b0;
-      wire clk_ddr = 1'b0;
-      wire clk_ref = 1'b0;
-      wire clk_ddr_dqs = 1'b0;
-     wire clk_i;
+      wire clk100 = '0;
+      wire clk_ddr = '0;
+      wire clk_ref = '0;
+      wire clk_ddr_dqs = '0;
+      wire soc_clk;
+      wire usb_clk;
      
      wire sys_clk;
      IBUFDS #(
        .IBUF_LOW_PWR ("FALSE")
      ) i_bufds_sys_clk (
-       .I  ( clk_p ),
-       .IB ( clk_n ),
+       .I  ( sys_clk_p ),
+       .IB ( sys_clk_n ),
        .O  ( sys_clk   )
      );
 
-     logic [1:0] soc_clk_div_q;
-     always_ff @(posedge sys_clk) begin
-       soc_clk_div_q <= soc_clk_div_q + 1'b1;
-     end
-
-     wire soc_clk_div = soc_clk_div_q[1];
-     BUFG i_soc_clk_bufg (
-       .I ( soc_clk_div ),
-       .O ( clk_i )
+     clk_wiz_0 i_clkwiz (
+       .clk_in1  ( sys_clk ),
+       .reset    ( '0 ),
+       .locked   ( ),
+       .clk_50   ( soc_clk ),
+       .clk_48   ( ),
+       .clk_20   ( ),
+       .clk_10   ( )
      );
+     wire clkwiz_o = soc_clk;
 
-     wire clkwiz_o = clk_i;
-
-    wire async_rst_n = rst_ni & system_reset_o & !uart_dram_mode;
+     logic sys_rst;
+     assign sys_rst = ~sys_resetn;
      
-     // Use rstgen for safe reset synchronization
+     // Cheshire-style reset synchronization
      wire rst_n;
      rstgen i_rstgen (
-       .clk_i       ( clkwiz_o    ),
-       .rst_ni      ( async_rst_n ),
-       .test_mode_i ( 1'b0        ),
-       .rst_no      ( rst_n       ),
-       .init_no     (             )
+       .clk_i        ( soc_clk  ),
+       .rst_ni       ( ~sys_rst ),
+       .test_mode_i  ( test_mode ),
+       .rst_no       ( rst_n    ),
+       .init_no      (          )
      );
 
-     // For GENESYS2, MIG needs the raw 200 MHz IBUFDS output (sys_clk),
-     // NOT a PLL-derived clock. The MIG has its own internal MMCM;
-     // cascading PLLs causes jitter issues and calibration failures.
-     wire dram_ref_clk = sys_clk; // Use the raw buffered clock
+      wire dram_ref_clk = sys_clk;
   `else
      wire clkwiz_o = clk_i;
      wire rst_n = rst_ni & system_reset_o;
   `endif
 
+  `ifndef GENESYS2
   uart_programmer up_dram (
      .clk_i(clkwiz_o),
      .rst_ni(rst_ni `ifdef BASYS3 & clkwiz_locked `endif) // pll_locked
      
-     ,.program_rx_i(program_rx_i)
+      ,.program_rx_i(program_rx_int)
      ,.system_reset_o(system_reset_o)
      ,.prog_mode_led_o(prog_mode_led_o)
 
@@ -199,6 +214,9 @@ module cheshire_soc_wrap import cheshire_pkg::*;
      ,.dram_write_rst_o(uart_dram_write_rst)
      ,.dram_mode_o(uart_dram_mode)
   );
+    `else
+    assign prog_mode_led_o = 1'b0;
+    `endif
   
   logic rtc;
   `ifdef SIM
@@ -302,7 +320,7 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     .jtag_tdo_o         ( jtag_tdo    ),
     .jtag_tdo_oe_o      ( ),
     .uart_tx_o          ( uart_tx_o ),
-    .uart_rx_i          ( program_rx_i ),
+    .uart_rx_i          ( program_rx_int ),
     .uart_rts_no        ( ),
     .uart_dtr_no        ( ),
     .uart_cts_ni        ( 1'b0 ),
@@ -464,8 +482,8 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     .axi_soc_r_chan_t  ( axi_llc_r_chan_t  ),
     .axi_soc_req_t     ( axi_llc_req_t     ),
     .axi_soc_resp_t    ( axi_llc_rsp_t     )
-  ) dram_controller (
-    .soc_resetn_i ( rst_n || uart_dram_mode ),
+  ) i_dram_wrapper (
+    .soc_resetn_i ( rst_n `ifndef GENESYS2 || uart_dram_mode `endif ),
     .soc_clk_i    ( clkwiz_o ),
 
     .clk100       ( clk100 ),
@@ -479,9 +497,9 @@ module cheshire_soc_wrap import cheshire_pkg::*;
 
     .init_calib_done_o      ( init_calib_done_o ),
 
-    .uart_dram_write_we_i   ( uart_dram_write_we ),
-    .uart_dram_write_addr_i ( uart_dram_write_addr ),
-    .uart_dram_write_data_i ( uart_dram_write_data ),
+    .uart_dram_write_we_i   ( `ifdef GENESYS2 1'b0 `else uart_dram_write_we `endif ),
+    .uart_dram_write_addr_i ( `ifdef GENESYS2 32'b0 `else uart_dram_write_addr `endif ),
+    .uart_dram_write_data_i ( `ifdef GENESYS2 32'b0 `else uart_dram_write_data `endif ),
     .uart_dram_write_rst_i  ( 0 ),
 
     // PHY interfaces

@@ -434,7 +434,7 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     wire [7:0] ddr3_dqs_n;
     wire [63:0] ddr3_dq;
 
-    ddr3 ddr3_dut0 (
+    ddr3_model ddr3_dut0 (
       .rst_n  (ddr3_reset_n),
       .ck     (ddr3_ck_p),
       .ck_n   (ddr3_ck_n),
@@ -453,7 +453,7 @@ module cheshire_soc_wrap import cheshire_pkg::*;
       .odt    (ddr3_odt)
     );
 
-    ddr3 ddr3_dut1 (
+    ddr3_model ddr3_dut1 (
       .rst_n  (ddr3_reset_n),
       .ck     (ddr3_ck_p),
       .ck_n   (ddr3_ck_n),
@@ -472,7 +472,7 @@ module cheshire_soc_wrap import cheshire_pkg::*;
       .odt    (ddr3_odt)
     );
 
-    ddr3 ddr3_dut2 (
+    ddr3_model ddr3_dut2 (
       .rst_n  (ddr3_reset_n),
       .ck     (ddr3_ck_p),
       .ck_n   (ddr3_ck_n),
@@ -491,7 +491,7 @@ module cheshire_soc_wrap import cheshire_pkg::*;
       .odt    (ddr3_odt)
     );
 
-    ddr3 ddr3_dut3 (
+    ddr3_model ddr3_dut3 (
       .rst_n  (ddr3_reset_n),
       .ck     (ddr3_ck_p),
       .ck_n   (ddr3_ck_n),

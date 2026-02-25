@@ -196,11 +196,20 @@
 
 //Memory Details
 
+`include "header.vh"
+
+`ifdef GENESYS2
 `define x4Gb
 
 `define sg107E
 
 `define x16
+
+`else // ZC706
+`define x1Gb
+`define sg125
+`define x16 // x8 in generated mig model?? maybe I need to use 8 ddr chips for this
+`endif
 
 module ddr3_model (
 

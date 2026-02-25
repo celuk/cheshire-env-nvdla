@@ -19,7 +19,8 @@ module dram_wrapper #(
   parameter type axi_soc_ar_chan_t = logic,
   parameter type axi_soc_r_chan_t  = logic,
   parameter type axi_soc_req_t     = logic,
-  parameter type axi_soc_resp_t    = logic
+  parameter type axi_soc_resp_t    = logic,
+  parameter int unsigned InitWords = 1024
 ) (
   // System reset
   input  logic  sys_rst_i,
@@ -98,6 +99,8 @@ module dram_wrapper #(
   // Clock on which is clocked the DRAM AXI
   logic dram_axi_clk;
   logic dram_rst_o;
+  logic dram_init_calib_complete;
+  logic dram_init_done_q;
 
   // Signals before resizing
   axi_soc_req_t  soc_dresizer_req;
@@ -108,8 +111,97 @@ module dram_wrapper #(
   axi_dw_resp_t dresizer_iresizer_rsp;
 
   // Signals after id width resizing
-  axi_dw_iw_req_t  iresizer_cdc_req, cdc_dram_req;
-  axi_dw_iw_resp_t iresizer_cdc_rsp, cdc_dram_rsp;
+  axi_dw_iw_req_t  iresizer_cdc_req, cdc_dram_req, init_dram_req, dram_req;
+  axi_dw_iw_resp_t iresizer_cdc_rsp, cdc_dram_rsp, init_dram_rsp, dram_rsp;
+
+  logic soc_path_resetn;
+
+  localparam int unsigned DramWordBytes = cfg.DataWidth / 8;
+  localparam int unsigned DramSizeVal   = $clog2(DramWordBytes);
+
+  logic [31:0] init_rom [0:InitWords-1];
+  initial $readmemh("../../../cheshire/sw/tests/helloworld.dram.hex", init_rom);
+
+  typedef enum logic [1:0] {
+    InitIdle,
+    InitSend,
+    InitWaitB,
+    InitDone
+  } init_state_e;
+  init_state_e init_state_q;
+  logic [$clog2(InitWords)-1:0] init_idx_q;
+  logic init_aw_done_q, init_w_done_q;
+
+  assign soc_path_resetn = soc_resetn_i & dram_init_done_q;
+
+  always_ff @(posedge dram_axi_clk or posedge dram_rst_o) begin
+    if (dram_rst_o) begin
+      init_state_q    <= InitIdle;
+      init_idx_q      <= '0;
+      init_aw_done_q  <= 1'b0;
+      init_w_done_q   <= 1'b0;
+      dram_init_done_q <= 1'b0;
+    end else begin
+      case (init_state_q)
+        InitIdle: begin
+          if (dram_init_calib_complete) begin
+            init_state_q <= InitSend;
+          end
+        end
+        InitSend: begin
+          if (init_dram_rsp.aw_ready) init_aw_done_q <= 1'b1;
+          if (init_dram_rsp.w_ready)  init_w_done_q  <= 1'b1;
+          if ((init_aw_done_q || init_dram_rsp.aw_ready) &&
+              (init_w_done_q  || init_dram_rsp.w_ready)) begin
+            init_aw_done_q <= 1'b0;
+            init_w_done_q  <= 1'b0;
+            init_state_q   <= InitWaitB;
+          end
+        end
+        InitWaitB: begin
+          if (init_dram_rsp.b_valid) begin
+            if (init_idx_q == InitWords - 1) begin
+              init_state_q     <= InitDone;
+              dram_init_done_q <= 1'b1;
+            end else begin
+              init_idx_q    <= init_idx_q + 1'b1;
+              init_state_q  <= InitSend;
+            end
+          end
+        end
+        InitDone: begin
+          dram_init_done_q <= 1'b1;
+        end
+      endcase
+    end
+  end
+
+  always_comb begin
+    init_dram_req = '0;
+    init_dram_req.aw.id    = '0;
+    init_dram_req.aw.addr  = init_idx_q * DramWordBytes;
+    init_dram_req.aw.len   = '0;
+    init_dram_req.aw.size  = DramSizeVal;
+    init_dram_req.aw.burst = 2'b01;
+    init_dram_req.aw.lock  = '0;
+    init_dram_req.aw.cache = '0;
+    init_dram_req.aw.prot  = '0;
+    init_dram_req.aw.qos   = '0;
+    init_dram_req.aw_valid = (init_state_q == InitSend) && !init_aw_done_q;
+
+    init_dram_req.w.data   = init_rom[init_idx_q];
+    init_dram_req.w.strb   = '1;
+    init_dram_req.w.last   = 1'b1;
+    init_dram_req.w_valid  = (init_state_q == InitSend) && !init_w_done_q;
+
+    init_dram_req.b_ready  = (init_state_q == InitWaitB);
+    init_dram_req.ar_valid = 1'b0;
+    init_dram_req.r_ready  = 1'b0;
+  end
+
+  assign dram_req      = dram_init_done_q ? cdc_dram_req : init_dram_req;
+  assign cdc_dram_rsp  = dram_init_done_q ? dram_rsp : '0;
+  assign init_dram_rsp = dram_rsp;
 
   // Entry signals
   assign soc_dresizer_req = soc_req_i;
@@ -141,7 +233,7 @@ module dram_wrapper #(
     .axi_slv_resp_t       ( axi_soc_resp_t )
   ) i_axi_dw_converter (
     .clk_i      ( soc_clk_i    ),
-    .rst_ni     ( soc_resetn_i ),
+    .rst_ni     ( soc_path_resetn ),
     .slv_req_i  ( soc_dresizer_req ),
     .slv_resp_o ( soc_dresizer_rsp ),
     .mst_req_o  ( dresizer_iresizer_req ),
@@ -170,7 +262,7 @@ module dram_wrapper #(
     .mst_resp_t             ( axi_dw_iw_resp_t )
   ) i_axi_iw_converter (
     .clk_i      ( soc_clk_i    ),
-    .rst_ni     ( soc_resetn_i ),
+    .rst_ni     ( soc_path_resetn ),
     .slv_req_i  ( dresizer_iresizer_req ),
     .slv_resp_o ( dresizer_iresizer_rsp ),
     .mst_req_o  ( iresizer_cdc_req ),
@@ -193,7 +285,7 @@ module dram_wrapper #(
       .LogDepth   ( cfg.CdcLogDepth )
     ) i_axi_cdc_mig (
       .src_clk_i  ( soc_clk_i    ),
-      .src_rst_ni ( soc_resetn_i ),
+      .src_rst_ni ( soc_path_resetn ),
       .src_req_i  ( iresizer_cdc_req ),
       .src_resp_o ( iresizer_cdc_rsp ),
       .dst_clk_i  ( dram_axi_clk ),
@@ -212,12 +304,14 @@ module dram_wrapper #(
 
   assign cdc_dram_rsp.b.user = '0;
   assign cdc_dram_rsp.r.user = '0;
+  assign init_dram_rsp.b.user = '0;
+  assign init_dram_rsp.r.user = '0;
 
   logic [cfg.AddrWidth-1:0] cdc_dram_req_aw_addr;
   logic [cfg.AddrWidth-1:0] cdc_dram_req_ar_addr;
 
-  assign cdc_dram_req_aw_addr = cdc_dram_req.aw.addr[cfg.AddrWidth-1:0];
-  assign cdc_dram_req_ar_addr = cdc_dram_req.ar.addr[cfg.AddrWidth-1:0];
+  assign cdc_dram_req_aw_addr = dram_req.aw.addr[cfg.AddrWidth-1:0];
+  assign cdc_dram_req_ar_addr = dram_req.ar.addr[cfg.AddrWidth-1:0];
 
   /////////////////////////
   //  Instiantiate DDR4  //
@@ -233,43 +327,43 @@ module dram_wrapper #(
     .c0_ddr4_ui_clk             ( dram_axi_clk ),
     .c0_ddr4_ui_clk_sync_rst    ( dram_rst_o   ),
     // AXI
-    .c0_ddr4_s_axi_awid         ( cdc_dram_req.aw.id    ),
+    .c0_ddr4_s_axi_awid         ( dram_req.aw.id    ),
     .c0_ddr4_s_axi_awaddr       ( cdc_dram_req_aw_addr  ),
-    .c0_ddr4_s_axi_awlen        ( cdc_dram_req.aw.len   ),
-    .c0_ddr4_s_axi_awsize       ( cdc_dram_req.aw.size  ),
-    .c0_ddr4_s_axi_awburst      ( cdc_dram_req.aw.burst ),
-    .c0_ddr4_s_axi_awlock       ( cdc_dram_req.aw.lock  ),
-    .c0_ddr4_s_axi_awcache      ( cdc_dram_req.aw.cache ),
-    .c0_ddr4_s_axi_awprot       ( cdc_dram_req.aw.prot  ),
-    .c0_ddr4_s_axi_awqos        ( cdc_dram_req.aw.qos   ),
-    .c0_ddr4_s_axi_awvalid      ( cdc_dram_req.aw_valid ),
-    .c0_ddr4_s_axi_awready      ( cdc_dram_rsp.aw_ready ),
-    .c0_ddr4_s_axi_wdata        ( cdc_dram_req.w.data   ),
-    .c0_ddr4_s_axi_wstrb        ( cdc_dram_req.w.strb   ),
-    .c0_ddr4_s_axi_wlast        ( cdc_dram_req.w.last   ),
-    .c0_ddr4_s_axi_wvalid       ( cdc_dram_req.w_valid  ),
-    .c0_ddr4_s_axi_wready       ( cdc_dram_rsp.w_ready  ),
-    .c0_ddr4_s_axi_bready       ( cdc_dram_req.b_ready  ),
-    .c0_ddr4_s_axi_bid          ( cdc_dram_rsp.b.id     ),
-    .c0_ddr4_s_axi_bresp        ( cdc_dram_rsp.b.resp   ),
-    .c0_ddr4_s_axi_bvalid       ( cdc_dram_rsp.b_valid  ),
-    .c0_ddr4_s_axi_arid         ( cdc_dram_req.ar.id    ),
+    .c0_ddr4_s_axi_awlen        ( dram_req.aw.len   ),
+    .c0_ddr4_s_axi_awsize       ( dram_req.aw.size  ),
+    .c0_ddr4_s_axi_awburst      ( dram_req.aw.burst ),
+    .c0_ddr4_s_axi_awlock       ( dram_req.aw.lock  ),
+    .c0_ddr4_s_axi_awcache      ( dram_req.aw.cache ),
+    .c0_ddr4_s_axi_awprot       ( dram_req.aw.prot  ),
+    .c0_ddr4_s_axi_awqos        ( dram_req.aw.qos   ),
+    .c0_ddr4_s_axi_awvalid      ( dram_req.aw_valid ),
+    .c0_ddr4_s_axi_awready      ( dram_rsp.aw_ready ),
+    .c0_ddr4_s_axi_wdata        ( dram_req.w.data   ),
+    .c0_ddr4_s_axi_wstrb        ( dram_req.w.strb   ),
+    .c0_ddr4_s_axi_wlast        ( dram_req.w.last   ),
+    .c0_ddr4_s_axi_wvalid       ( dram_req.w_valid  ),
+    .c0_ddr4_s_axi_wready       ( dram_rsp.w_ready  ),
+    .c0_ddr4_s_axi_bready       ( dram_req.b_ready  ),
+    .c0_ddr4_s_axi_bid          ( dram_rsp.b.id     ),
+    .c0_ddr4_s_axi_bresp        ( dram_rsp.b.resp   ),
+    .c0_ddr4_s_axi_bvalid       ( dram_rsp.b_valid  ),
+    .c0_ddr4_s_axi_arid         ( dram_req.ar.id    ),
     .c0_ddr4_s_axi_araddr       ( cdc_dram_req_ar_addr  ),
-    .c0_ddr4_s_axi_arlen        ( cdc_dram_req.ar.len   ),
-    .c0_ddr4_s_axi_arsize       ( cdc_dram_req.ar.size  ),
-    .c0_ddr4_s_axi_arburst      ( cdc_dram_req.ar.burst ),
-    .c0_ddr4_s_axi_arlock       ( cdc_dram_req.ar.lock  ),
-    .c0_ddr4_s_axi_arcache      ( cdc_dram_req.ar.cache ),
-    .c0_ddr4_s_axi_arprot       ( cdc_dram_req.ar.prot  ),
-    .c0_ddr4_s_axi_arqos        ( cdc_dram_req.ar.qos   ),
-    .c0_ddr4_s_axi_arvalid      ( cdc_dram_req.ar_valid ),
-    .c0_ddr4_s_axi_arready      ( cdc_dram_rsp.ar_ready ),
-    .c0_ddr4_s_axi_rready       ( cdc_dram_req.r_ready  ),
-    .c0_ddr4_s_axi_rid          ( cdc_dram_rsp.r.id     ),
-    .c0_ddr4_s_axi_rdata        ( cdc_dram_rsp.r.data   ),
-    .c0_ddr4_s_axi_rresp        ( cdc_dram_rsp.r.resp   ),
-    .c0_ddr4_s_axi_rlast        ( cdc_dram_rsp.r.last   ),
-    .c0_ddr4_s_axi_rvalid       ( cdc_dram_rsp.r_valid  ),
+    .c0_ddr4_s_axi_arlen        ( dram_req.ar.len   ),
+    .c0_ddr4_s_axi_arsize       ( dram_req.ar.size  ),
+    .c0_ddr4_s_axi_arburst      ( dram_req.ar.burst ),
+    .c0_ddr4_s_axi_arlock       ( dram_req.ar.lock  ),
+    .c0_ddr4_s_axi_arcache      ( dram_req.ar.cache ),
+    .c0_ddr4_s_axi_arprot       ( dram_req.ar.prot  ),
+    .c0_ddr4_s_axi_arqos        ( dram_req.ar.qos   ),
+    .c0_ddr4_s_axi_arvalid      ( dram_req.ar_valid ),
+    .c0_ddr4_s_axi_arready      ( dram_rsp.ar_ready ),
+    .c0_ddr4_s_axi_rready       ( dram_req.r_ready  ),
+    .c0_ddr4_s_axi_rid          ( dram_rsp.r.id     ),
+    .c0_ddr4_s_axi_rdata        ( dram_rsp.r.data   ),
+    .c0_ddr4_s_axi_rresp        ( dram_rsp.r.resp   ),
+    .c0_ddr4_s_axi_rlast        ( dram_rsp.r.last   ),
+    .c0_ddr4_s_axi_rvalid       ( dram_rsp.r_valid  ),
     // TODO: Shouldn't we map this to an external reg port?
     // AXI control
     .c0_ddr4_s_axi_ctrl_awvalid ( '0 ),
@@ -290,7 +384,7 @@ module dram_wrapper #(
     .c0_ddr4_s_axi_ctrl_rresp   ( ),
     .c0_ddr4_interrupt          ( ),
     // Others
-    .c0_init_calib_complete     ( ),
+    .c0_init_calib_complete     ( dram_init_calib_complete ),
     .addn_ui_clkout1            ( dram_clk_o ),
     .dbg_clk                    ( ),
     .dbg_bus                    ( ),
@@ -317,44 +411,44 @@ module dram_wrapper #(
     .app_ref_ack          ( ),
     .app_zq_ack           ( ),
     .aresetn              ( soc_resetn_i ),
-    .s_axi_awid           ( cdc_dram_req.aw.id    ),
+    .s_axi_awid           ( dram_req.aw.id    ),
     .s_axi_awaddr         ( cdc_dram_req_aw_addr  ),
-    .s_axi_awlen          ( cdc_dram_req.aw.len   ),
-    .s_axi_awsize         ( cdc_dram_req.aw.size  ),
-    .s_axi_awburst        ( cdc_dram_req.aw.burst ),
-    .s_axi_awlock         ( cdc_dram_req.aw.lock  ),
-    .s_axi_awcache        ( cdc_dram_req.aw.cache ),
-    .s_axi_awprot         ( cdc_dram_req.aw.prot  ),
-    .s_axi_awqos          ( cdc_dram_req.aw.qos   ),
-    .s_axi_awvalid        ( cdc_dram_req.aw_valid ),
-    .s_axi_awready        ( cdc_dram_rsp.aw_ready ),
-    .s_axi_wdata          ( cdc_dram_req.w.data   ),
-    .s_axi_wstrb          ( cdc_dram_req.w.strb   ),
-    .s_axi_wlast          ( cdc_dram_req.w.last   ),
-    .s_axi_wvalid         ( cdc_dram_req.w_valid  ),
-    .s_axi_wready         ( cdc_dram_rsp.w_ready  ),
-    .s_axi_bready         ( cdc_dram_req.b_ready  ),
-    .s_axi_bid            ( cdc_dram_rsp.b.id     ),
-    .s_axi_bresp          ( cdc_dram_rsp.b.resp   ),
-    .s_axi_bvalid         ( cdc_dram_rsp.b_valid  ),
-    .s_axi_arid           ( cdc_dram_req.ar.id    ),
+    .s_axi_awlen          ( dram_req.aw.len   ),
+    .s_axi_awsize         ( dram_req.aw.size  ),
+    .s_axi_awburst        ( dram_req.aw.burst ),
+    .s_axi_awlock         ( dram_req.aw.lock  ),
+    .s_axi_awcache        ( dram_req.aw.cache ),
+    .s_axi_awprot         ( dram_req.aw.prot  ),
+    .s_axi_awqos          ( dram_req.aw.qos   ),
+    .s_axi_awvalid        ( dram_req.aw_valid ),
+    .s_axi_awready        ( dram_rsp.aw_ready ),
+    .s_axi_wdata          ( dram_req.w.data   ),
+    .s_axi_wstrb          ( dram_req.w.strb   ),
+    .s_axi_wlast          ( dram_req.w.last   ),
+    .s_axi_wvalid         ( dram_req.w_valid  ),
+    .s_axi_wready         ( dram_rsp.w_ready  ),
+    .s_axi_bready         ( dram_req.b_ready  ),
+    .s_axi_bid            ( dram_rsp.b.id     ),
+    .s_axi_bresp          ( dram_rsp.b.resp   ),
+    .s_axi_bvalid         ( dram_rsp.b_valid  ),
+    .s_axi_arid           ( dram_req.ar.id    ),
     .s_axi_araddr         ( cdc_dram_req_ar_addr  ),
-    .s_axi_arlen          ( cdc_dram_req.ar.len   ),
-    .s_axi_arsize         ( cdc_dram_req.ar.size  ),
-    .s_axi_arburst        ( cdc_dram_req.ar.burst ),
-    .s_axi_arlock         ( cdc_dram_req.ar.lock  ),
-    .s_axi_arcache        ( cdc_dram_req.ar.cache ),
-    .s_axi_arprot         ( cdc_dram_req.ar.prot  ),
-    .s_axi_arqos          ( cdc_dram_req.ar.qos   ),
-    .s_axi_arvalid        ( cdc_dram_req.ar_valid ),
-    .s_axi_arready        ( cdc_dram_rsp.ar_ready ),
-    .s_axi_rready         ( cdc_dram_req.r_ready  ),
-    .s_axi_rid            ( cdc_dram_rsp.r.id     ),
-    .s_axi_rdata          ( cdc_dram_rsp.r.data   ),
-    .s_axi_rresp          ( cdc_dram_rsp.r.resp   ),
-    .s_axi_rlast          ( cdc_dram_rsp.r.last   ),
-    .s_axi_rvalid         ( cdc_dram_rsp.r_valid  ),
-    .init_calib_complete  ( ),
+    .s_axi_arlen          ( dram_req.ar.len   ),
+    .s_axi_arsize         ( dram_req.ar.size  ),
+    .s_axi_arburst        ( dram_req.ar.burst ),
+    .s_axi_arlock         ( dram_req.ar.lock  ),
+    .s_axi_arcache        ( dram_req.ar.cache ),
+    .s_axi_arprot         ( dram_req.ar.prot  ),
+    .s_axi_arqos          ( dram_req.ar.qos   ),
+    .s_axi_arvalid        ( dram_req.ar_valid ),
+    .s_axi_arready        ( dram_rsp.ar_ready ),
+    .s_axi_rready         ( dram_req.r_ready  ),
+    .s_axi_rid            ( dram_rsp.r.id     ),
+    .s_axi_rdata          ( dram_rsp.r.data   ),
+    .s_axi_rresp          ( dram_rsp.r.resp   ),
+    .s_axi_rlast          ( dram_rsp.r.last   ),
+    .s_axi_rvalid         ( dram_rsp.r_valid  ),
+    .init_calib_complete  ( dram_init_calib_complete ),
     .device_temp          ( ),
     // PHY
     .*

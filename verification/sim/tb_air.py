@@ -337,7 +337,7 @@ async def tair(dut):
     ## is not used now
 
     clk_ns = 20
-    baud_rate = 115200
+    baud_rate = 921600
 
     if hasattr(dut, "sys_clk_p") and hasattr(dut, "sys_clk_n"):
         clk_ns = 5

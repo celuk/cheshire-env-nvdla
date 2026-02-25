@@ -776,7 +776,7 @@ def run_test(simulator: str, test_file: Path, top_module: str, waves: bool, cfil
     submodule_dirs = [
         Path(SCRIPT_DIR / "../../nvdla/block-nvdla-sifive/vsrc/small"),
         Path(f"{VIVADO_PATH}/data/verilog/src/unisims"),
-        Path(f"{VIVADO_PATH}/data/verilog/src/xeclib")
+        Path(f"{VIVADO_PATH}/data/verilog/src/retarget")
     ]
 
     submodule_verilog_files = []

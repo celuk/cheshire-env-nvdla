@@ -105,6 +105,8 @@ module cheshire_soc_wrap import cheshire_pkg::*;
   logic [31:0] uart_dram_write_data;
   logic uart_dram_write_rst;
   logic uart_dram_mode;
+  logic mig_ui_clk;
+  logic mig_ui_clk_sync_rst;
 
   `ifdef BASYS3
      wire clkwiz_o;
@@ -138,7 +140,11 @@ module cheshire_soc_wrap import cheshire_pkg::*;
      (
         //.clk_in1_p(sys_clk_p),
         //.clk_in1_n(sys_clk_n)
+        `ifdef ZC706_MIG
+        .clk_in1(mig_ui_clk)
+        `else
         .clk_in1(sys_clk)
+        `endif
 
         ,.reset(~rst_ni)
 
@@ -171,7 +177,7 @@ module cheshire_soc_wrap import cheshire_pkg::*;
      );
 
      clk_wiz_0 u_pll (
-        .clk_in1(sys_clk),
+        .clk_in1(mig_ui_clk),
         //.clk_in1_p(sys_clk_p),
         //.clk_in1_n(sys_clk_n),
         .reset(~rst_ni),
@@ -186,10 +192,6 @@ module cheshire_soc_wrap import cheshire_pkg::*;
      wire clkwiz_o = clk_i;
      wire rst_n = rst_ni & system_reset_o & !uart_dram_mode & pll_locked;
 
-     // For GENESYS2, MIG needs the raw 200 MHz IBUFDS output (sys_clk),
-     // NOT a PLL-derived clock. The MIG has its own internal MMCM;
-     // cascading PLLs causes jitter issues and calibration failures.
-     wire dram_ref_clk = clk_ref; //sys_clk;
   `else
      wire clkwiz_o = clk_i;
      wire rst_n = rst_ni & system_reset_o;
@@ -570,14 +572,22 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     .soc_resetn_i ( (rst_ni & system_reset_o & pll_locked) || uart_dram_mode ),
     .soc_clk_i    ( clkwiz_o ),
 
+    `ifdef GENESYS2
+    .clk100       ( 1'b0 ),
+    .clk_ddr      ( sys_clk ),
+    .clk_ref      ( sys_clk ),
+    .clk_ddr_dqs  ( 1'b0 ),
+    `elsif ZC706_MIG
+    .clk100       ( 1'b0 ),
+    .clk_ddr      ( sys_clk ),
+    .clk_ref      ( sys_clk ),
+    .clk_ddr_dqs  ( 1'b0 ),
+    `else
     .clk100       ( clk100 ),
     .clk_ddr      ( clk_ddr ),
-    `ifdef GENESYS2
-    .clk_ref      ( dram_ref_clk ),  // Raw 200 MHz from IBUFDS for MIG
-    `else
     .clk_ref      ( clk_ref ),
-    `endif
     .clk_ddr_dqs  ( clk_ddr_dqs ),
+    `endif
     `ifdef ZC706
     .sys_clk_p    ( sys_clk_p ),
     .sys_clk_n    ( sys_clk_n ),
@@ -588,6 +598,9 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     .sys_clk_p    ( 1'b0 ),
     .sys_clk_n    ( 1'b0 ),
     `endif
+    .dram_sys_rst_i ( ~rst_ni ),
+    .ui_clk_o       ( mig_ui_clk ),
+    .ui_clk_sync_rst_o ( mig_ui_clk_sync_rst ),
 
     .uart_dram_write_we_i   ( uart_dram_write_we ),
     .uart_dram_write_addr_i ( uart_dram_write_addr ),

@@ -5,7 +5,7 @@ set_property IOSTANDARD LVDS [get_ports sys_clk_p]
 set_property PACKAGE_PIN G9 [get_ports sys_clk_n]
 set_property IOSTANDARD LVDS [get_ports sys_clk_n]
 create_clock -period 5.000 -name clk_200mhz_p [get_ports sys_clk_p]
-set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets u_pll/inst/clk_in1_clk_wiz_0]
+set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_nets u_pll/inst/clk_in1_clk_wiz_0]
 
 # PMOD1_5_LS
 #set_property PACKAGE_PIN AA20 [get_ports uart_rx_i]

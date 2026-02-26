@@ -287,7 +287,7 @@ module dram_wrapper #(
   // ---------------------------------------------------------
   logic [31:0] init_rom [0:255];
   initial begin
-    $readmemh("../../../cheshire/sw/tests/helloworld.dram.hex", init_rom);
+    $readmemh("/home/shc/projects/cheshire-env-nvdla/cheshire/sw/tests/helloworld.dram.hex", init_rom);
   end
 
   logic [2:0] calib_sync;
@@ -527,7 +527,7 @@ module dram_wrapper #(
   // ---------------------------------------------------------
   logic [31:0] init_rom [0:255];
   initial begin
-    $readmemh("../../../cheshire/sw/tests/helloworld.dram.hex", init_rom);
+    $readmemh("/home/shc/projects/cheshire-env-nvdla/cheshire/sw/tests/helloworld.dram.hex", init_rom);
   end
 
   logic [2:0] calib_sync;

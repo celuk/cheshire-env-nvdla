@@ -36,9 +36,6 @@ module dram_wrapper #(
   input  logic [31:0] uart_dram_write_data_i,
   input  logic        uart_dram_write_rst_i,
 
-  output logic        mig_ui_clk_o,
-  output logic        mig_mmcm_locked_o,
-
   // PHY interfaces
 
   output        ddr3_ck_p,
@@ -284,8 +281,6 @@ module dram_wrapper #(
 
   assign dram_axi_clk = ui_clk;
   assign dram_rst_o   = ui_clk_sync_rst;
-  assign mig_ui_clk_o = ui_clk;
-  assign mig_mmcm_locked_o = mmcm_locked;
 
   // ---------------------------------------------------------
   // FPGA ROM Loader for testing DRAM
@@ -526,8 +521,6 @@ module dram_wrapper #(
 
   assign dram_axi_clk = ui_clk;
   assign dram_rst_o   = ui_clk_sync_rst;
-  assign mig_ui_clk_o = ui_clk;
-  assign mig_mmcm_locked_o = mmcm_locked;
 
   // ---------------------------------------------------------
   // FPGA ROM Loader for testing DRAM
@@ -753,16 +746,15 @@ module dram_wrapper #(
     .s_axi_rready                   (cdc_dram_req.r_ready),
 
     // System Clock Ports
-    .sys_clk_p                      (sys_clk_p),
-    .sys_clk_n                      (sys_clk_n),
+    //.sys_clk_p                      (sys_clk_p),
+    //.sys_clk_n                      (sys_clk_n),
+    .sys_clk_i                      (clk_ref),
     .sys_rst                        (sys_rst_i)
   );
 
 `else
   assign dram_axi_clk = soc_clk_i;
   assign dram_rst_o   = ~soc_resetn_i;
-  assign mig_ui_clk_o = soc_clk_i;
-  assign mig_mmcm_locked_o = 1'b1;
 
   dram_controller_axi #(
     .AXI_ID_WIDTH  ( cfg.IdWidth ),

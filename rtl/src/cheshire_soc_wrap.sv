@@ -105,8 +105,6 @@ module cheshire_soc_wrap import cheshire_pkg::*;
   logic [31:0] uart_dram_write_data;
   logic uart_dram_write_rst;
   logic uart_dram_mode;
-  logic mig_ui_clk;
-  logic mig_mmcm_locked;
 
   `ifdef BASYS3
      wire clkwiz_o;
@@ -119,36 +117,28 @@ module cheshire_soc_wrap import cheshire_pkg::*;
      );
      wire rst_n = rst_ni & system_reset_o & clkwiz_locked;
   `elsif ZC706
-     `ifdef ZC706_MIG
-     wire pll_locked = mig_mmcm_locked;
-     wire clk100 = 1'b0;
-     wire clk_ddr = 1'b0;
-     wire clk_ref = 1'b0;
-     wire clk_ddr_dqs = 1'b0;
-
-     logic [1:0] soc_clk_div_q;
-     always_ff @(posedge mig_ui_clk, negedge rst_ni) begin
-       if (~rst_ni) begin
-         soc_clk_div_q <= '0;
-       end else begin
-         soc_clk_div_q <= soc_clk_div_q + 2'd1;
-       end
-     end
-
-     wire clkwiz_o = soc_clk_div_q[1];
-     wire rst_n = rst_ni & system_reset_o & !uart_dram_mode & pll_locked;
-     `else
      wire pll_locked;
      wire clk100;
      wire clk_ddr;
      wire clk_ref;
      wire clk_ddr_dqs;
      wire clk_i;
+
+     wire sys_clk;
+     IBUFDS #(
+       .IBUF_LOW_PWR ("FALSE")
+     ) i_bufds_sys_clk (
+       .I  ( sys_clk_p ),
+       .IB ( sys_clk_n ),
+       .O  ( sys_clk   )
+     );
+
      clk_wiz_0 u_pll
      //clk_wiz_1 u_pll
      (
-        .clk_in1_p(sys_clk_p),
-        .clk_in1_n(sys_clk_n)
+        //.clk_in1_p(sys_clk_p),
+        //.clk_in1_n(sys_clk_n)
+        .clk_in1(sys_clk)
 
         ,.reset(~rst_ni)
 
@@ -163,7 +153,6 @@ module cheshire_soc_wrap import cheshire_pkg::*;
 
      wire clkwiz_o = clk_i;
      wire rst_n = rst_ni & system_reset_o & !uart_dram_mode & pll_locked; // & !uart_dram_mode
-    `endif
   `elsif GENESYS2
      wire pll_locked;
      wire clk100;
@@ -578,11 +567,7 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     .axi_soc_req_t     ( axi_llc_req_t     ),
     .axi_soc_resp_t    ( axi_llc_rsp_t     )
   ) dram_controller (
-    `ifdef ZC706_MIG
-    .soc_resetn_i ( (rst_ni & system_reset_o) || uart_dram_mode ),
-    `else
     .soc_resetn_i ( (rst_ni & system_reset_o & pll_locked) || uart_dram_mode ),
-    `endif
     .soc_clk_i    ( clkwiz_o ),
 
     .clk100       ( clk100 ),
@@ -608,9 +593,6 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     .uart_dram_write_addr_i ( uart_dram_write_addr ),
     .uart_dram_write_data_i ( uart_dram_write_data ),
     .uart_dram_write_rst_i  ( 0 ),
-
-    .mig_ui_clk_o           ( mig_ui_clk ),
-    .mig_mmcm_locked_o      ( mig_mmcm_locked ),
 
     // PHY interfaces
     .ddr3_ck_p    ( ddr3_ck_p ),

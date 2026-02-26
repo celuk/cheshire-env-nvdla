@@ -142,9 +142,17 @@ buart:
 jtag:
 	/media/shc/0EDEBC4906059163/tools/riscv-openocd/src/openocd -f verification/jtag/debug_soc.cfg
 
+.PHONY: jtag_g2
+jtag_g2:
+	/mnt/c/Users/2640084/Downloads/riscv-openocd-built/riscv-openocd/src/openocd -f verification/jtag/debug_soc_genesys2.cfg
+
 PHONY: gdb
 gdb:
 	/home/shc/projects/cheshire-linux-nvdla/riscv-toolchain-custom/_install/bin/riscv64-unknown-linux-gnu-gdb /home/shc/projects/cheshire-linux-nvdla/riscv-linux-port/vmlinux -ex "target remote :3333"
+
+PHONY: gdb_g2
+gdb_g2:
+	gdb-multiarch -ex "target remote :3333"
 
 .PHONY: gdb_cmd
 gdb_cmd:

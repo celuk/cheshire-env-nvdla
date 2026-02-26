@@ -101,7 +101,7 @@ module mig_7series_0 (
   output            app_zq_ack,
   // Slave Interface Write Address Ports
   input [3:0]           s_axi_awid,
-  input [31:0]         s_axi_awaddr,
+  input [29:0]         s_axi_awaddr,
   input [7:0]           s_axi_awlen,
   input [2:0]           s_axi_awsize,
   input [1:0]           s_axi_awburst,
@@ -112,8 +112,8 @@ module mig_7series_0 (
   input         s_axi_awvalid,
   output            s_axi_awready,
   // Slave Interface Write Data Ports
-  input [511:0]         s_axi_wdata,
-  input [63:0]         s_axi_wstrb,
+  input [63:0]         s_axi_wdata,
+  input [7:0]         s_axi_wstrb,
   input         s_axi_wlast,
   input         s_axi_wvalid,
   output            s_axi_wready,
@@ -124,7 +124,7 @@ module mig_7series_0 (
   output            s_axi_bvalid,
   // Slave Interface Read Address Ports
   input [3:0]           s_axi_arid,
-  input [31:0]         s_axi_araddr,
+  input [29:0]         s_axi_araddr,
   input [7:0]           s_axi_arlen,
   input [2:0]           s_axi_arsize,
   input [1:0]           s_axi_arburst,
@@ -137,7 +137,7 @@ module mig_7series_0 (
   // Slave Interface Read Data Ports
   input         s_axi_rready,
   output [3:0]          s_axi_rid,
-  output [511:0]            s_axi_rdata,
+  output [63:0]            s_axi_rdata,
   output [1:0]          s_axi_rresp,
   output            s_axi_rlast,
   output            s_axi_rvalid,

@@ -189,19 +189,19 @@ module mig_7series_0_mig #
                                      // DDR2 SDRAM: Burst Type (Mode Register).
                                      // # = "SEQ" - (Sequential),
                                      //   = "INT" - (Interleaved).
-   parameter CL                    = 6,
+   parameter CL                    = 11,
                                      // in number of clock cycles
                                      // DDR3 SDRAM: CAS Latency (Mode Register 0).
                                      // DDR2 SDRAM: CAS Latency (Mode Register).
-   parameter CWL                   = 5,
+   parameter CWL                   = 8,
                                      // in number of clock cycles
                                      // DDR3 SDRAM: CAS Write Latency (Mode Register 2).
                                      // DDR2 SDRAM: Can be ignored
-   parameter OUTPUT_DRV            = "LOW",
+   parameter OUTPUT_DRV            = "HIGH",
                                      // Output Driver Impedance Control (Mode Register 1).
                                      // # = "HIGH" - RZQ/7,
                                      //   = "LOW" - RZQ/6.
-   parameter RTT_NOM               = "60",
+   parameter RTT_NOM               = "40",
                                      // RTT_NOM (ODT) (Mode Register 1).
                                      //   = "120" - RZQ/2,
                                      //   = "60"  - RZQ/4,
@@ -230,13 +230,13 @@ module mig_7series_0_mig #
    //***************************************************************************
    parameter CLKIN_PERIOD          = 5000,
                                      // Input Clock Period
-   parameter CLKFBOUT_MULT         = 4,
+   parameter CLKFBOUT_MULT         = 8,
                                      // write PLL VCO multiplier
    parameter DIVCLK_DIVIDE         = 1,
                                      // write PLL VCO divisor
-   parameter CLKOUT0_PHASE         = 315.0,
+   parameter CLKOUT0_PHASE         = 337.5,
                                      // Phase for PLL output clock (CLKOUT0)
-   parameter CLKOUT0_DIVIDE        = 1,
+   parameter CLKOUT0_DIVIDE        = 2,
                                      // VCO output divisor for PLL output clock (CLKOUT0)
    parameter CLKOUT1_DIVIDE        = 2,
                                      // VCO output divisor for PLL output clock (CLKOUT1)
@@ -246,7 +246,7 @@ module mig_7series_0_mig #
                                      // VCO output divisor for PLL output clock (CLKOUT3)
    parameter MMCM_VCO              = 800,
                                      // Max Freq (MHz) of MMCM VCO
-   parameter MMCM_MULT_F           = 8,
+   parameter MMCM_MULT_F           = 4,
                                      // write MMCM VCO multiplier
    parameter MMCM_DIVCLK_DIVIDE    = 1,
                                      // write MMCM VCO divisor
@@ -410,10 +410,10 @@ module mig_7series_0_mig #
                                      // Calibration bank address will be used for
                                      // calibration read and write operations
    parameter TCQ                   = 100,
-   parameter IDELAY_ADJ            = "OFF",
-   parameter FINE_PER_BIT          = "OFF",
-   parameter CENTER_COMP_MODE      = "OFF",
-   parameter PI_VAL_ADJ            = "OFF",
+   parameter IDELAY_ADJ            = "ON",
+   parameter FINE_PER_BIT          = "ON",
+   parameter CENTER_COMP_MODE      = "ON",
+   parameter PI_VAL_ADJ            = "ON",
    parameter IODELAY_GRP0          = "MIG_7SERIES_0_IODELAY_MIG0",
                                      // It is associated to a set of IODELAYs with
                                      // an IDELAYCTRL that have same IODELAY CONTROLLER
@@ -441,7 +441,7 @@ module mig_7series_0_mig #
    parameter CAL_WIDTH             = "HALF",
    parameter STARVE_LIMIT          = 2,
                                      // # = 2,3,4.
-   parameter REF_CLK_MMCM_IODELAY_CTRL    = "FALSE",
+   parameter REF_CLK_MMCM_IODELAY_CTRL    = "TRUE",
       
 
    //***************************************************************************
@@ -455,7 +455,7 @@ module mig_7series_0_mig #
    //***************************************************************************
    // System clock frequency parameters
    //***************************************************************************
-   parameter tCK                   = 2500,
+   parameter tCK                   = 1250,
                                      // memory tCK paramter.
                                      // # = Clock Period in pS.
    parameter nCK_PER_CLK           = 4,
@@ -481,11 +481,11 @@ module mig_7series_0_mig #
                                              // # = >= 1.
    parameter C_S_AXI_MEM_SIZE              = "1073741824",
                                      // Address Space required for this component
-   parameter C_S_AXI_ADDR_WIDTH            = 32,
+   parameter C_S_AXI_ADDR_WIDTH            = 30,
                                              // Width of S_AXI_AWADDR, S_AXI_ARADDR, M_AXI_AWADDR and
                                              // M_AXI_ARADDR for all SI/MI slots.
                                              // # = 32.
-   parameter C_S_AXI_DATA_WIDTH            = 512,
+   parameter C_S_AXI_DATA_WIDTH            = 64,
                                              // Width of WDATA and RDATA on SI slot.
                                              // Must be <= APP_DATA_WIDTH.
                                              // # = 32, 64, 128, 256.

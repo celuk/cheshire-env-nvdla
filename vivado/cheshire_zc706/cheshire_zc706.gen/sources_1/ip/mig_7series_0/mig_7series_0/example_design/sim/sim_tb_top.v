@@ -164,7 +164,7 @@ module sim_tb_top;
    //***************************************************************************
    // System clock frequency parameters
    //***************************************************************************
-   parameter tCK                   = 2500;
+   parameter tCK                   = 1250;
                                      // memory tCK paramter.
                      // # = Clock Period in pS.
    parameter nCK_PER_CLK           = 4;
@@ -177,11 +177,11 @@ module sim_tb_top;
    parameter C_S_AXI_ID_WIDTH              = 4;
                                              // Width of all master and slave ID signals.
                                              // # = >= 1.
-   parameter C_S_AXI_ADDR_WIDTH            = 32;
+   parameter C_S_AXI_ADDR_WIDTH            = 30;
                                              // Width of S_AXI_AWADDR, S_AXI_ARADDR, M_AXI_AWADDR and
                                              // M_AXI_ARADDR for all SI/MI slots.
                                              // # = 32.
-   parameter C_S_AXI_DATA_WIDTH            = 512;
+   parameter C_S_AXI_DATA_WIDTH            = 64;
                                              // Width of WDATA and RDATA on SI slot.
                                              // Must be <= APP_DATA_WIDTH.
                                              // # = 32, 64, 128, 256.

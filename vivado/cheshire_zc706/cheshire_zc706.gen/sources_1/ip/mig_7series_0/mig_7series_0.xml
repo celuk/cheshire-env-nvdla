@@ -186,7 +186,7 @@
       <spirit:vendorExtensions>
         <xilinx:busInterfaceInfo>
           <xilinx:enablement>
-            <xilinx:isEnabled xilinx:resolve="dependent" xilinx:id="BUSIF_ENABLEMENT.CLK_REF_I" xilinx:dependency=" spirit:decode(id(&apos;MODELPARAM_VALUE.REFCLK_TYPE&apos;)) != &quot;DIFF&quot; and spirit:decode(id(&apos;MODELPARAM_VALUE.REFCLK_TYPE&apos;)) != &quot;NONE&quot; ">false</xilinx:isEnabled>
+            <xilinx:isEnabled xilinx:resolve="dependent" xilinx:id="BUSIF_ENABLEMENT.CLK_REF_I" xilinx:dependency=" spirit:decode(id(&apos;MODELPARAM_VALUE.REFCLK_TYPE&apos;)) != &quot;DIFF&quot; and spirit:decode(id(&apos;MODELPARAM_VALUE.REFCLK_TYPE&apos;)) != &quot;NONE&quot; ">true</xilinx:isEnabled>
           </xilinx:enablement>
         </xilinx:busInterfaceInfo>
       </spirit:vendorExtensions>
@@ -1027,7 +1027,7 @@
       <spirit:parameters>
         <spirit:parameter>
           <spirit:name>FREQ_HZ</spirit:name>
-          <spirit:value spirit:format="float" spirit:resolve="dependent" spirit:id="BUSIFPARAM_VALUE.CLOCK.FREQ_HZ" spirit:dependency="spirit:decode(id(&apos;MODELPARAM_VALUE.FREQ_HZ&apos;))">200000000</spirit:value>
+          <spirit:value spirit:format="float" spirit:resolve="dependent" spirit:id="BUSIFPARAM_VALUE.CLOCK.FREQ_HZ" spirit:dependency="spirit:decode(id(&apos;MODELPARAM_VALUE.FREQ_HZ&apos;))">100000000</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>ASSOCIATED_BUSIF</spirit:name>
@@ -1687,7 +1687,7 @@
       <spirit:parameters>
         <spirit:parameter>
           <spirit:name>FREQ_HZ</spirit:name>
-          <spirit:value spirit:format="float" spirit:resolve="dependent" spirit:id="BUSIFPARAM_VALUE.S_AXI_CTRL.FREQ_HZ" spirit:dependency="spirit:decode(id(&apos;MODELPARAM_VALUE.FREQ_HZ&apos;))">200000000</spirit:value>
+          <spirit:value spirit:format="float" spirit:resolve="dependent" spirit:id="BUSIFPARAM_VALUE.S_AXI_CTRL.FREQ_HZ" spirit:dependency="spirit:decode(id(&apos;MODELPARAM_VALUE.FREQ_HZ&apos;))">100000000</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>DATA_WIDTH</spirit:name>
@@ -2277,7 +2277,7 @@
       <spirit:parameters>
         <spirit:parameter>
           <spirit:name>FREQ_HZ</spirit:name>
-          <spirit:value spirit:format="float" spirit:resolve="dependent" spirit:id="BUSIFPARAM_VALUE.S_AXI.FREQ_HZ" spirit:dependency="spirit:decode(id(&apos;MODELPARAM_VALUE.FREQ_HZ&apos;))">200000000</spirit:value>
+          <spirit:value spirit:format="float" spirit:resolve="dependent" spirit:id="BUSIFPARAM_VALUE.S_AXI.FREQ_HZ" spirit:dependency="spirit:decode(id(&apos;MODELPARAM_VALUE.FREQ_HZ&apos;))">100000000</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>DATA_WIDTH</spirit:name>
@@ -23473,11 +23473,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Thu Feb 26 01:50:02 UTC 2026</spirit:value>
+            <spirit:value>Thu Feb 26 17:40:05 UTC 2026</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:5c8b21de</spirit:value>
+            <spirit:value>9:29817e3f</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -23492,11 +23492,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Thu Feb 26 01:51:17 UTC 2026</spirit:value>
+            <spirit:value>Thu Feb 26 17:40:12 UTC 2026</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:5c8b21de</spirit:value>
+            <spirit:value>9:29817e3f</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -23507,7 +23507,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:5c8b21de</spirit:value>
+            <spirit:value>9:29817e3f</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -23523,11 +23523,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Thu Feb 26 01:51:20 UTC 2026</spirit:value>
+            <spirit:value>Thu Feb 26 17:40:15 UTC 2026</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:5c8b21de</spirit:value>
+            <spirit:value>9:29817e3f</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -23543,11 +23543,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Thu Feb 26 01:51:23 UTC 2026</spirit:value>
+            <spirit:value>Thu Feb 26 17:40:18 UTC 2026</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:b7215b89</spirit:value>
+            <spirit:value>9:e90968fe</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -23563,11 +23563,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Thu Feb 26 01:51:26 UTC 2026</spirit:value>
+            <spirit:value>Thu Feb 26 17:40:22 UTC 2026</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:b7215b89</spirit:value>
+            <spirit:value>9:e90968fe</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -23582,11 +23582,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Thu Feb 26 01:51:29 UTC 2026</spirit:value>
+            <spirit:value>Thu Feb 26 17:40:25 UTC 2026</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:5c8b21de</spirit:value>
+            <spirit:value>9:29817e3f</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -23601,11 +23601,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Thu Feb 26 01:51:29 UTC 2026</spirit:value>
+            <spirit:value>Thu Feb 26 17:40:25 UTC 2026</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:5c8b21de</spirit:value>
+            <spirit:value>9:29817e3f</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -23619,11 +23619,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Thu Feb 26 01:53:32 UTC 2026</spirit:value>
+            <spirit:value>Thu Feb 26 17:40:03 UTC 2026</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:5c8b21de</spirit:value>
+            <spirit:value>9:29817e3f</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -23727,7 +23727,7 @@
         <spirit:vendorExtensions>
           <xilinx:portInfo>
             <xilinx:enablement>
-              <xilinx:isEnabled xilinx:resolve="dependent" xilinx:id="PORT_ENABLEMENT.clk_ref_i" xilinx:dependency=" spirit:decode(id(&apos;MODELPARAM_VALUE.REFCLK_TYPE&apos;)) != &quot;DIFF&quot; and spirit:decode(id(&apos;MODELPARAM_VALUE.REFCLK_TYPE&apos;)) != &quot;NONE&quot; ">false</xilinx:isEnabled>
+              <xilinx:isEnabled xilinx:resolve="dependent" xilinx:id="PORT_ENABLEMENT.clk_ref_i" xilinx:dependency=" spirit:decode(id(&apos;MODELPARAM_VALUE.REFCLK_TYPE&apos;)) != &quot;DIFF&quot; and spirit:decode(id(&apos;MODELPARAM_VALUE.REFCLK_TYPE&apos;)) != &quot;NONE&quot; ">true</xilinx:isEnabled>
             </xilinx:enablement>
           </xilinx:portInfo>
         </spirit:vendorExtensions>
@@ -107846,7 +107846,7 @@
         <spirit:name>REFCLK_TYPE</spirit:name>
         <spirit:displayName>Type of ref clk</spirit:displayName>
         <spirit:description>Type of ref clk</spirit:description>
-        <spirit:value spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.REFCLK_TYPE" spirit:choiceRef="choice_list_350ebf94" spirit:configGroups="default">NONE</spirit:value>
+        <spirit:value spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.REFCLK_TYPE" spirit:choiceRef="choice_list_350ebf94" spirit:configGroups="default">NOBUF</spirit:value>
       </spirit:modelParameter>
       <spirit:modelParameter spirit:dataType="string">
         <spirit:name>MEM_TYPE</spirit:name>
@@ -108260,7 +108260,7 @@
         <spirit:name>FREQ_HZ</spirit:name>
         <spirit:displayName>defines the UI Clk freq</spirit:displayName>
         <spirit:description>defines the UI Clk freq</spirit:description>
-        <spirit:value spirit:format="float" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.FREQ_HZ" spirit:configGroups="default" spirit:minimum="0.0" spirit:maximum="800000000.0" spirit:rangeType="long">200000000</spirit:value>
+        <spirit:value spirit:format="float" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.FREQ_HZ" spirit:configGroups="default" spirit:minimum="0.0" spirit:maximum="800000000.0" spirit:rangeType="long">100000000</spirit:value>
       </spirit:modelParameter>
       <spirit:modelParameter spirit:dataType="float">
         <spirit:name>PHASE</spirit:name>
@@ -115769,6 +115769,141 @@
       <xilinx:displayName>Memory Interface Generator (MIG 7 Series)</xilinx:displayName>
       <xilinx:coreRevision>1</xilinx:coreRevision>
       <xilinx:configElementInfos>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.ARESETN.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C0_ARESETN.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C0_CLOCK.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C0_DDR2_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C0_DDR3_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C0_LPDDR2_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C0_MMCM_CLKOUT0.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C0_MMCM_CLKOUT1.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C0_MMCM_CLKOUT2.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C0_MMCM_CLKOUT3.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C0_MMCM_CLKOUT4.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C0_QDRIIP_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C0_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C0_RLDIII_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C0_RLDII_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C0_SYS_CLK_I.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C1_ARESETN.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C1_CLOCK.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C1_DDR2_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C1_DDR3_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C1_LPDDR2_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C1_MMCM_CLKOUT0.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C1_MMCM_CLKOUT1.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C1_MMCM_CLKOUT2.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C1_MMCM_CLKOUT3.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C1_MMCM_CLKOUT4.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C1_QDRIIP_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C1_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C1_RLDIII_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C1_RLDII_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C1_SYS_CLK_I.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C2_ARESETN.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C2_CLOCK.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C2_DDR2_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C2_DDR3_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C2_LPDDR2_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C2_MMCM_CLKOUT0.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C2_MMCM_CLKOUT1.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C2_MMCM_CLKOUT2.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C2_MMCM_CLKOUT3.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C2_MMCM_CLKOUT4.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C2_QDRIIP_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C2_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C2_RLDIII_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C2_RLDII_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C2_SYS_CLK_I.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C3_ARESETN.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C3_CLOCK.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C3_DDR2_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C3_DDR3_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C3_LPDDR2_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C3_MMCM_CLKOUT0.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C3_MMCM_CLKOUT1.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C3_MMCM_CLKOUT2.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C3_MMCM_CLKOUT3.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C3_MMCM_CLKOUT4.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C3_QDRIIP_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C3_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C3_RLDIII_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C3_RLDII_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C3_SYS_CLK_I.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C4_ARESETN.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C4_CLOCK.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C4_DDR2_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C4_DDR3_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C4_LPDDR2_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C4_MMCM_CLKOUT0.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C4_MMCM_CLKOUT1.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C4_MMCM_CLKOUT2.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C4_MMCM_CLKOUT3.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C4_MMCM_CLKOUT4.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C4_QDRIIP_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C4_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C4_RLDIII_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C4_RLDII_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C4_SYS_CLK_I.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C5_ARESETN.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C5_CLOCK.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C5_DDR2_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C5_DDR3_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C5_LPDDR2_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C5_MMCM_CLKOUT0.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C5_MMCM_CLKOUT1.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C5_MMCM_CLKOUT2.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C5_MMCM_CLKOUT3.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C5_MMCM_CLKOUT4.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C5_QDRIIP_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C5_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C5_RLDIII_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C5_RLDII_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C5_SYS_CLK_I.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C6_ARESETN.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C6_CLOCK.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C6_DDR2_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C6_DDR3_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C6_LPDDR2_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C6_MMCM_CLKOUT0.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C6_MMCM_CLKOUT1.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C6_MMCM_CLKOUT2.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C6_MMCM_CLKOUT3.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C6_MMCM_CLKOUT4.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C6_QDRIIP_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C6_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C6_RLDIII_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C6_RLDII_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C6_SYS_CLK_I.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C7_ARESETN.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C7_CLOCK.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C7_DDR2_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C7_DDR3_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C7_LPDDR2_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C7_MMCM_CLKOUT0.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C7_MMCM_CLKOUT1.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C7_MMCM_CLKOUT2.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C7_MMCM_CLKOUT3.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C7_MMCM_CLKOUT4.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C7_QDRIIP_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C7_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C7_RLDIII_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C7_RLDII_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.C7_SYS_CLK_I.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.CLK_REF_I.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.CLOCK.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.DDR2_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.DDR3_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.LPDDR2_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.MMCM_CLKOUT0.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.MMCM_CLKOUT1.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.MMCM_CLKOUT2.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.MMCM_CLKOUT3.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.MMCM_CLKOUT4.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.QDRIIP_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.RLDIII_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.RLDII_RESET.INSERT_VIP" xilinx:valueSource="user"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S0_AXI.ADDR_WIDTH" xilinx:valueSource="auto"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S0_AXI.ARUSER_WIDTH" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S0_AXI.AWUSER_WIDTH" xilinx:valueSource="constant"/>
@@ -115783,6 +115918,7 @@
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S0_AXI.HAS_REGION" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S0_AXI.HAS_RRESP" xilinx:valueSource="auto"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S0_AXI.HAS_WSTRB" xilinx:valueSource="auto"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S0_AXI.INSERT_VIP" xilinx:valueSource="user"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S0_AXI.PROTOCOL" xilinx:valueSource="auto"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S0_AXI.RUSER_WIDTH" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S0_AXI.WUSER_WIDTH" xilinx:valueSource="constant"/>
@@ -115801,6 +115937,7 @@
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S0_AXI_CTRL.HAS_RRESP" xilinx:valueSource="auto"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S0_AXI_CTRL.HAS_WSTRB" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S0_AXI_CTRL.ID_WIDTH" xilinx:valueSource="constant"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S0_AXI_CTRL.INSERT_VIP" xilinx:valueSource="user"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S0_AXI_CTRL.PROTOCOL" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S0_AXI_CTRL.RUSER_WIDTH" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S0_AXI_CTRL.WUSER_WIDTH" xilinx:valueSource="constant"/>
@@ -115818,6 +115955,7 @@
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S1_AXI.HAS_REGION" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S1_AXI.HAS_RRESP" xilinx:valueSource="auto"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S1_AXI.HAS_WSTRB" xilinx:valueSource="auto"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S1_AXI.INSERT_VIP" xilinx:valueSource="user"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S1_AXI.PROTOCOL" xilinx:valueSource="auto"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S1_AXI.RUSER_WIDTH" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S1_AXI.WUSER_WIDTH" xilinx:valueSource="constant"/>
@@ -115836,6 +115974,7 @@
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S1_AXI_CTRL.HAS_RRESP" xilinx:valueSource="auto"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S1_AXI_CTRL.HAS_WSTRB" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S1_AXI_CTRL.ID_WIDTH" xilinx:valueSource="constant"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S1_AXI_CTRL.INSERT_VIP" xilinx:valueSource="user"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S1_AXI_CTRL.PROTOCOL" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S1_AXI_CTRL.RUSER_WIDTH" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S1_AXI_CTRL.WUSER_WIDTH" xilinx:valueSource="constant"/>
@@ -115853,6 +115992,7 @@
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S2_AXI.HAS_REGION" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S2_AXI.HAS_RRESP" xilinx:valueSource="auto"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S2_AXI.HAS_WSTRB" xilinx:valueSource="auto"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S2_AXI.INSERT_VIP" xilinx:valueSource="user"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S2_AXI.PROTOCOL" xilinx:valueSource="auto"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S2_AXI.RUSER_WIDTH" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S2_AXI.WUSER_WIDTH" xilinx:valueSource="constant"/>
@@ -115871,6 +116011,7 @@
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S2_AXI_CTRL.HAS_RRESP" xilinx:valueSource="auto"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S2_AXI_CTRL.HAS_WSTRB" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S2_AXI_CTRL.ID_WIDTH" xilinx:valueSource="constant"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S2_AXI_CTRL.INSERT_VIP" xilinx:valueSource="user"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S2_AXI_CTRL.PROTOCOL" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S2_AXI_CTRL.RUSER_WIDTH" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S2_AXI_CTRL.WUSER_WIDTH" xilinx:valueSource="constant"/>
@@ -115888,6 +116029,7 @@
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S3_AXI.HAS_REGION" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S3_AXI.HAS_RRESP" xilinx:valueSource="auto"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S3_AXI.HAS_WSTRB" xilinx:valueSource="auto"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S3_AXI.INSERT_VIP" xilinx:valueSource="user"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S3_AXI.PROTOCOL" xilinx:valueSource="auto"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S3_AXI.RUSER_WIDTH" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S3_AXI.WUSER_WIDTH" xilinx:valueSource="constant"/>
@@ -115906,6 +116048,7 @@
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S3_AXI_CTRL.HAS_RRESP" xilinx:valueSource="auto"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S3_AXI_CTRL.HAS_WSTRB" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S3_AXI_CTRL.ID_WIDTH" xilinx:valueSource="constant"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S3_AXI_CTRL.INSERT_VIP" xilinx:valueSource="user"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S3_AXI_CTRL.PROTOCOL" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S3_AXI_CTRL.RUSER_WIDTH" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S3_AXI_CTRL.WUSER_WIDTH" xilinx:valueSource="constant"/>
@@ -115923,6 +116066,7 @@
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S4_AXI.HAS_REGION" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S4_AXI.HAS_RRESP" xilinx:valueSource="auto"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S4_AXI.HAS_WSTRB" xilinx:valueSource="auto"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S4_AXI.INSERT_VIP" xilinx:valueSource="user"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S4_AXI.PROTOCOL" xilinx:valueSource="auto"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S4_AXI.RUSER_WIDTH" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S4_AXI.WUSER_WIDTH" xilinx:valueSource="constant"/>
@@ -115941,6 +116085,7 @@
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S4_AXI_CTRL.HAS_RRESP" xilinx:valueSource="auto"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S4_AXI_CTRL.HAS_WSTRB" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S4_AXI_CTRL.ID_WIDTH" xilinx:valueSource="constant"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S4_AXI_CTRL.INSERT_VIP" xilinx:valueSource="user"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S4_AXI_CTRL.PROTOCOL" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S4_AXI_CTRL.RUSER_WIDTH" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S4_AXI_CTRL.WUSER_WIDTH" xilinx:valueSource="constant"/>
@@ -115958,6 +116103,7 @@
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S5_AXI.HAS_REGION" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S5_AXI.HAS_RRESP" xilinx:valueSource="auto"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S5_AXI.HAS_WSTRB" xilinx:valueSource="auto"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S5_AXI.INSERT_VIP" xilinx:valueSource="user"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S5_AXI.PROTOCOL" xilinx:valueSource="auto"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S5_AXI.RUSER_WIDTH" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S5_AXI.WUSER_WIDTH" xilinx:valueSource="constant"/>
@@ -115976,6 +116122,7 @@
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S5_AXI_CTRL.HAS_RRESP" xilinx:valueSource="auto"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S5_AXI_CTRL.HAS_WSTRB" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S5_AXI_CTRL.ID_WIDTH" xilinx:valueSource="constant"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S5_AXI_CTRL.INSERT_VIP" xilinx:valueSource="user"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S5_AXI_CTRL.PROTOCOL" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S5_AXI_CTRL.RUSER_WIDTH" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S5_AXI_CTRL.WUSER_WIDTH" xilinx:valueSource="constant"/>
@@ -115993,6 +116140,7 @@
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S6_AXI.HAS_REGION" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S6_AXI.HAS_RRESP" xilinx:valueSource="auto"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S6_AXI.HAS_WSTRB" xilinx:valueSource="auto"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S6_AXI.INSERT_VIP" xilinx:valueSource="user"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S6_AXI.PROTOCOL" xilinx:valueSource="auto"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S6_AXI.RUSER_WIDTH" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S6_AXI.WUSER_WIDTH" xilinx:valueSource="constant"/>
@@ -116011,6 +116159,7 @@
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S6_AXI_CTRL.HAS_RRESP" xilinx:valueSource="auto"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S6_AXI_CTRL.HAS_WSTRB" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S6_AXI_CTRL.ID_WIDTH" xilinx:valueSource="constant"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S6_AXI_CTRL.INSERT_VIP" xilinx:valueSource="user"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S6_AXI_CTRL.PROTOCOL" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S6_AXI_CTRL.RUSER_WIDTH" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S6_AXI_CTRL.WUSER_WIDTH" xilinx:valueSource="constant"/>
@@ -116028,6 +116177,7 @@
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S7_AXI.HAS_REGION" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S7_AXI.HAS_RRESP" xilinx:valueSource="auto"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S7_AXI.HAS_WSTRB" xilinx:valueSource="auto"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S7_AXI.INSERT_VIP" xilinx:valueSource="user"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S7_AXI.PROTOCOL" xilinx:valueSource="auto"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S7_AXI.RUSER_WIDTH" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S7_AXI.WUSER_WIDTH" xilinx:valueSource="constant"/>
@@ -116046,9 +116196,12 @@
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S7_AXI_CTRL.HAS_RRESP" xilinx:valueSource="auto"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S7_AXI_CTRL.HAS_WSTRB" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S7_AXI_CTRL.ID_WIDTH" xilinx:valueSource="constant"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S7_AXI_CTRL.INSERT_VIP" xilinx:valueSource="user"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S7_AXI_CTRL.PROTOCOL" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S7_AXI_CTRL.RUSER_WIDTH" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S7_AXI_CTRL.WUSER_WIDTH" xilinx:valueSource="constant"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.SYSTEM_RESET.INSERT_VIP" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.SYS_CLK_I.INSERT_VIP" xilinx:valueSource="user"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI.ADDR_WIDTH" xilinx:valueSource="auto"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI.ARUSER_WIDTH" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI.AWUSER_WIDTH" xilinx:valueSource="constant"/>
@@ -116056,6 +116209,7 @@
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI.DATA_WIDTH" xilinx:valueSource="auto"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI.HAS_REGION" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI.ID_WIDTH" xilinx:valueSource="auto"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI.INSERT_VIP" xilinx:valueSource="user"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI.RUSER_WIDTH" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI.WUSER_WIDTH" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.ADDR_WIDTH" xilinx:valueSource="auto"/>
@@ -116073,6 +116227,7 @@
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.HAS_RRESP" xilinx:valueSource="auto"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.HAS_WSTRB" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.ID_WIDTH" xilinx:valueSource="constant"/>
+        <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.INSERT_VIP" xilinx:valueSource="user"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.PROTOCOL" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.RUSER_WIDTH" xilinx:valueSource="constant"/>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.WUSER_WIDTH" xilinx:valueSource="constant"/>

@@ -65,13 +65,13 @@
     <Option Name="WTVcsLaunchSim" Val="0"/>
     <Option Name="WTRivieraLaunchSim" Val="0"/>
     <Option Name="WTActivehdlLaunchSim" Val="0"/>
-    <Option Name="WTXSimExportSim" Val="11"/>
-    <Option Name="WTModelSimExportSim" Val="11"/>
-    <Option Name="WTQuestaExportSim" Val="11"/>
+    <Option Name="WTXSimExportSim" Val="14"/>
+    <Option Name="WTModelSimExportSim" Val="14"/>
+    <Option Name="WTQuestaExportSim" Val="14"/>
     <Option Name="WTIesExportSim" Val="0"/>
-    <Option Name="WTVcsExportSim" Val="11"/>
-    <Option Name="WTRivieraExportSim" Val="11"/>
-    <Option Name="WTActivehdlExportSim" Val="10"/>
+    <Option Name="WTVcsExportSim" Val="14"/>
+    <Option Name="WTRivieraExportSim" Val="14"/>
+    <Option Name="WTActivehdlExportSim" Val="13"/>
     <Option Name="GenerateIPUpgradeLog" Val="TRUE"/>
     <Option Name="XSimRadix" Val="hex"/>
     <Option Name="XSimTimeUnit" Val="ns"/>
@@ -89,13 +89,6 @@
   <FileSets Version="1" Minor="31">
     <FileSet Name="sources_1" Type="DesignSrcs" RelSrcDir="$PSRCDIR/sources_1" RelGenDir="$PGENDIR/sources_1">
       <Filter Type="Srcs"/>
-      <File Path="$PSRCDIR/sources_1/ip/clk_wiz_0/clk_wiz_0.xci">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="implementation"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
       <File Path="$PPRDIR/../../nvdla/block-nvdla-sifive/vsrc/small/vmod/vlibs/AN2D4PO4.v">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -10837,6 +10830,12 @@
           <Attr Name="ScopedToCell" Val="mig_7series_0"/>
         </FileInfo>
       </File>
+      <File Path="$PSRCDIR/sources_1/ip/mig_7series_0/mig_b.prj">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="ScopedToCell" Val="mig_7series_0"/>
+        </FileInfo>
+      </File>
       <Config>
         <Option Name="DesignMode" Val="RTL"/>
         <Option Name="TopModule" Val="cheshire_soc_wrap"/>
@@ -10953,6 +10952,47 @@
         <Define Name="SYNTHESIS"/>
       </Config>
     </FileSet>
+    <FileSet Name="clk_wiz_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/clk_wiz_0" RelGenDir="$PGENDIR/clk_wiz_0">
+      <File Path="$PSRCDIR/sources_1/ip/clk_wiz_0/clk_wiz_0.xci">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <Config>
+        <Option Name="TopModule" Val="clk_wiz_0"/>
+        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/common_cells-c159992f96c142c6/include"/>
+        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/apb-e3aa324d02239b4e/include"/>
+        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/axi-b93d0d6a6eea0215/include"/>
+        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/obi-54801685a76362e8/include"/>
+        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/axi_stream-beabe2c04fcf6efb/include"/>
+        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/register_interface-7455b30659b3b228/include"/>
+        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/axi_llc-1c63a0c45fcf3e82/include"/>
+        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/axi_llc-1c63a0c45fcf3e82/test"/>
+        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/axi_rt-3edb1eb4a82b5fc1/include"/>
+        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/cva6-2d66dd46fd533439/common/local/util"/>
+        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/cva6-2d66dd46fd533439/core/include"/>
+        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/idma-f908701a071bbdb8/src/include"/>
+        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/idma-f908701a071bbdb8/target/rtl/include"/>
+        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/idma-f908701a071bbdb8/test"/>
+        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/serial_link-6a7ec72ff7cf8235/src/axis/include"/>
+        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/cva6-2d66dd46fd533439/core/cache_subsystem/hpdcache/rtl/include"/>
+        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/hw/include"/>
+        <Option Name="VerilogDir" Val="$PPRDIR/../../rtl/src"/>
+        <Option Name="VerilogDir" Val="$PPRDIR/../../rtl"/>
+        <Option Name="dataflowViewerSettings" Val="min_width=16"/>
+        <Option Name="UseBlackboxStub" Val="1"/>
+        <Define Name="TARGET_CVA6"/>
+        <Define Name="TARGET_RTL"/>
+        <Define Name="TARGET_CV64A6_IMAFDCSCLIC_SV39"/>
+        <Define Name="VLIB_BYPASS_POWER_CG"/>
+        <Define Name="NV_FPGA_FIFOGEN"/>
+        <Define Name="FIFOGEN_MASTER_CLK_GATING_DISABLED"/>
+        <Define Name="FPGA"/>
+        <Define Name="SYNTHESIS"/>
+      </Config>
+    </FileSet>
   </FileSets>
   <Simulators>
     <Simulator Name="XSim">
@@ -10996,6 +11036,18 @@
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
       <RQSFiles/>
     </Run>
+    <Run Id="clk_wiz_0_synth_1" Type="Ft3:Synth" SrcSet="clk_wiz_0" Part="xc7z045ffg900-2" ConstrsSet="clk_wiz_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/clk_wiz_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/clk_wiz_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/clk_wiz_0_synth_1">
+      <Strategy Version="1" Minor="2">
+        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2022">
+          <Desc>Vivado Synthesis Defaults</Desc>
+        </StratHandle>
+        <Step Id="synth_design"/>
+      </Strategy>
+      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
+      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2022"/>
+      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
+      <RQSFiles/>
+    </Run>
     <Run Id="impl_1" Type="Ft2:EntireDesign" Part="xc7z045ffg900-2" ConstrsSet="constrs_1" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" State="current" Dir="$PRUNDIR/impl_1" SynthRun="synth_1" IncludeInArchive="true" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/impl_1">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2022"/>
@@ -11017,6 +11069,25 @@
     <Run Id="mig_7series_0_impl_1" Type="Ft2:EntireDesign" Part="xc7z045ffg900-2" ConstrsSet="mig_7series_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="mig_7series_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/mig_7series_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/mig_7series_0_impl_1">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2022"/>
+        <Step Id="init_design"/>
+        <Step Id="opt_design"/>
+        <Step Id="power_opt_design"/>
+        <Step Id="place_design"/>
+        <Step Id="post_place_power_opt_design"/>
+        <Step Id="phys_opt_design"/>
+        <Step Id="route_design"/>
+        <Step Id="post_route_phys_opt_design"/>
+        <Step Id="write_bitstream"/>
+      </Strategy>
+      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2022"/>
+      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
+      <RQSFiles/>
+    </Run>
+    <Run Id="clk_wiz_0_impl_1" Type="Ft2:EntireDesign" Part="xc7z045ffg900-2" ConstrsSet="clk_wiz_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="clk_wiz_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/clk_wiz_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/clk_wiz_0_impl_1">
+      <Strategy Version="1" Minor="2">
+        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2022">
+          <Desc>Default settings for Implementation.</Desc>
+        </StratHandle>
         <Step Id="init_design"/>
         <Step Id="opt_design"/>
         <Step Id="power_opt_design"/>

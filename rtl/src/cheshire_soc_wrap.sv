@@ -118,42 +118,42 @@ module cheshire_soc_wrap import cheshire_pkg::*;
      wire rst_n = rst_ni & system_reset_o & clkwiz_locked;
   `elsif ZC706
      wire pll_locked;
-     wire clk100;
+     wire clk100 = 0;
      wire clk_ddr;
      wire clk_ref;
-     wire clk_ddr_dqs;
+     wire clk_ddr_dqs = 0;
      wire clk_i;
 
-     wire sys_clk;
-     IBUFDS #(
-       .IBUF_LOW_PWR ("FALSE")
-     ) i_bufds_sys_clk (
-       .I  ( sys_clk_p ),
-       .IB ( sys_clk_n ),
-       .O  ( sys_clk   )
-     );
+     //wire sys_clk;
+     //IBUFDS #(
+     //  .IBUF_LOW_PWR ("FALSE")
+     //) i_bufds_sys_clk (
+     //  .I  ( sys_clk_p ),
+     //  .IB ( sys_clk_n ),
+     //  .O  ( sys_clk   )
+     //);
 
      clk_wiz_0 u_pll
      //clk_wiz_1 u_pll
      (
-        //.clk_in1_p(sys_clk_p),
-        //.clk_in1_n(sys_clk_n)
-        .clk_in1(sys_clk)
+        .clk_in1_p(sys_clk_p),
+        .clk_in1_n(sys_clk_n)
+        //.clk_in1(sys_clk)
 
-        ,.reset(~rst_ni)
+        ,.reset(0)
 
         // first values for 100mhz, second values for 50mhz
-        ,.clk_out1(clk100)      // 100, 50
+        ,.clk_out1(clk_i)      // 100, 50
         ,.clk_out2(clk_ddr)     // 400, 200
         ,.clk_out3(clk_ref)     // 200, 200
-        ,.clk_out4(clk_ddr_dqs) // 400, 200 (phase 90)
-        ,.clk_out5(clk_i)       // 100, 50
-        ,.locked(pll_locked)
+        //,.clk_out4(clk_ddr_dqs) // 400, 200 (phase 90)
+        //,.clk_out5(clk_i)       // 100, 50
+        ,.locked()
      );
 
      wire clkwiz_o = clk_i;
-     wire rst_n = rst_ni & system_reset_o & !uart_dram_mode & pll_locked; // & !uart_dram_mode
-     wire dram_ref_clk = sys_clk;
+     wire rst_n = rst_ni & system_reset_o & !uart_dram_mode; // & !uart_dram_mode
+     wire dram_ref_clk = clk_ref; //sys_clk;
   `elsif GENESYS2
      wire pll_locked;
      wire clk100;
@@ -568,7 +568,7 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     .axi_soc_req_t     ( axi_llc_req_t     ),
     .axi_soc_resp_t    ( axi_llc_rsp_t     )
   ) dram_controller (
-    .soc_resetn_i ( (rst_ni & system_reset_o & pll_locked) || uart_dram_mode ),
+    .soc_resetn_i ( (rst_ni & system_reset_o) || uart_dram_mode ),
     .soc_clk_i    ( clkwiz_o ),
 
     .clk100       ( clk100 ),

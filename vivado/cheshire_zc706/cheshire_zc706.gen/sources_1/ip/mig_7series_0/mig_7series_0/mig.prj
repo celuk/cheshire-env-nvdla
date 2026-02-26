@@ -23,7 +23,7 @@
 
   <SystemClock>No Buffer</SystemClock>
 
-  <ReferenceClock>Use System Clock</ReferenceClock>
+  <ReferenceClock>No Buffer</ReferenceClock>
 
   <SysResetPolarity>ACTIVE HIGH</SysResetPolarity>
 
@@ -37,10 +37,10 @@
 
   <Controller number="0">
     <MemoryDevice>DDR3_SDRAM/SODIMMs/MT8JTF12864HZ-1G6</MemoryDevice>
-    <TimePeriod>1250</TimePeriod>
+    <TimePeriod>2500</TimePeriod>
     <VccAuxIO>2.0V</VccAuxIO>
     <PHYRatio>4:1</PHYRatio>
-    <InputClkFreq>200</InputClkFreq>
+    <InputClkFreq>400</InputClkFreq>
     <UIExtraClocks>0</UIExtraClocks>
     <MMCM_VCO>800</MMCM_VCO>
     <MMCMClkOut0> 1.000</MMCMClkOut0>
@@ -176,6 +176,12 @@
       <Pin IN_TERM="" IOSTANDARD="SSTL15" PADName="H11" SLEW="FAST" VCCAUX_IO="HIGH" name="ddr3_ras_n"/>
       <Pin IN_TERM="" IOSTANDARD="LVCMOS15" PADName="G17" SLEW="FAST" VCCAUX_IO="HIGH" name="ddr3_reset_n"/>
       <Pin IN_TERM="" IOSTANDARD="SSTL15" PADName="F7" SLEW="FAST" VCCAUX_IO="HIGH" name="ddr3_we_n"/>
+      <Pin IN_TERM="" IOSTANDARD="LVCMOS15" PADName="A17" SLEW="SLOW" VCCAUX_IO="" name="led[0]"/>
+      <Pin IN_TERM="" IOSTANDARD="LVCMOS25" PADName="W21" SLEW="SLOW" VCCAUX_IO="" name="led[1]"/>
+      <Pin IN_TERM="" IOSTANDARD="LVCMOS15" PADName="G2" SLEW="SLOW" VCCAUX_IO="" name="led[2]"/>
+      <Pin IN_TERM="" IOSTANDARD="LVCMOS25" PADName="Y21" SLEW="SLOW" VCCAUX_IO="" name="led[3]"/>
+      <Pin IN_TERM="" IOSTANDARD="DIFF_SSTL15" PADName="G9" SLEW="" VCCAUX_IO="DONTCARE" name="sys_clk_n"/>
+      <Pin IN_TERM="" IOSTANDARD="DIFF_SSTL15" PADName="H9" SLEW="" VCCAUX_IO="DONTCARE" name="sys_clk_p"/>
     </PinSelection>
     <System_Control>
       <Pin Bank="Select Bank" PADName="No connect" name="sys_rst"/>
@@ -187,21 +193,21 @@
     </TimingParameters>
     <mrBurstLength name="Burst Length">8 - Fixed</mrBurstLength>
     <mrBurstType name="Read Burst Type and Length">Sequential</mrBurstType>
-    <mrCasLatency name="CAS Latency">11</mrCasLatency>
+    <mrCasLatency name="CAS Latency">6</mrCasLatency>
     <mrMode name="Mode">Normal</mrMode>
     <mrDllReset name="DLL Reset">No</mrDllReset>
     <mrPdMode name="DLL control for precharge PD">Slow Exit</mrPdMode>
     <emrDllEnable name="DLL Enable">Enable</emrDllEnable>
-    <emrOutputDriveStrength name="Output Driver Impedance Control">RZQ/7</emrOutputDriveStrength>
+    <emrOutputDriveStrength name="Output Driver Impedance Control">RZQ/6</emrOutputDriveStrength>
     <emrMirrorSelection name="Address Mirroring">Disable</emrMirrorSelection>
     <emrCSSelection name="Controller Chip Select Pin">Enable</emrCSSelection>
-    <emrRTT name="RTT (nominal) - On Die Termination (ODT)">RZQ/6</emrRTT>
+    <emrRTT name="RTT (nominal) - On Die Termination (ODT)">RZQ/4</emrRTT>
     <emrPosted name="Additive Latency (AL)">0</emrPosted>
     <emrOCD name="Write Leveling Enable">Disabled</emrOCD>
     <emrDQS name="TDQS enable">Enabled</emrDQS>
     <emrRDQS name="Qoff">Output Buffer Enabled</emrRDQS>
     <mr2PartialArraySelfRefresh name="Partial-Array Self Refresh">Full Array</mr2PartialArraySelfRefresh>
-    <mr2CasWriteLatency name="CAS write latency">8</mr2CasWriteLatency>
+    <mr2CasWriteLatency name="CAS write latency">5</mr2CasWriteLatency>
     <mr2AutoSelfRefresh name="Auto Self Refresh">Enabled</mr2AutoSelfRefresh>
     <mr2SelfRefreshTempRange name="High Temparature Self Refresh Rate">Normal</mr2SelfRefreshTempRange>
     <mr2RTTWR name="RTT_WR - Dynamic On Die Termination (ODT)">Dynamic ODT off</mr2RTTWR>

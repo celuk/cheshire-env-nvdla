@@ -748,7 +748,8 @@ module dram_wrapper #(
     // System Clock Ports
     //.sys_clk_p                      (sys_clk_p),
     //.sys_clk_n                      (sys_clk_n),
-    .sys_clk_i                      (clk_ref),
+    .sys_clk_i                      (clk_ddr),
+    .clk_ref_i                      (clk_ref),
     .sys_rst                        (sys_rst_i)
   );
 

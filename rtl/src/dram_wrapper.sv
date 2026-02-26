@@ -30,10 +30,6 @@ module dram_wrapper #(
   input  logic  clk_ddr_dqs,
   input  logic  sys_clk_p,
   input  logic  sys_clk_n,
-  input  logic  dram_sys_rst_i,
-
-  output logic  ui_clk_o,
-  output logic  ui_clk_sync_rst_o,
 
   input  logic        uart_dram_write_we_i,
   input  logic [31:0] uart_dram_write_addr_i,
@@ -277,7 +273,7 @@ module dram_wrapper #(
 
 `ifdef GENESYS2
   wire dram_clk_i = clk_ref;
-  wire sys_rst_i  = dram_sys_rst_i;
+  wire sys_rst_i  = ~soc_resetn_i;
   wire ui_clk;
   wire ui_clk_sync_rst;
   wire init_calib_complete;
@@ -285,15 +281,13 @@ module dram_wrapper #(
 
   assign dram_axi_clk = ui_clk;
   assign dram_rst_o   = ui_clk_sync_rst;
-  assign ui_clk_o = ui_clk;
-  assign ui_clk_sync_rst_o = ui_clk_sync_rst;
 
   // ---------------------------------------------------------
   // FPGA ROM Loader for testing DRAM
   // ---------------------------------------------------------
   logic [31:0] init_rom [0:255];
   initial begin
-    $readmemh("/home/shc/projects/cheshire-env-nvdla/cheshire/sw/tests/helloworld.dram.hex", init_rom);
+    $readmemh("../../../cheshire/sw/tests/helloworld.dram.hex", init_rom);
   end
 
   logic [2:0] calib_sync;
@@ -456,7 +450,7 @@ module dram_wrapper #(
     .ui_clk                         (ui_clk),
     .ui_clk_sync_rst                (ui_clk_sync_rst),
     .mmcm_locked                    (mmcm_locked),
-    .aresetn                        (~dram_sys_rst_i),
+    .aresetn                        (soc_resetn_i),
     .app_sr_req                     (1'b0),
     .app_ref_req                    (1'b0),
     .app_zq_req                     (1'b0),
@@ -519,7 +513,7 @@ module dram_wrapper #(
 
 
 `elsif ZC706_MIG
-  wire sys_rst_i  = dram_sys_rst_i;
+  wire sys_rst_i  = ~soc_resetn_i;
   wire ui_clk;
   wire ui_clk_sync_rst;
   wire init_calib_complete;
@@ -527,15 +521,13 @@ module dram_wrapper #(
 
   assign dram_axi_clk = ui_clk;
   assign dram_rst_o   = ui_clk_sync_rst;
-  assign ui_clk_o = ui_clk;
-  assign ui_clk_sync_rst_o = ui_clk_sync_rst;
 
   // ---------------------------------------------------------
   // FPGA ROM Loader for testing DRAM
   // ---------------------------------------------------------
   logic [31:0] init_rom [0:255];
   initial begin
-    $readmemh("/home/shc/projects/cheshire-env-nvdla/cheshire/sw/tests/helloworld.dram.hex", init_rom);
+    $readmemh("../../../cheshire/sw/tests/helloworld.dram.hex", init_rom);
   end
 
   logic [2:0] calib_sync;
@@ -698,7 +690,7 @@ module dram_wrapper #(
     .ui_clk                         (ui_clk),
     .ui_clk_sync_rst                (ui_clk_sync_rst),
     .mmcm_locked                    (mmcm_locked),
-    .aresetn                        (~dram_sys_rst_i),
+    .aresetn                        (soc_resetn_i),
     .app_sr_req                     (1'b0),
     .app_ref_req                    (1'b0),
     .app_zq_req                     (1'b0),
@@ -763,8 +755,6 @@ module dram_wrapper #(
 `else
   assign dram_axi_clk = soc_clk_i;
   assign dram_rst_o   = ~soc_resetn_i;
-  assign ui_clk_o = 1'b0;
-  assign ui_clk_sync_rst_o = 1'b1;
 
   dram_controller_axi #(
     .AXI_ID_WIDTH  ( cfg.IdWidth ),

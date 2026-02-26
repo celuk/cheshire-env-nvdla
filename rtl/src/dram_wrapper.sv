@@ -746,10 +746,13 @@ module dram_wrapper #(
     .s_axi_rready                   (cdc_dram_req.r_ready),
 
     // System Clock Ports
-    //.sys_clk_p                      (sys_clk_p),
-    //.sys_clk_n                      (sys_clk_n),
-    .sys_clk_i                      (clk_ddr),
-    .clk_ref_i                      (clk_ref),
+    .sys_clk_p                      (sys_clk_p),
+    .sys_clk_n                      (sys_clk_n),
+
+    //.sys_clk_i                      (clk_ddr),
+
+    //.clk_ref_i                      (clk_ref),
+    
     .sys_rst                        (sys_rst_i)
   );
 

@@ -186,7 +186,7 @@
       <spirit:vendorExtensions>
         <xilinx:busInterfaceInfo>
           <xilinx:enablement>
-            <xilinx:isEnabled xilinx:resolve="dependent" xilinx:id="BUSIF_ENABLEMENT.CLK_REF_I" xilinx:dependency=" spirit:decode(id(&apos;MODELPARAM_VALUE.REFCLK_TYPE&apos;)) != &quot;DIFF&quot; and spirit:decode(id(&apos;MODELPARAM_VALUE.REFCLK_TYPE&apos;)) != &quot;NONE&quot; ">true</xilinx:isEnabled>
+            <xilinx:isEnabled xilinx:resolve="dependent" xilinx:id="BUSIF_ENABLEMENT.CLK_REF_I" xilinx:dependency=" spirit:decode(id(&apos;MODELPARAM_VALUE.REFCLK_TYPE&apos;)) != &quot;DIFF&quot; and spirit:decode(id(&apos;MODELPARAM_VALUE.REFCLK_TYPE&apos;)) != &quot;NONE&quot; ">false</xilinx:isEnabled>
           </xilinx:enablement>
         </xilinx:busInterfaceInfo>
       </spirit:vendorExtensions>
@@ -1027,7 +1027,7 @@
       <spirit:parameters>
         <spirit:parameter>
           <spirit:name>FREQ_HZ</spirit:name>
-          <spirit:value spirit:format="float" spirit:resolve="dependent" spirit:id="BUSIFPARAM_VALUE.CLOCK.FREQ_HZ" spirit:dependency="spirit:decode(id(&apos;MODELPARAM_VALUE.FREQ_HZ&apos;))">100000000</spirit:value>
+          <spirit:value spirit:format="float" spirit:resolve="dependent" spirit:id="BUSIFPARAM_VALUE.CLOCK.FREQ_HZ" spirit:dependency="spirit:decode(id(&apos;MODELPARAM_VALUE.FREQ_HZ&apos;))">200000000</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>ASSOCIATED_BUSIF</spirit:name>
@@ -1687,7 +1687,7 @@
       <spirit:parameters>
         <spirit:parameter>
           <spirit:name>FREQ_HZ</spirit:name>
-          <spirit:value spirit:format="float" spirit:resolve="dependent" spirit:id="BUSIFPARAM_VALUE.S_AXI_CTRL.FREQ_HZ" spirit:dependency="spirit:decode(id(&apos;MODELPARAM_VALUE.FREQ_HZ&apos;))">100000000</spirit:value>
+          <spirit:value spirit:format="float" spirit:resolve="dependent" spirit:id="BUSIFPARAM_VALUE.S_AXI_CTRL.FREQ_HZ" spirit:dependency="spirit:decode(id(&apos;MODELPARAM_VALUE.FREQ_HZ&apos;))">200000000</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>DATA_WIDTH</spirit:name>
@@ -2277,7 +2277,7 @@
       <spirit:parameters>
         <spirit:parameter>
           <spirit:name>FREQ_HZ</spirit:name>
-          <spirit:value spirit:format="float" spirit:resolve="dependent" spirit:id="BUSIFPARAM_VALUE.S_AXI.FREQ_HZ" spirit:dependency="spirit:decode(id(&apos;MODELPARAM_VALUE.FREQ_HZ&apos;))">100000000</spirit:value>
+          <spirit:value spirit:format="float" spirit:resolve="dependent" spirit:id="BUSIFPARAM_VALUE.S_AXI.FREQ_HZ" spirit:dependency="spirit:decode(id(&apos;MODELPARAM_VALUE.FREQ_HZ&apos;))">200000000</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>DATA_WIDTH</spirit:name>
@@ -2605,7 +2605,7 @@
       <spirit:vendorExtensions>
         <xilinx:busInterfaceInfo>
           <xilinx:enablement>
-            <xilinx:isEnabled xilinx:resolve="dependent" xilinx:id="BUSIF_ENABLEMENT.SYS_CLK" xilinx:dependency=" spirit:decode(id(&apos;MODELPARAM_VALUE.NoOfControllers&apos;)) = 1 and spirit:decode(id(&apos;MODELPARAM_VALUE.SYSCLK_TYPE&apos;)) = &quot;DIFF&quot; and spirit:decode(id(&apos;MODELPARAM_VALUE.IS_CLK_SHARED&apos;)) = &quot;FALSE&quot; ">false</xilinx:isEnabled>
+            <xilinx:isEnabled xilinx:resolve="dependent" xilinx:id="BUSIF_ENABLEMENT.SYS_CLK" xilinx:dependency=" spirit:decode(id(&apos;MODELPARAM_VALUE.NoOfControllers&apos;)) = 1 and spirit:decode(id(&apos;MODELPARAM_VALUE.SYSCLK_TYPE&apos;)) = &quot;DIFF&quot; and spirit:decode(id(&apos;MODELPARAM_VALUE.IS_CLK_SHARED&apos;)) = &quot;FALSE&quot; ">true</xilinx:isEnabled>
           </xilinx:enablement>
         </xilinx:busInterfaceInfo>
       </spirit:vendorExtensions>
@@ -2703,7 +2703,7 @@
       <spirit:vendorExtensions>
         <xilinx:busInterfaceInfo>
           <xilinx:enablement>
-            <xilinx:isEnabled xilinx:resolve="dependent" xilinx:id="BUSIF_ENABLEMENT.SYS_CLK_I" xilinx:dependency=" spirit:decode(id(&apos;MODELPARAM_VALUE.NoOfControllers&apos;)) = 1 and spirit:decode(id(&apos;MODELPARAM_VALUE.SYSCLK_TYPE&apos;)) != &quot;DIFF&quot; and spirit:decode(id(&apos;MODELPARAM_VALUE.IS_CLK_SHARED&apos;)) = &quot;FALSE&quot; ">true</xilinx:isEnabled>
+            <xilinx:isEnabled xilinx:resolve="dependent" xilinx:id="BUSIF_ENABLEMENT.SYS_CLK_I" xilinx:dependency=" spirit:decode(id(&apos;MODELPARAM_VALUE.NoOfControllers&apos;)) = 1 and spirit:decode(id(&apos;MODELPARAM_VALUE.SYSCLK_TYPE&apos;)) != &quot;DIFF&quot; and spirit:decode(id(&apos;MODELPARAM_VALUE.IS_CLK_SHARED&apos;)) = &quot;FALSE&quot; ">false</xilinx:isEnabled>
           </xilinx:enablement>
         </xilinx:busInterfaceInfo>
       </spirit:vendorExtensions>
@@ -23473,11 +23473,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Thu Feb 26 17:40:05 UTC 2026</spirit:value>
+            <spirit:value>Thu Feb 26 19:59:50 UTC 2026</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:29817e3f</spirit:value>
+            <spirit:value>9:dfb101b1</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -23492,11 +23492,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Thu Feb 26 17:40:12 UTC 2026</spirit:value>
+            <spirit:value>Thu Feb 26 19:59:57 UTC 2026</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:29817e3f</spirit:value>
+            <spirit:value>9:dfb101b1</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -23507,7 +23507,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:29817e3f</spirit:value>
+            <spirit:value>9:dfb101b1</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -23523,11 +23523,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Thu Feb 26 17:40:15 UTC 2026</spirit:value>
+            <spirit:value>Thu Feb 26 20:00:00 UTC 2026</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:29817e3f</spirit:value>
+            <spirit:value>9:dfb101b1</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -23543,11 +23543,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Thu Feb 26 17:40:18 UTC 2026</spirit:value>
+            <spirit:value>Thu Feb 26 20:00:03 UTC 2026</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:e90968fe</spirit:value>
+            <spirit:value>9:cb47e037</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -23563,11 +23563,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Thu Feb 26 17:40:22 UTC 2026</spirit:value>
+            <spirit:value>Thu Feb 26 20:00:06 UTC 2026</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:e90968fe</spirit:value>
+            <spirit:value>9:cb47e037</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -23582,11 +23582,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Thu Feb 26 17:40:25 UTC 2026</spirit:value>
+            <spirit:value>Thu Feb 26 20:00:09 UTC 2026</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:29817e3f</spirit:value>
+            <spirit:value>9:dfb101b1</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -23601,11 +23601,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Thu Feb 26 17:40:25 UTC 2026</spirit:value>
+            <spirit:value>Thu Feb 26 20:00:10 UTC 2026</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:29817e3f</spirit:value>
+            <spirit:value>9:dfb101b1</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -23619,11 +23619,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Thu Feb 26 17:40:03 UTC 2026</spirit:value>
+            <spirit:value>Thu Feb 26 19:59:48 UTC 2026</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:29817e3f</spirit:value>
+            <spirit:value>9:dfb101b1</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -23727,7 +23727,7 @@
         <spirit:vendorExtensions>
           <xilinx:portInfo>
             <xilinx:enablement>
-              <xilinx:isEnabled xilinx:resolve="dependent" xilinx:id="PORT_ENABLEMENT.clk_ref_i" xilinx:dependency=" spirit:decode(id(&apos;MODELPARAM_VALUE.REFCLK_TYPE&apos;)) != &quot;DIFF&quot; and spirit:decode(id(&apos;MODELPARAM_VALUE.REFCLK_TYPE&apos;)) != &quot;NONE&quot; ">true</xilinx:isEnabled>
+              <xilinx:isEnabled xilinx:resolve="dependent" xilinx:id="PORT_ENABLEMENT.clk_ref_i" xilinx:dependency=" spirit:decode(id(&apos;MODELPARAM_VALUE.REFCLK_TYPE&apos;)) != &quot;DIFF&quot; and spirit:decode(id(&apos;MODELPARAM_VALUE.REFCLK_TYPE&apos;)) != &quot;NONE&quot; ">false</xilinx:isEnabled>
             </xilinx:enablement>
           </xilinx:portInfo>
         </spirit:vendorExtensions>
@@ -32987,7 +32987,7 @@
         <spirit:vendorExtensions>
           <xilinx:portInfo>
             <xilinx:enablement>
-              <xilinx:isEnabled xilinx:resolve="dependent" xilinx:id="PORT_ENABLEMENT.sys_clk_p" xilinx:dependency=" spirit:decode(id(&apos;MODELPARAM_VALUE.NoOfControllers&apos;)) = 1 and spirit:decode(id(&apos;MODELPARAM_VALUE.SYSCLK_TYPE&apos;)) = &quot;DIFF&quot; and spirit:decode(id(&apos;MODELPARAM_VALUE.IS_CLK_SHARED&apos;)) = &quot;FALSE&quot; ">false</xilinx:isEnabled>
+              <xilinx:isEnabled xilinx:resolve="dependent" xilinx:id="PORT_ENABLEMENT.sys_clk_p" xilinx:dependency=" spirit:decode(id(&apos;MODELPARAM_VALUE.NoOfControllers&apos;)) = 1 and spirit:decode(id(&apos;MODELPARAM_VALUE.SYSCLK_TYPE&apos;)) = &quot;DIFF&quot; and spirit:decode(id(&apos;MODELPARAM_VALUE.IS_CLK_SHARED&apos;)) = &quot;FALSE&quot; ">true</xilinx:isEnabled>
             </xilinx:enablement>
           </xilinx:portInfo>
         </spirit:vendorExtensions>
@@ -33009,7 +33009,7 @@
         <spirit:vendorExtensions>
           <xilinx:portInfo>
             <xilinx:enablement>
-              <xilinx:isEnabled xilinx:resolve="dependent" xilinx:id="PORT_ENABLEMENT.sys_clk_n" xilinx:dependency=" spirit:decode(id(&apos;MODELPARAM_VALUE.NoOfControllers&apos;)) = 1 and spirit:decode(id(&apos;MODELPARAM_VALUE.SYSCLK_TYPE&apos;)) = &quot;DIFF&quot; and spirit:decode(id(&apos;MODELPARAM_VALUE.IS_CLK_SHARED&apos;)) = &quot;FALSE&quot; ">false</xilinx:isEnabled>
+              <xilinx:isEnabled xilinx:resolve="dependent" xilinx:id="PORT_ENABLEMENT.sys_clk_n" xilinx:dependency=" spirit:decode(id(&apos;MODELPARAM_VALUE.NoOfControllers&apos;)) = 1 and spirit:decode(id(&apos;MODELPARAM_VALUE.SYSCLK_TYPE&apos;)) = &quot;DIFF&quot; and spirit:decode(id(&apos;MODELPARAM_VALUE.IS_CLK_SHARED&apos;)) = &quot;FALSE&quot; ">true</xilinx:isEnabled>
             </xilinx:enablement>
           </xilinx:portInfo>
         </spirit:vendorExtensions>
@@ -33031,7 +33031,7 @@
         <spirit:vendorExtensions>
           <xilinx:portInfo>
             <xilinx:enablement>
-              <xilinx:isEnabled xilinx:resolve="dependent" xilinx:id="PORT_ENABLEMENT.sys_clk_i" xilinx:dependency=" spirit:decode(id(&apos;MODELPARAM_VALUE.NoOfControllers&apos;)) = 1 and spirit:decode(id(&apos;MODELPARAM_VALUE.SYSCLK_TYPE&apos;)) != &quot;DIFF&quot; and spirit:decode(id(&apos;MODELPARAM_VALUE.IS_CLK_SHARED&apos;)) = &quot;FALSE&quot; ">true</xilinx:isEnabled>
+              <xilinx:isEnabled xilinx:resolve="dependent" xilinx:id="PORT_ENABLEMENT.sys_clk_i" xilinx:dependency=" spirit:decode(id(&apos;MODELPARAM_VALUE.NoOfControllers&apos;)) = 1 and spirit:decode(id(&apos;MODELPARAM_VALUE.SYSCLK_TYPE&apos;)) != &quot;DIFF&quot; and spirit:decode(id(&apos;MODELPARAM_VALUE.IS_CLK_SHARED&apos;)) = &quot;FALSE&quot; ">false</xilinx:isEnabled>
             </xilinx:enablement>
           </xilinx:portInfo>
         </spirit:vendorExtensions>
@@ -107846,7 +107846,7 @@
         <spirit:name>REFCLK_TYPE</spirit:name>
         <spirit:displayName>Type of ref clk</spirit:displayName>
         <spirit:description>Type of ref clk</spirit:description>
-        <spirit:value spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.REFCLK_TYPE" spirit:choiceRef="choice_list_350ebf94" spirit:configGroups="default">NOBUF</spirit:value>
+        <spirit:value spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.REFCLK_TYPE" spirit:choiceRef="choice_list_350ebf94" spirit:configGroups="default">NONE</spirit:value>
       </spirit:modelParameter>
       <spirit:modelParameter spirit:dataType="string">
         <spirit:name>MEM_TYPE</spirit:name>
@@ -107876,7 +107876,7 @@
         <spirit:name>SYSCLK_TYPE</spirit:name>
         <spirit:displayName>Type of sys clk</spirit:displayName>
         <spirit:description>Type of sys clk</spirit:description>
-        <spirit:value spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.SYSCLK_TYPE" spirit:choiceRef="choice_list_1570a756" spirit:configGroups="default">NOBUF</spirit:value>
+        <spirit:value spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.SYSCLK_TYPE" spirit:choiceRef="choice_list_1570a756" spirit:configGroups="default">DIFF</spirit:value>
       </spirit:modelParameter>
       <spirit:modelParameter spirit:dataType="long">
         <spirit:name>USE_AXI</spirit:name>
@@ -108260,7 +108260,7 @@
         <spirit:name>FREQ_HZ</spirit:name>
         <spirit:displayName>defines the UI Clk freq</spirit:displayName>
         <spirit:description>defines the UI Clk freq</spirit:description>
-        <spirit:value spirit:format="float" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.FREQ_HZ" spirit:configGroups="default" spirit:minimum="0.0" spirit:maximum="800000000.0" spirit:rangeType="long">100000000</spirit:value>
+        <spirit:value spirit:format="float" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.FREQ_HZ" spirit:configGroups="default" spirit:minimum="0.0" spirit:maximum="800000000.0" spirit:rangeType="long">200000000</spirit:value>
       </spirit:modelParameter>
       <spirit:modelParameter spirit:dataType="float">
         <spirit:name>PHASE</spirit:name>
@@ -115742,7 +115742,7 @@
     <spirit:parameter>
       <spirit:name>XML_INPUT_FILE</spirit:name>
       <spirit:displayName>XML_INPUT_FILE</spirit:displayName>
-      <spirit:value spirit:resolve="user" spirit:id="PARAM_VALUE.XML_INPUT_FILE" spirit:order="2">mig_a.prj</spirit:value>
+      <spirit:value spirit:resolve="user" spirit:id="PARAM_VALUE.XML_INPUT_FILE" spirit:order="2">mig_b.prj</spirit:value>
     </spirit:parameter>
     <spirit:parameter>
       <spirit:name>RESET_BOARD_INTERFACE</spirit:name>

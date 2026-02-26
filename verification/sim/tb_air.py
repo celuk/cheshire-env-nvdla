@@ -339,6 +339,24 @@ async def tair(dut):
     clk_ns = 20
     baud_rate = 115200
 
+    if hasattr(dut, "clk_p") and hasattr(dut, "clk_n"):
+        clk_ns2 = 5
+        # drive the positive pin
+        clk2 = dut.clk_p
+        cocotb.start_soon(Clock(clk2, clk_ns2, "ns").start(start_high=False))
+
+        # in parallel, tie clk_n to the inverse of clk_p
+        async def drive_inverted():
+            # initialise
+            dut.clk_n.value = 1
+            while True:
+                await RisingEdge(clk2)
+                dut.clk_n.value = 0
+                await FallingEdge(clk2)
+                dut.clk_n.value = 1
+
+        cocotb.start_soon(drive_inverted())
+
     if hasattr(dut, "sys_clk_p") and hasattr(dut, "sys_clk_n"):
         clk_ns = 5
         # drive the positive pin

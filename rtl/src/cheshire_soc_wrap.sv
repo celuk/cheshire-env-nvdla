@@ -9,8 +9,12 @@
 module cheshire_soc_wrap import cheshire_pkg::*;
 (
   `ifdef ZC706
-  input  wire sys_clk_p,
-  input  wire sys_clk_n,
+  input  wire clk_p,
+  input  wire clk_n,
+  `ifdef ZC706_MIG
+  input wire sys_clk_p,
+  input wire sys_clk_n,
+  `endif
   `elsif GENESYS2
   input  wire sys_clk_p,
   input  wire sys_clk_n,
@@ -72,6 +76,13 @@ module cheshire_soc_wrap import cheshire_pkg::*;
   `endif
 );
 
+`ifdef ZC706
+  `ifndef ZC706_MIG
+    wire sys_clk_p;
+    wire sys_clk_n;
+  `endif
+`endif
+
   logic [1:0] boot_mode_i = 2'b00;
   logic test_mode = 0;
   // JTAG
@@ -118,10 +129,10 @@ module cheshire_soc_wrap import cheshire_pkg::*;
      wire rst_n = rst_ni & system_reset_o & clkwiz_locked;
   `elsif ZC706
      wire pll_locked;
-     wire clk100 = 0;
+     wire clk100;
      wire clk_ddr;
      wire clk_ref;
-     wire clk_ddr_dqs = 0;
+     wire clk_ddr_dqs;
      wire clk_i;
 
      //wire sys_clk;
@@ -136,18 +147,18 @@ module cheshire_soc_wrap import cheshire_pkg::*;
      clk_wiz_0 u_pll
      //clk_wiz_1 u_pll
      (
-        .clk_in1_p(sys_clk_p),
-        .clk_in1_n(sys_clk_n)
+        .clk_in1_p(clk_p),
+        .clk_in1_n(clk_n)
         //.clk_in1(sys_clk)
 
         ,.reset(0)
 
         // first values for 100mhz, second values for 50mhz
-        ,.clk_out1(clk_i)      // 100, 50
+        ,.clk_out1(clk100)      // 100, 50
         ,.clk_out2(clk_ddr)     // 400, 200
         ,.clk_out3(clk_ref)     // 200, 200
-        //,.clk_out4(clk_ddr_dqs) // 400, 200 (phase 90)
-        //,.clk_out5(clk_i)       // 100, 50
+        ,.clk_out4(clk_ddr_dqs) // 400, 200 (phase 90)
+        ,.clk_out5(clk_i)       // 100, 50
         ,.locked()
      );
 
@@ -581,7 +592,7 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     .clk_ref      ( clk_ref ),
     `endif
     .clk_ddr_dqs  ( clk_ddr_dqs ),
-    `ifdef ZC706
+    `ifdef ZC706_MIG
     .sys_clk_p    ( sys_clk_p ),
     .sys_clk_n    ( sys_clk_n ),
     `elsif GENESYS2

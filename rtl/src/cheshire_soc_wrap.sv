@@ -70,9 +70,9 @@ module cheshire_soc_wrap import cheshire_pkg::*;
   input wire jtag_tms_i,
   input wire jtag_tdi_i,
   output wire jtag_tdo_o
-  `ifdef GENESYS2
+  //`ifdef GENESYS2
   , input wire jtag_trst_ni
-  `endif
+  //`endif
   `endif
 );
 
@@ -88,11 +88,11 @@ module cheshire_soc_wrap import cheshire_pkg::*;
   // JTAG
   logic jtag_tck = jtag_tck_i;
   logic jtag_trst_n;
-  `ifdef GENESYS2
+  //`ifdef GENESYS2
   assign jtag_trst_n = jtag_trst_ni;
-  `else
-  assign jtag_trst_n = 1'b1;
-  `endif
+  //`else
+  //assign jtag_trst_n = 1'b1;
+  //`endif
   logic jtag_tms = jtag_tms_i;
   logic jtag_tdi = jtag_tdi_i;
   logic jtag_tdo;

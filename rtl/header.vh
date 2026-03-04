@@ -6,7 +6,7 @@
 //`define SIM
 //`define GENESYS2
 `define ZC706
-`define ZC706_MIG
+//`define ZC706_MIG
 
 `define CPU_CLK 50_000_000
 `define BAUD_RATE 115200

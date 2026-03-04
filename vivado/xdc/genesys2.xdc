@@ -154,6 +154,14 @@ set_property VCCAUX_IO HIGH [get_ports {ddr3_dm[1]}]
 set_property IOSTANDARD SSTL15 [get_ports {ddr3_dm[1]}]
 set_property PACKAGE_PIN AF3 [get_ports {ddr3_dm[1]}]
 
+set_property VCCAUX_IO HIGH [get_ports {ddr3_dm[2]}]
+set_property IOSTANDARD SSTL15 [get_ports {ddr3_dm[2]}]
+set_property PACKAGE_PIN AH4 [get_ports {ddr3_dm[2]}]
+
+set_property VCCAUX_IO HIGH [get_ports {ddr3_dm[3]}]
+set_property IOSTANDARD SSTL15 [get_ports {ddr3_dm[3]}]
+set_property PACKAGE_PIN AF8 [get_ports {ddr3_dm[3]}]
+
 ##
 
 ## DDR3_BA
@@ -179,6 +187,10 @@ set_property PACKAGE_PIN AE9 [get_ports {ddr3_ba[0]}]
 ##
 
 ## DDR3_ADDR
+
+set_property VCCAUX_IO HIGH [get_ports {ddr3_addr[14]}]
+set_property IOSTANDARD SSTL15 [get_ports {ddr3_addr[14]}]
+set_property PACKAGE_PIN AH9 [get_ports {ddr3_addr[14]}]
 
 # PadFunction: IO_L1N_T0_34
 set_property VCCAUX_IO HIGH [get_ports {ddr3_addr[13]}]
@@ -366,6 +378,71 @@ set_property VCCAUX_IO HIGH [get_ports {ddr3_dq[15]}]
 set_property IOSTANDARD SSTL15_T_DCI [get_ports {ddr3_dq[15]}]
 set_property PACKAGE_PIN AF6 [get_ports {ddr3_dq[15]}]
 
+
+set_property VCCAUX_IO HIGH [get_ports {ddr3_dq[16]}]
+set_property IOSTANDARD SSTL15_T_DCI [get_ports {ddr3_dq[16]}]
+set_property PACKAGE_PIN AJ4 [get_ports {ddr3_dq[16]}]
+
+set_property VCCAUX_IO HIGH [get_ports {ddr3_dq[17]}]
+set_property IOSTANDARD SSTL15_T_DCI [get_ports {ddr3_dq[17]}]
+set_property PACKAGE_PIN AH6 [get_ports {ddr3_dq[17]}]
+
+set_property VCCAUX_IO HIGH [get_ports {ddr3_dq[18]}]
+set_property IOSTANDARD SSTL15_T_DCI [get_ports {ddr3_dq[18]}]
+set_property PACKAGE_PIN AH5 [get_ports {ddr3_dq[18]}]
+
+set_property VCCAUX_IO HIGH [get_ports {ddr3_dq[19]}]
+set_property IOSTANDARD SSTL15_T_DCI [get_ports {ddr3_dq[19]}]
+set_property PACKAGE_PIN AH2 [get_ports {ddr3_dq[19]}]
+
+set_property VCCAUX_IO HIGH [get_ports {ddr3_dq[20]}]
+set_property IOSTANDARD SSTL15_T_DCI [get_ports {ddr3_dq[20]}]
+set_property PACKAGE_PIN AJ2 [get_ports {ddr3_dq[20]}]
+
+set_property VCCAUX_IO HIGH [get_ports {ddr3_dq[21]}]
+set_property IOSTANDARD SSTL15_T_DCI [get_ports {ddr3_dq[21]}]
+set_property PACKAGE_PIN AJ1 [get_ports {ddr3_dq[21]}]
+
+set_property VCCAUX_IO HIGH [get_ports {ddr3_dq[22]}]
+set_property IOSTANDARD SSTL15_T_DCI [get_ports {ddr3_dq[22]}]
+set_property PACKAGE_PIN AK1 [get_ports {ddr3_dq[22]}]
+
+set_property VCCAUX_IO HIGH [get_ports {ddr3_dq[23]}]
+set_property IOSTANDARD SSTL15_T_DCI [get_ports {ddr3_dq[23]}]
+set_property PACKAGE_PIN AJ3 [get_ports {ddr3_dq[23]}]
+
+set_property VCCAUX_IO HIGH [get_ports {ddr3_dq[24]}]
+set_property IOSTANDARD SSTL15_T_DCI [get_ports {ddr3_dq[24]}]
+set_property PACKAGE_PIN AF7 [get_ports {ddr3_dq[24]}]
+
+set_property VCCAUX_IO HIGH [get_ports {ddr3_dq[25]}]
+set_property IOSTANDARD SSTL15_T_DCI [get_ports {ddr3_dq[25]}]
+set_property PACKAGE_PIN AG7 [get_ports {ddr3_dq[25]}]
+
+set_property VCCAUX_IO HIGH [get_ports {ddr3_dq[26]}]
+set_property IOSTANDARD SSTL15_T_DCI [get_ports {ddr3_dq[26]}]
+set_property PACKAGE_PIN AJ6 [get_ports {ddr3_dq[26]}]
+
+set_property VCCAUX_IO HIGH [get_ports {ddr3_dq[27]}]
+set_property IOSTANDARD SSTL15_T_DCI [get_ports {ddr3_dq[27]}]
+set_property PACKAGE_PIN AK6 [get_ports {ddr3_dq[27]}]
+
+set_property VCCAUX_IO HIGH [get_ports {ddr3_dq[28]}]
+set_property IOSTANDARD SSTL15_T_DCI [get_ports {ddr3_dq[28]}]
+set_property PACKAGE_PIN AJ8 [get_ports {ddr3_dq[28]}]
+
+set_property VCCAUX_IO HIGH [get_ports {ddr3_dq[29]}]
+set_property IOSTANDARD SSTL15_T_DCI [get_ports {ddr3_dq[29]}]
+set_property PACKAGE_PIN AK8 [get_ports {ddr3_dq[29]}]
+
+set_property VCCAUX_IO HIGH [get_ports {ddr3_dq[30]}]
+set_property IOSTANDARD SSTL15_T_DCI [get_ports {ddr3_dq[30]}]
+set_property PACKAGE_PIN AK5 [get_ports {ddr3_dq[30]}]
+
+set_property VCCAUX_IO HIGH [get_ports {ddr3_dq[31]}]
+set_property IOSTANDARD SSTL15_T_DCI [get_ports {ddr3_dq[31]}]
+set_property PACKAGE_PIN AK4 [get_ports {ddr3_dq[31]}]
+
 ##
 
 ## DDR3_DQS_P
@@ -385,6 +462,14 @@ set_property IOSTANDARD DIFF_SSTL15_T_DCI [get_ports ddr3_dqs_p[1]]
 #set_property IOSTANDARD SSTL15_T_DCI [get_ports ddr3_dqs_p[1]]
 set_property PACKAGE_PIN AG4 [get_ports ddr3_dqs_p[1]]
 
+set_property VCCAUX_IO HIGH [get_ports ddr3_dqs_p[2]]
+set_property IOSTANDARD DIFF_SSTL15_T_DCI [get_ports ddr3_dqs_p[2]]
+set_property PACKAGE_PIN AG2 [get_ports ddr3_dqs_p[2]]
+
+set_property VCCAUX_IO HIGH [get_ports ddr3_dqs_p[3]]
+set_property IOSTANDARD DIFF_SSTL15_T_DCI [get_ports ddr3_dqs_p[3]]
+set_property PACKAGE_PIN AH7 [get_ports ddr3_dqs_p[3]]
+
 ##
 
 ## DDR3_DQS_N
@@ -402,6 +487,14 @@ set_property VCCAUX_IO HIGH [get_ports ddr3_dqs_n[1]]
 set_property IOSTANDARD DIFF_SSTL15_T_DCI [get_ports ddr3_dqs_n[1]]
 #set_property IOSTANDARD SSTL15_T_DCI [get_ports ddr3_dqs_n[1]]
 set_property PACKAGE_PIN AG3 [get_ports ddr3_dqs_n[1]]
+
+set_property VCCAUX_IO HIGH [get_ports ddr3_dqs_n[2]]
+set_property IOSTANDARD DIFF_SSTL15_T_DCI [get_ports ddr3_dqs_n[2]]
+set_property PACKAGE_PIN AH1 [get_ports ddr3_dqs_n[2]]
+
+set_property VCCAUX_IO HIGH [get_ports ddr3_dqs_n[3]]
+set_property IOSTANDARD DIFF_SSTL15_T_DCI [get_ports ddr3_dqs_n[3]]
+set_property PACKAGE_PIN AJ7 [get_ports ddr3_dqs_n[3]]
 
 ##
 

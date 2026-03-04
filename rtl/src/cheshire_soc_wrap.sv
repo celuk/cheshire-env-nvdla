@@ -56,12 +56,12 @@ module cheshire_soc_wrap import cheshire_pkg::*;
   inout  logic [63:0] ddr3_dq
   `else
   output logic [2:0] ddr3_ba,
-  output logic [13:0] ddr3_addr,
+  output logic [14:0] ddr3_addr,
   output logic ddr3_odt,
-  inout  logic [1:0] ddr3_dm,
-  inout  logic [1:0] ddr3_dqs_p,
-  inout  logic [1:0] ddr3_dqs_n,
-  inout  logic [15:0] ddr3_dq
+  inout  logic [3:0] ddr3_dm,
+  inout  logic [3:0] ddr3_dqs_p,
+  inout  logic [3:0] ddr3_dqs_n,
+  inout  logic [31:0] ddr3_dq
   `endif
 `endif
 
@@ -570,6 +570,17 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     `endif
   `endif
 
+  `ifdef ZC706
+  `ifndef ZC706_MIG
+    logic [13:0] ddr3_addr_int;
+    logic [1:0]  ddr3_dm_int;
+
+    assign ddr3_addr    = {1'b0, ddr3_addr_int};
+    assign ddr3_dm[1:0] = ddr3_dm_int;
+    assign ddr3_dm[3:2] = 2'b11; // mask writes on unused upper x16 lane
+  `endif
+  `endif
+
   dram_wrapper #(
     .axi_soc_aw_chan_t ( axi_llc_aw_chan_t ),
     .axi_soc_w_chan_t  ( axi_llc_w_chan_t  ),
@@ -611,10 +622,30 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     // PHY interfaces
     .ddr3_ck_p    ( ddr3_ck_p ),
     .ddr3_ck_n    ( ddr3_ck_n ),
+    `ifdef ZC706
+    `ifndef ZC706_MIG
+    .ddr3_dq      ( ddr3_dq[15:0] ),
+    .ddr3_dqs_n   ( ddr3_dqs_n[1:0] ),
+    .ddr3_dqs_p   ( ddr3_dqs_p[1:0] ),
+    `else
     .ddr3_dq      ( ddr3_dq ),
     .ddr3_dqs_n   ( ddr3_dqs_n ),
     .ddr3_dqs_p   ( ddr3_dqs_p ),
+    `endif
+    `else
+    .ddr3_dq      ( ddr3_dq ),
+    .ddr3_dqs_n   ( ddr3_dqs_n ),
+    .ddr3_dqs_p   ( ddr3_dqs_p ),
+    `endif
+    `ifdef ZC706
+    `ifndef ZC706_MIG
+    .ddr3_addr    ( ddr3_addr_int ),
+    `else
     .ddr3_addr    ( ddr3_addr ),
+    `endif
+    `else
+    .ddr3_addr    ( ddr3_addr ),
+    `endif
     .ddr3_ba      ( ddr3_ba ),
     .ddr3_ras_n   ( ddr3_ras_n ),
     .ddr3_cas_n   ( ddr3_cas_n ),
@@ -622,7 +653,15 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     .ddr3_reset_n ( ddr3_reset_n ),
     .ddr3_cke     ( ddr3_cke ),
     .ddr3_cs_n    ( ddr3_cs_n ),
+    `ifdef ZC706
+    `ifndef ZC706_MIG
+    .ddr3_dm      ( ddr3_dm_int ),
+    `else
     .ddr3_dm      ( ddr3_dm ),
+    `endif
+    `else
+    .ddr3_dm      ( ddr3_dm ),
+    `endif
     .ddr3_odt     ( ddr3_odt ),
 
     // DRAM AXI interface

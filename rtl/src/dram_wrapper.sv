@@ -69,21 +69,6 @@ module dram_wrapper #(
   output [7:0]  ddr3_dm,
   output [0:0]  ddr3_odt,
   `else
-  `ifdef DDR_32X
-  inout  [31:0] ddr3_dq,
-  inout  [3:0]  ddr3_dqs_n,
-  inout  [3:0]  ddr3_dqs_p,
-  output [14:0] ddr3_addr,
-  output [2:0]  ddr3_ba,
-  output        ddr3_ras_n,
-  output        ddr3_cas_n,
-  output        ddr3_we_n,
-  output        ddr3_reset_n,
-  output        ddr3_cke,
-  output        ddr3_cs_n,
-  output [3:0]  ddr3_dm,
-  output        ddr3_odt,
-  `else
   inout  [15:0] ddr3_dq,
   inout  [1:0]  ddr3_dqs_n,
   inout  [1:0]  ddr3_dqs_p,
@@ -97,7 +82,6 @@ module dram_wrapper #(
   output        ddr3_cs_n,
   output [1:0]  ddr3_dm,
   output        ddr3_odt,
-  `endif
   `endif
   // DRAM AXI interface
   input  axi_soc_req_t  soc_req_i,

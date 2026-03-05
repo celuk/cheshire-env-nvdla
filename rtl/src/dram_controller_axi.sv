@@ -58,21 +58,12 @@ module dram_controller_axi #(
     ,output ddr3_cas_n
     ,output ddr3_we_n
     ,output [2:0] ddr3_ba
-    `ifdef DDR_32X
-    ,output [14:0] ddr3_addr
-    ,output ddr3_odt
-    ,output [3:0] ddr3_dm
-    ,inout [3:0] ddr3_dqs_p
-    ,inout [3:0] ddr3_dqs_n
-    ,inout [31:0] ddr3_dq
-    `else
     ,output [13:0] ddr3_addr
     ,output ddr3_odt
     ,output [1:0] ddr3_dm
     ,inout [1:0] ddr3_dqs_p
     ,inout [1:0] ddr3_dqs_n
     ,inout [15:0] ddr3_dq
-    `endif
  
     ,input clk100
     ,input clk_ddr

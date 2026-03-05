@@ -1,10 +1,10 @@
 -- Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
 -- --------------------------------------------------------------------------------
--- Tool Version: Vivado v.2022.2 (lin64) Build 3671981 Fri Oct 14 04:59:54 MDT 2022
--- Date        : Wed Mar  4 22:53:54 2026
--- Host        : karpuz running 64-bit Ubuntu 22.04.5 LTS
--- Command     : write_vhdl -force -mode funcsim
---               /home/shc/projects/cheshire-env-nvdla/vivado/cheshire_genesys2/cheshire_genesys2.gen/sources_1/ip/clk_wiz_0/clk_wiz_0_sim_netlist.vhdl
+-- Tool Version: Vivado v.2022.2 (win64) Build 3671981 Fri Oct 14 05:00:03 MDT 2022
+-- Date        : Tue Feb 17 13:00:28 2026
+-- Host        : ECIT01684 running 64-bit major release  (build 9200)
+-- Command     : write_vhdl -force -mode funcsim -rename_top clk_wiz_0 -prefix
+--               clk_wiz_0_ clk_wiz_0_sim_netlist.vhdl
 -- Design      : clk_wiz_0
 -- Purpose     : This VHDL netlist is a functional simulation representation of the design and should not be modified or
 --               synthesized. This netlist cannot be used for SDF annotated simulation.
@@ -14,7 +14,7 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 library UNISIM;
 use UNISIM.VCOMPONENTS.ALL;
-entity clk_wiz_0_clk_wiz is
+entity clk_wiz_0_clk_wiz_0_clk_wiz is
   port (
     clk_out1 : out STD_LOGIC;
     clk_out2 : out STD_LOGIC;
@@ -23,13 +23,11 @@ entity clk_wiz_0_clk_wiz is
     clk_out5 : out STD_LOGIC;
     reset : in STD_LOGIC;
     locked : out STD_LOGIC;
-    clk_in1_p : in STD_LOGIC;
-    clk_in1_n : in STD_LOGIC
+    clk_in1 : in STD_LOGIC
   );
-end clk_wiz_0_clk_wiz;
+end clk_wiz_0_clk_wiz_0_clk_wiz;
 
-architecture STRUCTURE of clk_wiz_0_clk_wiz is
-  signal clk_in1_clk_wiz_0 : STD_LOGIC;
+architecture STRUCTURE of clk_wiz_0_clk_wiz_0_clk_wiz is
   signal clk_out1_clk_wiz_0 : STD_LOGIC;
   signal clk_out2_clk_wiz_0 : STD_LOGIC;
   signal clk_out3_clk_wiz_0 : STD_LOGIC;
@@ -51,13 +49,6 @@ architecture STRUCTURE of clk_wiz_0_clk_wiz is
   signal NLW_mmcm_adv_inst_DO_UNCONNECTED : STD_LOGIC_VECTOR ( 15 downto 0 );
   attribute BOX_TYPE : string;
   attribute BOX_TYPE of clkf_buf : label is "PRIMITIVE";
-  attribute BOX_TYPE of clkin1_ibufgds : label is "PRIMITIVE";
-  attribute CAPACITANCE : string;
-  attribute CAPACITANCE of clkin1_ibufgds : label is "DONT_CARE";
-  attribute IBUF_DELAY_VALUE : string;
-  attribute IBUF_DELAY_VALUE of clkin1_ibufgds : label is "0";
-  attribute IFD_DELAY_VALUE : string;
-  attribute IFD_DELAY_VALUE of clkin1_ibufgds : label is "AUTO";
   attribute BOX_TYPE of clkout1_buf : label is "PRIMITIVE";
   attribute BOX_TYPE of clkout2_buf : label is "PRIMITIVE";
   attribute BOX_TYPE of clkout3_buf : label is "PRIMITIVE";
@@ -69,17 +60,6 @@ clkf_buf: unisim.vcomponents.BUFG
      port map (
       I => clkfbout_clk_wiz_0,
       O => clkfbout_buf_clk_wiz_0
-    );
-clkin1_ibufgds: unisim.vcomponents.IBUFDS
-    generic map(
-      CCIO_EN_M => "TRUE",
-      CCIO_EN_S => "TRUE",
-      IOSTANDARD => "DEFAULT"
-    )
-        port map (
-      I => clk_in1_p,
-      IB => clk_in1_n,
-      O => clk_in1_clk_wiz_0
     );
 clkout1_buf: unisim.vcomponents.BUFG
      port map (
@@ -162,7 +142,7 @@ mmcm_adv_inst: unisim.vcomponents.MMCME2_ADV
       CLKFBOUT => clkfbout_clk_wiz_0,
       CLKFBOUTB => NLW_mmcm_adv_inst_CLKFBOUTB_UNCONNECTED,
       CLKFBSTOPPED => NLW_mmcm_adv_inst_CLKFBSTOPPED_UNCONNECTED,
-      CLKIN1 => clk_in1_clk_wiz_0,
+      CLKIN1 => clk_in1,
       CLKIN2 => '0',
       CLKINSEL => '1',
       CLKINSTOPPED => NLW_mmcm_adv_inst_CLKINSTOPPED_UNCONNECTED,
@@ -206,8 +186,7 @@ entity clk_wiz_0 is
     clk_out5 : out STD_LOGIC;
     reset : in STD_LOGIC;
     locked : out STD_LOGIC;
-    clk_in1_p : in STD_LOGIC;
-    clk_in1_n : in STD_LOGIC
+    clk_in1 : in STD_LOGIC
   );
   attribute NotValidForBitStream : boolean;
   attribute NotValidForBitStream of clk_wiz_0 : entity is true;
@@ -215,10 +194,9 @@ end clk_wiz_0;
 
 architecture STRUCTURE of clk_wiz_0 is
 begin
-inst: entity work.clk_wiz_0_clk_wiz
+inst: entity work.clk_wiz_0_clk_wiz_0_clk_wiz
      port map (
-      clk_in1_n => clk_in1_n,
-      clk_in1_p => clk_in1_p,
+      clk_in1 => clk_in1,
       clk_out1 => clk_out1,
       clk_out2 => clk_out2,
       clk_out3 => clk_out3,

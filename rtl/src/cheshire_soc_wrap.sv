@@ -55,15 +55,6 @@ module cheshire_soc_wrap import cheshire_pkg::*;
   inout  logic [7:0] ddr3_dqs_n,
   inout  logic [63:0] ddr3_dq
   `else
-  `ifdef DDR_32X
-  output logic [2:0] ddr3_ba,
-  output logic [14:0] ddr3_addr,
-  output logic ddr3_odt,
-  inout  logic [3:0] ddr3_dm,
-  inout  logic [3:0] ddr3_dqs_p,
-  inout  logic [3:0] ddr3_dqs_n,
-  inout  logic [31:0] ddr3_dq
-  `else
   output logic [2:0] ddr3_ba,
   output logic [13:0] ddr3_addr,
   output logic ddr3_odt,
@@ -72,7 +63,6 @@ module cheshire_soc_wrap import cheshire_pkg::*;
   inout  logic [1:0] ddr3_dqs_n,
   inout  logic [15:0] ddr3_dq
   `endif
-  `endif
 `endif
 
   `ifdef JTAG
@@ -80,9 +70,9 @@ module cheshire_soc_wrap import cheshire_pkg::*;
   input wire jtag_tms_i,
   input wire jtag_tdi_i,
   output wire jtag_tdo_o
-  //`ifdef GENESYS2
+  `ifdef GENESYS2
   , input wire jtag_trst_ni
-  //`endif
+  `endif
   `endif
 );
 
@@ -98,11 +88,11 @@ module cheshire_soc_wrap import cheshire_pkg::*;
   // JTAG
   logic jtag_tck = jtag_tck_i;
   logic jtag_trst_n;
-  //`ifdef GENESYS2
+  `ifdef GENESYS2
   assign jtag_trst_n = jtag_trst_ni;
-  //`else
-  //assign jtag_trst_n = 1'b1;
-  //`endif
+  `else
+  assign jtag_trst_n = 1'b1;
+  `endif
   logic jtag_tms = jtag_tms_i;
   logic jtag_tdi = jtag_tdi_i;
   logic jtag_tdo;

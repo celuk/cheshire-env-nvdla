@@ -10,7 +10,6 @@ module uart_programmer (
    ,output logic system_reset_o
    ,output logic prog_mode_led_o
 
-   // New outputs for DRAM programming
    ,output logic dram_write_we_o,
    output logic [31:0] dram_write_addr_o,
    output logic [31:0] dram_write_data_o,
@@ -246,10 +245,9 @@ module uart_programmer (
 
    // Output assignments
    assign prog_mode_led_o = (state_prog == SequenceDramWriteProgram);
-   assign system_reset_o = dram_prog_sys_rst_n;
+   assign system_reset_o = dram_prog_sys_rst_n & ~soft_rst;
    assign ram_prog_rd_en = (state_prog != SequenceDramWriteFinish);
 
-   // New DRAM output assignments
    assign dram_write_we_o   = dram_prog_inst_valid;
    assign dram_write_addr_o = dram_prog_addr;
    assign dram_write_data_o = dram_prog_instruction;

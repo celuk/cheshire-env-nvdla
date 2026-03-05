@@ -625,7 +625,7 @@ package cheshire_pkg;
     Nvdla             : 1,
     AxiRt             : 0,
     Clic              : 0,
-    IrqRouter         : 0,
+    IrqRouter         : 1,
     BusErr            : 1,
     // Debug
     DbgIdCode         : CheshireIdCode,

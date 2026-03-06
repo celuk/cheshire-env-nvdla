@@ -60,6 +60,7 @@ set_property IOSTANDARD LVCMOS12 [get_ports jtag_tdi_i]
 set_property PACKAGE_PIN AP11 [get_ports jtag_trst_ni]
 set_property IOSTANDARD LVCMOS12 [get_ports jtag_trst_ni]
 # devami AP12 (yesil), AN11 (mor)
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets jtag_tck_i_IBUF_inst/O]
 
 ## JTAG
 # ZCU106 JTAG is just for PS side?? we need to drive from pmod headers?

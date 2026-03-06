@@ -776,32 +776,35 @@ module cheshire_soc import cheshire_pkg::*; import cvxif_pkg::*; #(
       core_out_rsp        = core_ur_rsp;
     end
 
-    // CVA6's ID encoding is wasteful; remap it statically pack into available bits
-    axi_id_serialize #(
-      .AxiSlvPortIdWidth      ( Cva6IdWidth     ),
-      .AxiSlvPortMaxTxns      ( Cfg.CoreMaxTxns ),
-      .AxiMstPortIdWidth      ( Cfg.AxiMstIdWidth      ),
-      .AxiMstPortMaxUniqIds   ( 2 ** Cfg.AxiMstIdWidth ),
-      .AxiMstPortMaxTxnsPerId ( Cfg.CoreMaxTxnsPerId   ),
-      .AxiAddrWidth           ( Cfg.AddrWidth    ),
-      .AxiDataWidth           ( Cfg.AxiDataWidth ),
-      .AxiUserWidth           ( Cfg.AxiUserWidth ),
-      .AtopSupport            ( 1 ),
-      .slv_req_t              ( axi_cva6_req_t ),
-      .slv_resp_t             ( axi_cva6_rsp_t ),
-      .mst_req_t              ( axi_mst_req_t  ),
-      .mst_resp_t             ( axi_mst_rsp_t  ),
-      .MstIdBaseOffset        ( '0 ),
-      .IdMapNumEntries        ( Cva6IdsUsed ),
-      .IdMap                  ( gen_cva6_id_map(Cfg) )
-    ) i_axi_id_serialize (
-      .clk_i,
-      .rst_ni,
-      .slv_req_i  ( core_ur_req ),
-      .slv_resp_o ( core_ur_rsp ),
-      .mst_req_o  ( axi_in_req[AxiIn.cores[i]] ),
-      .mst_resp_i ( axi_in_rsp[AxiIn.cores[i]] )
-    );
+    //// CVA6's ID encoding is wasteful; remap it statically pack into available bits
+    //axi_id_serialize #(
+    //  .AxiSlvPortIdWidth      ( Cva6IdWidth     ),
+    //  .AxiSlvPortMaxTxns      ( Cfg.CoreMaxTxns ),
+    //  .AxiMstPortIdWidth      ( Cfg.AxiMstIdWidth      ),
+    //  .AxiMstPortMaxUniqIds   ( 2 ** Cfg.AxiMstIdWidth ),
+    //  .AxiMstPortMaxTxnsPerId ( Cfg.CoreMaxTxnsPerId   ),
+    //  .AxiAddrWidth           ( Cfg.AddrWidth    ),
+    //  .AxiDataWidth           ( Cfg.AxiDataWidth ),
+    //  .AxiUserWidth           ( Cfg.AxiUserWidth ),
+    //  .AtopSupport            ( 1 ),
+    //  .slv_req_t              ( axi_cva6_req_t ),
+    //  .slv_resp_t             ( axi_cva6_rsp_t ),
+    //  .mst_req_t              ( axi_mst_req_t  ),
+    //  .mst_resp_t             ( axi_mst_rsp_t  ),
+    //  .MstIdBaseOffset        ( '0 ),
+    //  .IdMapNumEntries        ( Cva6IdsUsed ),
+    //  .IdMap                  ( gen_cva6_id_map(Cfg) )
+    //) i_axi_id_serialize (
+    //  .clk_i,
+    //  .rst_ni,
+    //  .slv_req_i  ( core_ur_req ),
+    //  .slv_resp_o ( core_ur_rsp ),
+    //  .mst_req_o  ( axi_in_req[AxiIn.cores[i]] ),
+    //  .mst_resp_i ( axi_in_rsp[AxiIn.cores[i]] )
+    //);
+
+    assign axi_in_req[AxiIn.cores[i]] = axi_mst_req_t'(core_ur_req);
+    assign core_ur_rsp = axi_cva6_rsp_t'(axi_in_rsp[AxiIn.cores[i]]);
   end
 
   /////////////////////////
@@ -1910,29 +1913,32 @@ module cheshire_soc import cheshire_pkg::*; import cvxif_pkg::*; #(
     assign nvdla_rlast   = nvdla_raw_rsp.r.last;
     assign nvdla_rvalid  = nvdla_raw_rsp.r_valid;
 
-    // Serialize NVDLA IDs (8bit) to match Cheshire AXI master ID width (2bit)
-    axi_id_serialize #(
-      .AxiSlvPortIdWidth      ( NvdlaIdWidth ),
-      .AxiSlvPortMaxTxns      ( Cfg.CoreMaxTxns ),
-      .AxiMstPortIdWidth      ( Cfg.AxiMstIdWidth ),
-      .AxiMstPortMaxUniqIds   ( 2 ** Cfg.AxiMstIdWidth ),
-      .AxiMstPortMaxTxnsPerId ( Cfg.CoreMaxTxnsPerId ),
-      .AxiAddrWidth           ( Cfg.AddrWidth ),
-      .AxiDataWidth           ( Cfg.AxiDataWidth ),
-      .AxiUserWidth           ( Cfg.AxiUserWidth ),
-      .AtopSupport            ( 0 ),
-      .slv_req_t              ( nvdla_axi_req_t ),
-      .slv_resp_t             ( nvdla_axi_rsp_t ),
-      .mst_req_t              ( axi_mst_req_t ),
-      .mst_resp_t             ( axi_mst_rsp_t )
-    ) i_nvdla_id_serialize (
-      .clk_i,
-      .rst_ni,
-      .slv_req_i  ( nvdla_raw_req ),
-      .slv_resp_o ( nvdla_raw_rsp ),
-      .mst_req_o  ( axi_nvdla_mst_req ),
-      .mst_resp_i ( axi_in_rsp[AxiIn.nvdla] )
-    );
+    //// Serialize NVDLA IDs (8bit) to match Cheshire AXI master ID width (2bit)
+    //axi_id_serialize #(
+    //  .AxiSlvPortIdWidth      ( NvdlaIdWidth ),
+    //  .AxiSlvPortMaxTxns      ( Cfg.CoreMaxTxns ),
+    //  .AxiMstPortIdWidth      ( Cfg.AxiMstIdWidth ),
+    //  .AxiMstPortMaxUniqIds   ( 2 ** Cfg.AxiMstIdWidth ),
+    //  .AxiMstPortMaxTxnsPerId ( Cfg.CoreMaxTxnsPerId ),
+    //  .AxiAddrWidth           ( Cfg.AddrWidth ),
+    //  .AxiDataWidth           ( Cfg.AxiDataWidth ),
+    //  .AxiUserWidth           ( Cfg.AxiUserWidth ),
+    //  .AtopSupport            ( 0 ),
+    //  .slv_req_t              ( nvdla_axi_req_t ),
+    //  .slv_resp_t             ( nvdla_axi_rsp_t ),
+    //  .mst_req_t              ( axi_mst_req_t ),
+    //  .mst_resp_t             ( axi_mst_rsp_t )
+    //) i_nvdla_id_serialize (
+    //  .clk_i,
+    //  .rst_ni,
+    //  .slv_req_i  ( nvdla_raw_req ),
+    //  .slv_resp_o ( nvdla_raw_rsp ),
+    //  .mst_req_o  ( axi_nvdla_mst_req ),
+    //  .mst_resp_i ( axi_in_rsp[AxiIn.nvdla] )
+    //);
+
+    assign axi_nvdla_mst_req = axi_mst_req_t'(nvdla_raw_req);
+    assign nvdla_raw_rsp = axi_cva6_rsp_t'(axi_in_rsp[AxiIn.nvdla]);
 
     always_comb begin
       axi_in_req[AxiIn.nvdla]         = axi_nvdla_mst_req;

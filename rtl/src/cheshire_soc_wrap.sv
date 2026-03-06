@@ -18,6 +18,11 @@ module cheshire_soc_wrap import cheshire_pkg::*;
   `elsif GENESYS2
   input  wire sys_clk_p,
   input  wire sys_clk_n,
+  `elsif ZCU106
+  input wire clk_p,
+  input wire clk_n,
+  input wire c0_sys_clk_p,
+  input wire c0_sys_clk_n,
   `else
   input wire clk_i,
   `endif
@@ -29,6 +34,23 @@ module cheshire_soc_wrap import cheshire_pkg::*;
   output wire uart_tx_o
 
 `ifndef DRAM_SIM
+  `ifdef ZCU106
+  // DDR4 Interface (ZCU106)
+  ,output logic        c0_ddr4_reset_n,
+  output logic [0:0]   c0_ddr4_ck_t,
+  output logic [0:0]   c0_ddr4_ck_c,
+  output logic         c0_ddr4_act_n,
+  output logic [16:0]  c0_ddr4_adr,
+  output logic [1:0]   c0_ddr4_ba,
+  output logic [0:0]   c0_ddr4_bg,
+  output logic [0:0]   c0_ddr4_cke,
+  output logic [0:0]   c0_ddr4_odt,
+  output logic [0:0]   c0_ddr4_cs_n,
+  inout  logic [3:0]   c0_ddr4_dm_dbi_n,
+  inout  logic [31:0]  c0_ddr4_dq,
+  inout  logic [3:0]   c0_ddr4_dqs_c,
+  inout  logic [3:0]   c0_ddr4_dqs_t
+  `else
   // DDR3 Interface
   ,output logic ddr3_reset_n,
   output logic ddr3_cke,
@@ -63,6 +85,7 @@ module cheshire_soc_wrap import cheshire_pkg::*;
   inout  logic [1:0] ddr3_dqs_n,
   inout  logic [15:0] ddr3_dq
   `endif
+  `endif
 `endif
 
   `ifdef JTAG
@@ -72,7 +95,14 @@ module cheshire_soc_wrap import cheshire_pkg::*;
   output wire jtag_tdo_o
   `ifdef GENESYS2
   , input wire jtag_trst_ni
+  `elsif ZCU106
+  , input wire jtag_trst_ni // ZCU106 uses GENESYS2 trstn port via external pmod connection with it
   `endif
+  `endif
+
+  `ifdef ZCU106
+  , input wire uart_cts_ni
+  , input wire uart_rts_no
   `endif
 );
 
@@ -89,6 +119,8 @@ module cheshire_soc_wrap import cheshire_pkg::*;
   logic jtag_tck = jtag_tck_i;
   logic jtag_trst_n;
   `ifdef GENESYS2
+  assign jtag_trst_n = jtag_trst_ni;
+  `elsif ZCU106
   assign jtag_trst_n = jtag_trst_ni;
   `else
   assign jtag_trst_n = 1'b1;
@@ -202,6 +234,27 @@ module cheshire_soc_wrap import cheshire_pkg::*;
      // NOT a PLL-derived clock. The MIG has its own internal MMCM;
      // cascading PLLs causes jitter issues and calibration failures.
      wire dram_ref_clk = sys_clk;
+    `elsif ZCU106
+        wire clk100;
+        wire clk_ddr;
+        wire clk_ref;
+        wire clk_ddr_dqs;
+        wire clk_i;
+
+        clk_wiz_0 u_pll (
+          .clk_in1_p(clk_p),
+          .clk_in1_n(clk_n),
+          .reset(0),
+          .clk_out1(clk100),
+          .clk_out2(clk_ddr),
+          .clk_out3(clk_ref),
+          .clk_out4(clk_ddr_dqs),
+          .clk_out5(clk_i),
+          .locked()
+        );
+
+        wire clkwiz_o = clk_i;
+      wire rst_n = rst_ni & system_reset_o & !uart_dram_mode;
   `else
      wire clkwiz_o = clk_i;
      wire rst_n = rst_ni & system_reset_o;
@@ -325,9 +378,14 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     .jtag_tdo_oe_o      ( ),
     .uart_tx_o          ( uart_tx_o ),
     .uart_rx_i          ( program_rx_i ),
+    `ifdef ZCU106
+    .uart_rts_no        ( uart_rts_no ),
+    .uart_cts_ni        ( uart_cts_ni ),
+    `else
     .uart_rts_no        ( ),
-    .uart_dtr_no        ( ),
     .uart_cts_ni        ( 1'b0 ),
+    `endif
+    .uart_dtr_no        ( ),
     .uart_dsr_ni        ( 1'b0 ),
     .uart_dcd_ni        ( 1'b0 ),
     .uart_rin_ni        ( 1'b0 ),
@@ -595,6 +653,9 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     `ifdef ZC706_MIG
     .sys_clk_p    ( sys_clk_p ),
     .sys_clk_n    ( sys_clk_n ),
+    `elsif ZCU106
+    .c0_sys_clk_p ( c0_sys_clk_p ),
+    .c0_sys_clk_n ( c0_sys_clk_n ),
     `elsif GENESYS2
     .sys_clk_p    ( 1'b0 ),
     .sys_clk_n    ( 1'b0 ),
@@ -609,6 +670,22 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     .uart_dram_write_rst_i  ( 0 ),
 
     // PHY interfaces
+    `ifdef ZCU106
+    .c0_ddr4_reset_n ( c0_ddr4_reset_n ),
+    .c0_ddr4_ck_t    ( c0_ddr4_ck_t ),
+    .c0_ddr4_ck_c    ( c0_ddr4_ck_c ),
+    .c0_ddr4_act_n   ( c0_ddr4_act_n ),
+    .c0_ddr4_adr     ( c0_ddr4_adr ),
+    .c0_ddr4_ba      ( c0_ddr4_ba ),
+    .c0_ddr4_bg      ( c0_ddr4_bg ),
+    .c0_ddr4_cke     ( c0_ddr4_cke ),
+    .c0_ddr4_odt     ( c0_ddr4_odt ),
+    .c0_ddr4_cs_n    ( c0_ddr4_cs_n ),
+    .c0_ddr4_dm_dbi_n( c0_ddr4_dm_dbi_n ),
+    .c0_ddr4_dq      ( c0_ddr4_dq ),
+    .c0_ddr4_dqs_c   ( c0_ddr4_dqs_c ),
+    .c0_ddr4_dqs_t   ( c0_ddr4_dqs_t ),
+    `else
     .ddr3_ck_p    ( ddr3_ck_p ),
     .ddr3_ck_n    ( ddr3_ck_n ),
     .ddr3_dq      ( ddr3_dq ),
@@ -624,6 +701,7 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     .ddr3_cs_n    ( ddr3_cs_n ),
     .ddr3_dm      ( ddr3_dm ),
     .ddr3_odt     ( ddr3_odt ),
+    `endif
 
     // DRAM AXI interface
     .soc_req_i    ( axi_llc_mst_req ),

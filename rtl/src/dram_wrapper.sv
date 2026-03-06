@@ -28,8 +28,13 @@ module dram_wrapper #(
   input  logic  clk_ddr,
   input  logic  clk_ref,
   input  logic  clk_ddr_dqs,
+  `ifdef ZCU106
+  input  logic  c0_sys_clk_p,
+  input  logic  c0_sys_clk_n,
+  `else
   input  logic  sys_clk_p,
   input  logic  sys_clk_n,
+  `endif
 
   input  logic        uart_dram_write_we_i,
   input  logic [31:0] uart_dram_write_addr_i,
@@ -38,6 +43,22 @@ module dram_wrapper #(
 
   // PHY interfaces
 
+  `ifdef ZCU106
+  output        c0_ddr4_reset_n,
+  output [0:0]  c0_ddr4_ck_t,
+  output [0:0]  c0_ddr4_ck_c,
+  output        c0_ddr4_act_n,
+  output [16:0] c0_ddr4_adr,
+  output [1:0]  c0_ddr4_ba,
+  output [0:0]  c0_ddr4_bg,
+  output [0:0]  c0_ddr4_cke,
+  output [0:0]  c0_ddr4_odt,
+  output [0:0]  c0_ddr4_cs_n,
+  inout  [3:0]  c0_ddr4_dm_dbi_n,
+  inout  [31:0] c0_ddr4_dq,
+  inout  [3:0]  c0_ddr4_dqs_c,
+  inout  [3:0]  c0_ddr4_dqs_t,
+  `else
   output        ddr3_ck_p,
   output        ddr3_ck_n,
   `ifdef GENESYS2
@@ -83,6 +104,7 @@ module dram_wrapper #(
   output [1:0]  ddr3_dm,
   output        ddr3_odt,
   `endif
+  `endif
   // DRAM AXI interface
   input  axi_soc_req_t  soc_req_i,
   output axi_soc_resp_t soc_rsp_o
@@ -104,14 +126,14 @@ module dram_wrapper #(
   } dram_cfg_t;
 
   localparam dram_cfg_t cfg = '{
-    EnCdc         : `ifdef GENESYS2 1 `elsif ZC706_MIG 1 `else 0 `endif,    // 200 MHz AXI (cf. CCdcLogDepth)
+    EnCdc         : `ifdef GENESYS2 1 `elsif ZC706_MIG 1 `elsif ZCU106 1 `else 0 `endif,    // 200 MHz AXI (cf. CCdcLogDepth)
     CdcLogDepth   : 5,
-    IdWidth       : 4,    // Fixed
+    IdWidth       : `ifdef ZCU106 8 `else 4 `endif,    // Fixed
     AddrWidth     : 30,
     DataWidth     : 64,
     StrobeWidth   : 8,
-    MaxUniqIds    : `ifdef GENESYS2 8 `else 4 `endif,    // TODO: suboptimal, but limited by CVA6/LLC
-    MaxTxns       : `ifdef GENESYS2 24 `else 1 `endif    // TODO: suboptimal, but limited by CVA6/LLC
+    MaxUniqIds    : `ifdef GENESYS2 8 `elsif ZCU106 8 `else 4 `endif,    // TODO: suboptimal, but limited by CVA6/LLC
+    MaxTxns       : `ifdef GENESYS2 24 `elsif ZCU106 24 `else 1 `endif    // TODO: suboptimal, but limited by CVA6/LLC
   };
 
   localparam SocDataWidth = $bits(soc_req_i.w.data);
@@ -754,6 +776,78 @@ module dram_wrapper #(
     //.clk_ref_i                      (clk_ref),
     
     .sys_rst                        (sys_rst_i)
+  );
+
+`elsif ZCU106
+  wire sys_rst_i  = ~soc_resetn_i;
+  wire c0_init_calib_complete;
+  wire c0_ddr4_ui_clk;
+  wire c0_ddr4_ui_clk_sync_rst;
+
+  assign dram_axi_clk = c0_ddr4_ui_clk;
+  assign dram_rst_o   = c0_ddr4_ui_clk_sync_rst;
+
+  ddr4_0 u_ddr4_0 (
+    .c0_init_calib_complete          ( c0_init_calib_complete ),
+    .dbg_clk                         ( ),
+    .c0_sys_clk_p                    ( c0_sys_clk_p ),
+    .c0_sys_clk_n                    ( c0_sys_clk_n ),
+    .dbg_bus                         ( ),
+    .c0_ddr4_adr                     ( c0_ddr4_adr ),
+    .c0_ddr4_ba                      ( c0_ddr4_ba ),
+    .c0_ddr4_cke                     ( c0_ddr4_cke ),
+    .c0_ddr4_cs_n                    ( c0_ddr4_cs_n ),
+    .c0_ddr4_dm_dbi_n                ( c0_ddr4_dm_dbi_n ),
+    .c0_ddr4_dq                      ( c0_ddr4_dq ),
+    .c0_ddr4_dqs_c                   ( c0_ddr4_dqs_c ),
+    .c0_ddr4_dqs_t                   ( c0_ddr4_dqs_t ),
+    .c0_ddr4_odt                     ( c0_ddr4_odt ),
+    .c0_ddr4_bg                      ( c0_ddr4_bg ),
+    .c0_ddr4_reset_n                 ( c0_ddr4_reset_n ),
+    .c0_ddr4_act_n                   ( c0_ddr4_act_n ),
+    .c0_ddr4_ck_c                    ( c0_ddr4_ck_c ),
+    .c0_ddr4_ck_t                    ( c0_ddr4_ck_t ),
+    .c0_ddr4_ui_clk                  ( c0_ddr4_ui_clk ),
+    .c0_ddr4_ui_clk_sync_rst         ( c0_ddr4_ui_clk_sync_rst ),
+    .c0_ddr4_aresetn                 ( soc_resetn_i ),
+    .c0_ddr4_s_axi_awid              ( cdc_dram_req.aw.id ),
+    .c0_ddr4_s_axi_awaddr            ( cdc_dram_req_aw_addr ),
+    .c0_ddr4_s_axi_awlen             ( cdc_dram_req.aw.len ),
+    .c0_ddr4_s_axi_awsize            ( cdc_dram_req.aw.size ),
+    .c0_ddr4_s_axi_awburst           ( cdc_dram_req.aw.burst ),
+    .c0_ddr4_s_axi_awlock            ( cdc_dram_req.aw.lock ),
+    .c0_ddr4_s_axi_awcache           ( cdc_dram_req.aw.cache ),
+    .c0_ddr4_s_axi_awprot            ( cdc_dram_req.aw.prot ),
+    .c0_ddr4_s_axi_awqos             ( cdc_dram_req.aw.qos ),
+    .c0_ddr4_s_axi_awvalid           ( cdc_dram_req.aw_valid ),
+    .c0_ddr4_s_axi_awready           ( cdc_dram_rsp.aw_ready ),
+    .c0_ddr4_s_axi_wdata             ( cdc_dram_req.w.data ),
+    .c0_ddr4_s_axi_wstrb             ( cdc_dram_req.w.strb ),
+    .c0_ddr4_s_axi_wlast             ( cdc_dram_req.w.last ),
+    .c0_ddr4_s_axi_wvalid            ( cdc_dram_req.w_valid ),
+    .c0_ddr4_s_axi_wready            ( cdc_dram_rsp.w_ready ),
+    .c0_ddr4_s_axi_bready            ( cdc_dram_req.b_ready ),
+    .c0_ddr4_s_axi_bid               ( cdc_dram_rsp.b.id ),
+    .c0_ddr4_s_axi_bresp             ( cdc_dram_rsp.b.resp ),
+    .c0_ddr4_s_axi_bvalid            ( cdc_dram_rsp.b_valid ),
+    .c0_ddr4_s_axi_arid              ( cdc_dram_req.ar.id ),
+    .c0_ddr4_s_axi_araddr            ( cdc_dram_req_ar_addr ),
+    .c0_ddr4_s_axi_arlen             ( cdc_dram_req.ar.len ),
+    .c0_ddr4_s_axi_arsize            ( cdc_dram_req.ar.size ),
+    .c0_ddr4_s_axi_arburst           ( cdc_dram_req.ar.burst ),
+    .c0_ddr4_s_axi_arlock            ( cdc_dram_req.ar.lock ),
+    .c0_ddr4_s_axi_arcache           ( cdc_dram_req.ar.cache ),
+    .c0_ddr4_s_axi_arprot            ( cdc_dram_req.ar.prot ),
+    .c0_ddr4_s_axi_arqos             ( cdc_dram_req.ar.qos ),
+    .c0_ddr4_s_axi_arvalid           ( cdc_dram_req.ar_valid ),
+    .c0_ddr4_s_axi_arready           ( cdc_dram_rsp.ar_ready ),
+    .c0_ddr4_s_axi_rready            ( cdc_dram_req.r_ready ),
+    .c0_ddr4_s_axi_rlast             ( cdc_dram_rsp.r.last ),
+    .c0_ddr4_s_axi_rvalid            ( cdc_dram_rsp.r_valid ),
+    .c0_ddr4_s_axi_rresp             ( cdc_dram_rsp.r.resp ),
+    .c0_ddr4_s_axi_rid               ( cdc_dram_rsp.r.id ),
+    .c0_ddr4_s_axi_rdata             ( cdc_dram_rsp.r.data ),
+    .sys_rst                         ( sys_rst_i )
   );
 
 `else

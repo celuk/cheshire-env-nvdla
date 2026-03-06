@@ -54,10 +54,10 @@ module dram_wrapper #(
   output [0:0]  c0_ddr4_cke,
   output [0:0]  c0_ddr4_odt,
   output [0:0]  c0_ddr4_cs_n,
-  inout  [3:0]  c0_ddr4_dm_dbi_n,
-  inout  [31:0] c0_ddr4_dq,
-  inout  [3:0]  c0_ddr4_dqs_c,
-  inout  [3:0]  c0_ddr4_dqs_t,
+  inout  [7:0]  c0_ddr4_dm_dbi_n,
+  inout  [63:0] c0_ddr4_dq,
+  inout  [7:0]  c0_ddr4_dqs_c,
+  inout  [7:0]  c0_ddr4_dqs_t,
   `else
   output        ddr3_ck_p,
   output        ddr3_ck_n,
@@ -129,9 +129,9 @@ module dram_wrapper #(
     EnCdc         : `ifdef GENESYS2 1 `elsif ZC706_MIG 1 `elsif ZCU106 1 `else 0 `endif,    // 200 MHz AXI (cf. CCdcLogDepth)
     CdcLogDepth   : 5,
     IdWidth       : `ifdef ZCU106 8 `else 4 `endif,    // Fixed
-    AddrWidth     : 30,
-    DataWidth     : 64,
-    StrobeWidth   : 8,
+    AddrWidth     : `ifdef ZCU106 31 `else 30 `endif,
+    DataWidth     : `ifdef ZCU106 512 `else 64 `endif,
+    StrobeWidth   : `ifdef ZCU106 64 `else 8 `endif,
     MaxUniqIds    : `ifdef GENESYS2 8 `elsif ZCU106 8 `else 4 `endif,    // TODO: suboptimal, but limited by CVA6/LLC
     MaxTxns       : `ifdef GENESYS2 24 `elsif ZCU106 24 `else 1 `endif    // TODO: suboptimal, but limited by CVA6/LLC
   };

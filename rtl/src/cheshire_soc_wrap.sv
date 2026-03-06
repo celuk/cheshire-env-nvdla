@@ -46,10 +46,10 @@ module cheshire_soc_wrap import cheshire_pkg::*;
   output logic [0:0]   c0_ddr4_cke,
   output logic [0:0]   c0_ddr4_odt,
   output logic [0:0]   c0_ddr4_cs_n,
-  inout  logic [3:0]   c0_ddr4_dm_dbi_n,
-  inout  logic [31:0]  c0_ddr4_dq,
-  inout  logic [3:0]   c0_ddr4_dqs_c,
-  inout  logic [3:0]   c0_ddr4_dqs_t
+  inout  logic [7:0]   c0_ddr4_dm_dbi_n,
+  inout  logic [63:0]  c0_ddr4_dq,
+  inout  logic [7:0]   c0_ddr4_dqs_c,
+  inout  logic [7:0]   c0_ddr4_dqs_t
   `else
   // DDR3 Interface
   ,output logic ddr3_reset_n,

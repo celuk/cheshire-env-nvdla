@@ -7,6 +7,11 @@ set_property IOSTANDARD LVDS [get_ports clk_n]
 create_clock -period 8.000 [get_ports clk_p]
 #set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets u_pll/inst/clk_in1_clk_wiz_0]
 
+#set_property PACKAGE_PIN AJ12        [get_ports "c0_sys_clk_n"] ;# Bank  66 VCCO - VCC1V2   - IO_L13N_T2L_N1_GC_QBC_66
+#set_property IOSTANDARD  DIFF_SSTL12 [get_ports "c0_sys_clk_n"] ;# Bank  66 VCCO - VCC1V2   - IO_L13N_T2L_N1_GC_QBC_66
+#set_property PACKAGE_PIN AH12        [get_ports "c0_sys_clk_p"] ;# Bank  66 VCCO - VCC1V2   - IO_L13P_T2L_N0_GC_QBC_66
+#set_property IOSTANDARD  DIFF_SSTL12 [get_ports "c0_sys_clk_p"] ;# Bank  66 VCCO - VCC1V2   - IO_L13P_T2L_N0_GC_QBC_66
+
 set_property PACKAGE_PIN AL17 [get_ports program_rx_i]
 set_property IOSTANDARD LVCMOS12 [get_ports program_rx_i]
 
@@ -45,15 +50,15 @@ set_property IOSTANDARD LVCMOS18 [get_ports rst_ni]
 #set_property IOSTANDARD  LVCMOS12 [get_ports "PMOD1_6_LS"] ;# Bank  66 VCCO - VCC1V2   - IO_L1N_T0L_N1_DBC_66
 # GENESYS2 pmod header equivalents in order: U27 (siyah), U28 (sari), T26 (turuncu), T27 (lacivert), T22 (gri), T23 (yesil), T20 (mor)
 set_property PACKAGE_PIN AN8 [get_ports jtag_tdo_o]
-set_property IOSTANDARD LVCMOS25 [get_ports jtag_tdo_o]
+set_property IOSTANDARD LVCMOS12 [get_ports jtag_tdo_o]
 set_property PACKAGE_PIN AP9 [get_ports jtag_tck_i]
-set_property IOSTANDARD LVCMOS25 [get_ports jtag_tck_i]
+set_property IOSTANDARD LVCMOS12 [get_ports jtag_tck_i]
 set_property PACKAGE_PIN AN9 [get_ports jtag_tms_i]
-set_property IOSTANDARD LVCMOS25 [get_ports jtag_tms_i]
+set_property IOSTANDARD LVCMOS12 [get_ports jtag_tms_i]
 set_property PACKAGE_PIN AP10 [get_ports jtag_tdi_i]
-set_property IOSTANDARD LVCMOS25 [get_ports jtag_tdi_i]
+set_property IOSTANDARD LVCMOS12 [get_ports jtag_tdi_i]
 set_property PACKAGE_PIN AP11 [get_ports jtag_trst_ni]
-set_property IOSTANDARD LVCMOS33 [get_ports jtag_trst_ni]
+set_property IOSTANDARD LVCMOS12 [get_ports jtag_trst_ni]
 # devami AP12 (yesil), AN11 (mor)
 
 ## JTAG

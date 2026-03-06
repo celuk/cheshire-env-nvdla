@@ -308,6 +308,166 @@ end
   riu_nibble = 'hb;
 end
 
+28'h0004120: begin //c0_ddr4_dq[32] IO_L14P_T2L_N2_GC_65
+  riu_addr_cal = 6'hD;
+  riu_nibble = 'hc;
+end
+
+28'h0004121: begin //c0_ddr4_dq[33] IO_L14N_T2L_N3_GC_65
+  riu_addr_cal = 6'hE;
+  riu_nibble = 'hc;
+end
+
+28'h0004122: begin //c0_ddr4_dq[34] IO_L15P_T2L_N4_AD11P_65
+  riu_addr_cal = 6'hF;
+  riu_nibble = 'hc;
+end
+
+28'h0004123: begin //c0_ddr4_dq[35] IO_L15N_T2L_N5_AD11N_65
+  riu_addr_cal = 6'h10;
+  riu_nibble = 'hc;
+end
+
+28'h0004124: begin //c0_ddr4_dq[36] IO_L17P_T2U_N8_AD10P_65
+  riu_addr_cal = 6'hD;
+  riu_nibble = 'hd;
+end
+
+28'h0004125: begin //c0_ddr4_dq[37] IO_L17N_T2U_N9_AD10N_65
+  riu_addr_cal = 6'hE;
+  riu_nibble = 'hd;
+end
+
+28'h0004126: begin //c0_ddr4_dq[38] IO_L18P_T2U_N10_AD2P_65
+  riu_addr_cal = 6'hF;
+  riu_nibble = 'hd;
+end
+
+28'h0004127: begin //c0_ddr4_dq[39] IO_L18N_T2U_N11_AD2N_65
+  riu_addr_cal = 6'h10;
+  riu_nibble = 'hd;
+end
+
+28'h0004128: begin //c0_ddr4_dq[40] IO_L20P_T3L_N2_AD1P_65
+  riu_addr_cal = 6'hD;
+  riu_nibble = 'he;
+end
+
+28'h0004129: begin //c0_ddr4_dq[41] IO_L20N_T3L_N3_AD1N_65
+  riu_addr_cal = 6'hE;
+  riu_nibble = 'he;
+end
+
+28'h000412A: begin //c0_ddr4_dq[42] IO_L21P_T3L_N4_AD8P_65
+  riu_addr_cal = 6'hF;
+  riu_nibble = 'he;
+end
+
+28'h000412B: begin //c0_ddr4_dq[43] IO_L21N_T3L_N5_AD8N_65
+  riu_addr_cal = 6'h10;
+  riu_nibble = 'he;
+end
+
+28'h000412C: begin //c0_ddr4_dq[44] IO_L23P_T3U_N8_I2C_SCLK_65
+  riu_addr_cal = 6'hD;
+  riu_nibble = 'hf;
+end
+
+28'h000412D: begin //c0_ddr4_dq[45] IO_L23N_T3U_N9_65
+  riu_addr_cal = 6'hE;
+  riu_nibble = 'hf;
+end
+
+28'h000412E: begin //c0_ddr4_dq[46] IO_L24P_T3U_N10_PERSTN1_I2C_SDA_65
+  riu_addr_cal = 6'hF;
+  riu_nibble = 'hf;
+end
+
+28'h000412F: begin //c0_ddr4_dq[47] IO_L24N_T3U_N11_PERSTN0_65
+  riu_addr_cal = 6'h10;
+  riu_nibble = 'hf;
+end
+
+28'h0004130: begin //c0_ddr4_dq[48] IO_L2P_T0L_N2_66
+  riu_addr_cal = 6'hD;
+  riu_nibble = 'h10;
+end
+
+28'h0004131: begin //c0_ddr4_dq[49] IO_L2N_T0L_N3_66
+  riu_addr_cal = 6'hE;
+  riu_nibble = 'h10;
+end
+
+28'h0004132: begin //c0_ddr4_dq[50] IO_L3P_T0L_N4_AD15P_66
+  riu_addr_cal = 6'hF;
+  riu_nibble = 'h10;
+end
+
+28'h0004133: begin //c0_ddr4_dq[51] IO_L3N_T0L_N5_AD15N_66
+  riu_addr_cal = 6'h10;
+  riu_nibble = 'h10;
+end
+
+28'h0004134: begin //c0_ddr4_dq[52] IO_L5P_T0U_N8_AD14P_66
+  riu_addr_cal = 6'hD;
+  riu_nibble = 'h11;
+end
+
+28'h0004135: begin //c0_ddr4_dq[53] IO_L5N_T0U_N9_AD14N_66
+  riu_addr_cal = 6'hE;
+  riu_nibble = 'h11;
+end
+
+28'h0004136: begin //c0_ddr4_dq[54] IO_L6P_T0U_N10_AD6P_66
+  riu_addr_cal = 6'hF;
+  riu_nibble = 'h11;
+end
+
+28'h0004137: begin //c0_ddr4_dq[55] IO_L6N_T0U_N11_AD6N_66
+  riu_addr_cal = 6'h10;
+  riu_nibble = 'h11;
+end
+
+28'h0004138: begin //c0_ddr4_dq[56] IO_L8P_T1L_N2_AD5P_66
+  riu_addr_cal = 6'hD;
+  riu_nibble = 'h12;
+end
+
+28'h0004139: begin //c0_ddr4_dq[57] IO_L8N_T1L_N3_AD5N_66
+  riu_addr_cal = 6'hE;
+  riu_nibble = 'h12;
+end
+
+28'h000413A: begin //c0_ddr4_dq[58] IO_L9P_T1L_N4_AD12P_66
+  riu_addr_cal = 6'hF;
+  riu_nibble = 'h12;
+end
+
+28'h000413B: begin //c0_ddr4_dq[59] IO_L9N_T1L_N5_AD12N_66
+  riu_addr_cal = 6'h10;
+  riu_nibble = 'h12;
+end
+
+28'h000413C: begin //c0_ddr4_dq[60] IO_L11P_T1U_N8_GC_66
+  riu_addr_cal = 6'hD;
+  riu_nibble = 'h13;
+end
+
+28'h000413D: begin //c0_ddr4_dq[61] IO_L11N_T1U_N9_GC_66
+  riu_addr_cal = 6'hE;
+  riu_nibble = 'h13;
+end
+
+28'h000413E: begin //c0_ddr4_dq[62] IO_L12P_T1U_N10_GC_66
+  riu_addr_cal = 6'hF;
+  riu_nibble = 'h13;
+end
+
+28'h000413F: begin //c0_ddr4_dq[63] IO_L12N_T1U_N11_GC_66
+  riu_addr_cal = 6'h10;
+  riu_nibble = 'h13;
+end
+
 //========================================//
 //===========Data IDELAYS=============//
 //========================================//
@@ -472,6 +632,166 @@ end
   riu_nibble = 'hb;
 end
 
+28'h0004220: begin //c0_ddr4_dq[32] IO_L14P_T2L_N2_GC_65
+  riu_addr_cal = 6'h14;
+  riu_nibble = 'hc;
+end
+
+28'h0004221: begin //c0_ddr4_dq[33] IO_L14N_T2L_N3_GC_65
+  riu_addr_cal = 6'h15;
+  riu_nibble = 'hc;
+end
+
+28'h0004222: begin //c0_ddr4_dq[34] IO_L15P_T2L_N4_AD11P_65
+  riu_addr_cal = 6'h16;
+  riu_nibble = 'hc;
+end
+
+28'h0004223: begin //c0_ddr4_dq[35] IO_L15N_T2L_N5_AD11N_65
+  riu_addr_cal = 6'h17;
+  riu_nibble = 'hc;
+end
+
+28'h0004224: begin //c0_ddr4_dq[36] IO_L17P_T2U_N8_AD10P_65
+  riu_addr_cal = 6'h14;
+  riu_nibble = 'hd;
+end
+
+28'h0004225: begin //c0_ddr4_dq[37] IO_L17N_T2U_N9_AD10N_65
+  riu_addr_cal = 6'h15;
+  riu_nibble = 'hd;
+end
+
+28'h0004226: begin //c0_ddr4_dq[38] IO_L18P_T2U_N10_AD2P_65
+  riu_addr_cal = 6'h16;
+  riu_nibble = 'hd;
+end
+
+28'h0004227: begin //c0_ddr4_dq[39] IO_L18N_T2U_N11_AD2N_65
+  riu_addr_cal = 6'h17;
+  riu_nibble = 'hd;
+end
+
+28'h0004228: begin //c0_ddr4_dq[40] IO_L20P_T3L_N2_AD1P_65
+  riu_addr_cal = 6'h14;
+  riu_nibble = 'he;
+end
+
+28'h0004229: begin //c0_ddr4_dq[41] IO_L20N_T3L_N3_AD1N_65
+  riu_addr_cal = 6'h15;
+  riu_nibble = 'he;
+end
+
+28'h000422A: begin //c0_ddr4_dq[42] IO_L21P_T3L_N4_AD8P_65
+  riu_addr_cal = 6'h16;
+  riu_nibble = 'he;
+end
+
+28'h000422B: begin //c0_ddr4_dq[43] IO_L21N_T3L_N5_AD8N_65
+  riu_addr_cal = 6'h17;
+  riu_nibble = 'he;
+end
+
+28'h000422C: begin //c0_ddr4_dq[44] IO_L23P_T3U_N8_I2C_SCLK_65
+  riu_addr_cal = 6'h14;
+  riu_nibble = 'hf;
+end
+
+28'h000422D: begin //c0_ddr4_dq[45] IO_L23N_T3U_N9_65
+  riu_addr_cal = 6'h15;
+  riu_nibble = 'hf;
+end
+
+28'h000422E: begin //c0_ddr4_dq[46] IO_L24P_T3U_N10_PERSTN1_I2C_SDA_65
+  riu_addr_cal = 6'h16;
+  riu_nibble = 'hf;
+end
+
+28'h000422F: begin //c0_ddr4_dq[47] IO_L24N_T3U_N11_PERSTN0_65
+  riu_addr_cal = 6'h17;
+  riu_nibble = 'hf;
+end
+
+28'h0004230: begin //c0_ddr4_dq[48] IO_L2P_T0L_N2_66
+  riu_addr_cal = 6'h14;
+  riu_nibble = 'h10;
+end
+
+28'h0004231: begin //c0_ddr4_dq[49] IO_L2N_T0L_N3_66
+  riu_addr_cal = 6'h15;
+  riu_nibble = 'h10;
+end
+
+28'h0004232: begin //c0_ddr4_dq[50] IO_L3P_T0L_N4_AD15P_66
+  riu_addr_cal = 6'h16;
+  riu_nibble = 'h10;
+end
+
+28'h0004233: begin //c0_ddr4_dq[51] IO_L3N_T0L_N5_AD15N_66
+  riu_addr_cal = 6'h17;
+  riu_nibble = 'h10;
+end
+
+28'h0004234: begin //c0_ddr4_dq[52] IO_L5P_T0U_N8_AD14P_66
+  riu_addr_cal = 6'h14;
+  riu_nibble = 'h11;
+end
+
+28'h0004235: begin //c0_ddr4_dq[53] IO_L5N_T0U_N9_AD14N_66
+  riu_addr_cal = 6'h15;
+  riu_nibble = 'h11;
+end
+
+28'h0004236: begin //c0_ddr4_dq[54] IO_L6P_T0U_N10_AD6P_66
+  riu_addr_cal = 6'h16;
+  riu_nibble = 'h11;
+end
+
+28'h0004237: begin //c0_ddr4_dq[55] IO_L6N_T0U_N11_AD6N_66
+  riu_addr_cal = 6'h17;
+  riu_nibble = 'h11;
+end
+
+28'h0004238: begin //c0_ddr4_dq[56] IO_L8P_T1L_N2_AD5P_66
+  riu_addr_cal = 6'h14;
+  riu_nibble = 'h12;
+end
+
+28'h0004239: begin //c0_ddr4_dq[57] IO_L8N_T1L_N3_AD5N_66
+  riu_addr_cal = 6'h15;
+  riu_nibble = 'h12;
+end
+
+28'h000423A: begin //c0_ddr4_dq[58] IO_L9P_T1L_N4_AD12P_66
+  riu_addr_cal = 6'h16;
+  riu_nibble = 'h12;
+end
+
+28'h000423B: begin //c0_ddr4_dq[59] IO_L9N_T1L_N5_AD12N_66
+  riu_addr_cal = 6'h17;
+  riu_nibble = 'h12;
+end
+
+28'h000423C: begin //c0_ddr4_dq[60] IO_L11P_T1U_N8_GC_66
+  riu_addr_cal = 6'h14;
+  riu_nibble = 'h13;
+end
+
+28'h000423D: begin //c0_ddr4_dq[61] IO_L11N_T1U_N9_GC_66
+  riu_addr_cal = 6'h15;
+  riu_nibble = 'h13;
+end
+
+28'h000423E: begin //c0_ddr4_dq[62] IO_L12P_T1U_N10_GC_66
+  riu_addr_cal = 6'h16;
+  riu_nibble = 'h13;
+end
+
+28'h000423F: begin //c0_ddr4_dq[63] IO_L12N_T1U_N11_GC_66
+  riu_addr_cal = 6'h17;
+  riu_nibble = 'h13;
+end
+
 //========================================//
 //===========Mask ODELAYS=============//
 //========================================//
@@ -494,6 +814,26 @@ end
 28'h0004403: begin //c0_ddr4_dm_dbi_n[3] IO_L7P_T1L_N0_QBC_AD13P_65
   riu_addr_cal = 6'hB;
   riu_nibble = 'ha;
+end
+
+28'h0004404: begin //c0_ddr4_dm_dbi_n[4] IO_L13P_T2L_N0_GC_QBC_65
+  riu_addr_cal = 6'hB;
+  riu_nibble = 'hc;
+end
+
+28'h0004405: begin //c0_ddr4_dm_dbi_n[5] IO_L19P_T3L_N0_DBC_AD9P_65
+  riu_addr_cal = 6'hB;
+  riu_nibble = 'he;
+end
+
+28'h0004406: begin //c0_ddr4_dm_dbi_n[6] IO_L1P_T0L_N0_DBC_66
+  riu_addr_cal = 6'hB;
+  riu_nibble = 'h10;
+end
+
+28'h0004407: begin //c0_ddr4_dm_dbi_n[7] IO_L7P_T1L_N0_QBC_AD13P_66
+  riu_addr_cal = 6'hB;
+  riu_nibble = 'h12;
 end
 
 //========================================//
@@ -520,6 +860,26 @@ end
   riu_nibble = 'ha;
 end
 
+28'h0004804: begin //c0_ddr4_dm_dbi_n[4] IO_L13P_T2L_N0_GC_QBC_65
+  riu_addr_cal = 6'h12;
+  riu_nibble = 'hc;
+end
+
+28'h0004805: begin //c0_ddr4_dm_dbi_n[5] IO_L19P_T3L_N0_DBC_AD9P_65
+  riu_addr_cal = 6'h12;
+  riu_nibble = 'he;
+end
+
+28'h0004806: begin //c0_ddr4_dm_dbi_n[6] IO_L1P_T0L_N0_DBC_66
+  riu_addr_cal = 6'h12;
+  riu_nibble = 'h10;
+end
+
+28'h0004807: begin //c0_ddr4_dm_dbi_n[7] IO_L7P_T1L_N0_QBC_AD13P_66
+  riu_addr_cal = 6'h12;
+  riu_nibble = 'h12;
+end
+
 //========================================//
 //===========Strobe ODELAYS=============//
 //========================================//
@@ -544,6 +904,26 @@ end
   riu_nibble = 'hb;
 end
 
+28'h0008104: begin //c0_ddr4_dqs_t[4] IO_L16P_T2U_N6_QBC_AD3P_65
+  riu_addr_cal = 6'hB;
+  riu_nibble = 'hd;
+end
+
+28'h0008105: begin //c0_ddr4_dqs_t[5] IO_L22P_T3U_N6_DBC_AD0P_65
+  riu_addr_cal = 6'hB;
+  riu_nibble = 'hf;
+end
+
+28'h0008106: begin //c0_ddr4_dqs_t[6] IO_L4P_T0U_N6_DBC_AD7P_66
+  riu_addr_cal = 6'hB;
+  riu_nibble = 'h11;
+end
+
+28'h0008107: begin //c0_ddr4_dqs_t[7] IO_L10P_T1U_N6_QBC_AD4P_66
+  riu_addr_cal = 6'hB;
+  riu_nibble = 'h13;
+end
+
 //========================================//
 //===========Strobe IDELAYS=============//
 //========================================//
@@ -566,5 +946,25 @@ end
 28'h0008203: begin //c0_ddr4_dqs_t[3] IO_L10P_T1U_N6_QBC_AD4P_65
   riu_addr_cal = 6'h12;
   riu_nibble = 'hb;
+end
+
+28'h0008204: begin //c0_ddr4_dqs_t[4] IO_L16P_T2U_N6_QBC_AD3P_65
+  riu_addr_cal = 6'h12;
+  riu_nibble = 'hd;
+end
+
+28'h0008205: begin //c0_ddr4_dqs_t[5] IO_L22P_T3U_N6_DBC_AD0P_65
+  riu_addr_cal = 6'h12;
+  riu_nibble = 'hf;
+end
+
+28'h0008206: begin //c0_ddr4_dqs_t[6] IO_L4P_T0U_N6_DBC_AD7P_66
+  riu_addr_cal = 6'h12;
+  riu_nibble = 'h11;
+end
+
+28'h0008207: begin //c0_ddr4_dqs_t[7] IO_L10P_T1U_N6_QBC_AD4P_66
+  riu_addr_cal = 6'h12;
+  riu_nibble = 'h13;
 end
 

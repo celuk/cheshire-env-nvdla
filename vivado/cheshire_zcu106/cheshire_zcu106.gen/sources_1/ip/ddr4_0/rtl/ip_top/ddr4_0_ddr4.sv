@@ -109,7 +109,7 @@
   PhyIP_ECC = "false",
   PhyIP_CasLatency = 18,
   PhyIP_CasWriteLatency = 12,
-  PhyIP_DataWidth = 32,
+  PhyIP_DataWidth = 64,
   PhyIP_ChipSelect = "true",
   PhyIP_Slot = "Single",
   PhyIP_isCKEShared = "false",
@@ -123,7 +123,7 @@
   PhyIP_CLKFBOUT_MULT = "5",
   PhyIP_DIVCLK_DIVIDE = "1",
   PhyIP_CLKOUT0_DIVIDE = "5",
-  PhyIP_CLKOUT1_DIVIDE = "0",
+  PhyIP_CLKOUT1_DIVIDE = "15",
   PhyIP_CLKOUT2_DIVIDE = "0",
   PhyIP_CLKOUT3_DIVIDE = "0",
   PhyIP_CLKOUT4_DIVIDE = "0",
@@ -138,7 +138,7 @@
   PhyIP_Phy_Only = "Complete_Memory_Controller",
   PhyIP_DEBUG_SIGNAL = "Disable",
   PhyIP_CLKOUTPHY_MODE = "VCO_2X",
-  PhyIP_DQ_WIDTH = 32,
+  PhyIP_DQ_WIDTH = 64,
   PhyIP_MEM_DEVICE_WIDTH = 16,
   PhyIP_MIN_PERIOD = 750,
   PhyIP_USE_DM_PORT = "DM_NO_DBI",
@@ -158,8 +158,8 @@
   PhyIP_ODT_WIDTH = 1,
   PhyIP_nCS_PER_RANK = 1,
   PhyIP_DATABITS_PER_STROBE = 8,
-  PhyIP_DQS_WIDTH = 4,
-  PhyIP_DM_WIDTH = 4
+  PhyIP_DQS_WIDTH = 8,
+  PhyIP_DM_WIDTH = 8
 
 *)
 (* dont_touch = "true" *) module ddr4_0_ddr4 #
@@ -175,9 +175,9 @@
     parameter integer COL_WIDTH               = 10,
     parameter integer CS_WIDTH                = 1,
     parameter integer ODT_WIDTH               = 1,
-    parameter integer DQ_WIDTH                = 32,
-    parameter integer DQS_WIDTH               = 4,
-    parameter integer DM_WIDTH                = 4,
+    parameter integer DQ_WIDTH                = 64,
+    parameter integer DQS_WIDTH               = 8,
+    parameter integer DM_WIDTH                = 8,
 
     parameter         DRAM_TYPE               = "DDR4",
     parameter         MEM_ADDR_ORDER          = "ROW_COLUMN_BANK",
@@ -236,14 +236,14 @@
     parameter         EXTRA_CMD_DELAY         = 0,
     parameter         nCK_PER_CLK             = 4,
     parameter         APP_ADDR_WIDTH          = 28,
-    parameter         APP_DATA_WIDTH          = 256,
-    parameter         APP_MASK_WIDTH          = 32,
+    parameter         APP_DATA_WIDTH          = 512,
+    parameter         APP_MASK_WIDTH          = 64,
 
     parameter         CLKIN_PERIOD_MMCM        = 3332,
     parameter         CLKFBOUT_MULT_MMCM       = 5,
     parameter         DIVCLK_DIVIDE_MMCM       = 1,
     parameter         CLKOUT0_DIVIDE_MMCM      = 5,
-    parameter         CLKOUT1_DIVIDE_MMCM      = 5,
+    parameter         CLKOUT1_DIVIDE_MMCM      = 15,
     parameter         CLKOUT2_DIVIDE_MMCM      = 5,
     parameter         CLKOUT3_DIVIDE_MMCM      = 5,
     parameter         CLKOUT4_DIVIDE_MMCM      = 5,
@@ -254,11 +254,11 @@
     parameter C_S_AXI_ID_WIDTH                = 8,
                                               // Width of all master and slave ID signals.
                                               // # = >= 1.
-    parameter C_S_AXI_ADDR_WIDTH              = 30,
+    parameter C_S_AXI_ADDR_WIDTH              = 31,
                                               // Width of S_AXI_AWADDR, S_AXI_ARADDR, M_AXI_AWADDR and
                                               // M_AXI_ARADDR for all SI/MI slots.
                                               // # = 32.
-    parameter C_S_AXI_DATA_WIDTH              = 64,
+    parameter C_S_AXI_DATA_WIDTH              = 512,
                                               // Width of WDATA and RDATA on SI slot.
                                               // Must be <= APP_DATA_WIDTH.
                                               // # = 32, 64, 128, 256.
@@ -330,7 +330,7 @@
     parameter         DDR4_CLAMSHELL       = "OFF",
 
     parameter DDR4_REG_PARITY_ENABLE            = "OFF",
-    parameter integer DBYTES                    = 4,
+    parameter integer DBYTES                    = 8,
     parameter         MR0                       = 13'b0101101000000,
     parameter         DDR4_DB_HIF_RTT_NOM     = 4'b0011, 
     parameter         DDR4_DB_HIF_RTT_WR      = 4'b0000, 

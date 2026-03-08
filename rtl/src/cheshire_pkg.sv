@@ -622,7 +622,7 @@ package cheshire_pkg;
     SerialLink        : 0,
     Vga               : 0,
     Usb               : 0,
-    Nvdla             : 1,
+    Nvdla             : 0,
     AxiRt             : 0,
     Clic              : 0,
     IrqRouter         : 1,

@@ -15,7 +15,7 @@
         "Debug_Signal": [ { "value": "Disable", "value_src": "propagated", "resolve_type": "user", "usage": "all" } ],
         "Simulation_Mode": [ { "value": "Unisim", "value_src": "propagated", "resolve_type": "user", "usage": "all" } ],
         "PARTIAL_RECONFIG_FLOW_MIG": [ { "value": "false", "value_src": "propagated", "resolve_type": "user", "format": "bool", "usage": "all" } ],
-        "CLKOUT1_DIVIDE": [ { "value": "15", "value_src": "propagated", "resolve_type": "user", "format": "long", "usage": "all" } ],
+        "CLKOUT1_DIVIDE": [ { "value": "30", "value_src": "propagated", "resolve_type": "user", "format": "long", "usage": "all" } ],
         "CLKOUT2_DIVIDE": [ { "value": "0", "value_src": "propagated", "resolve_type": "user", "format": "long", "usage": "all" } ],
         "CLKOUT3_DIVIDE": [ { "value": "0", "value_src": "propagated", "resolve_type": "user", "format": "long", "usage": "all" } ],
         "CLKOUT4_DIVIDE": [ { "value": "0", "value_src": "propagated", "resolve_type": "user", "format": "long", "usage": "all" } ],

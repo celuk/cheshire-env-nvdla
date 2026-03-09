@@ -1,10 +1,10 @@
 set_property SEVERITY Warning [get_drc_checks LUTLP-1]
 
-set_property PACKAGE_PIN H9 [get_ports clk_p]
-set_property IOSTANDARD LVDS [get_ports clk_p]
-set_property PACKAGE_PIN G9 [get_ports clk_n]
-set_property IOSTANDARD LVDS [get_ports clk_n]
-create_clock -period 8.000 [get_ports clk_p]
+#set_property PACKAGE_PIN H9 [get_ports clk_p]
+#set_property IOSTANDARD LVDS [get_ports clk_p]
+#set_property PACKAGE_PIN G9 [get_ports clk_n]
+#set_property IOSTANDARD LVDS [get_ports clk_n]
+#create_clock -period 8.000 [get_ports clk_p]
 #set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets u_pll/inst/clk_in1_clk_wiz_0]
 
 #set_property PACKAGE_PIN AJ12        [get_ports "c0_sys_clk_n"] ;# Bank  66 VCCO - VCC1V2   - IO_L13N_T2L_N1_GC_QBC_66

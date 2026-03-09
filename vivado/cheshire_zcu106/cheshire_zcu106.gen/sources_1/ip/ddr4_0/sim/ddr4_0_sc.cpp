@@ -103,14 +103,14 @@ ddr4_0_sc::ddr4_0_sc(const sc_core::sc_module_name& nm) : sc_core::sc_module(nm)
     model_param_props.addLong("C0.APP_MASK_WIDTH", "64");
     model_param_props.addLong("C0.DDR4_StackHeight", "1");
     model_param_props.addLong("CLKOUT0_DIVIDE", "0");
-    model_param_props.addLong("CLKOUT1_DIVIDE", "15");
+    model_param_props.addLong("CLKOUT1_DIVIDE", "30");
     model_param_props.addLong("CLKOUT2_DIVIDE", "0");
     model_param_props.addLong("CLKOUT3_DIVIDE", "0");
     model_param_props.addLong("CLKOUT4_DIVIDE", "0");
     model_param_props.addLong("CLKOUT6_DIVIDE", "0");
     model_param_props.addFloat("C0.DDR4_VrefVoltage", "0.84");
     model_param_props.addFloat("C0.DDR4_UI_CLOCK", "300000000");
-    model_param_props.addFloat("M_ADDN_UI_CLKOUT1_FREQ_HZ", "100");
+    model_param_props.addFloat("M_ADDN_UI_CLKOUT1_FREQ_HZ", "50");
     model_param_props.addFloat("M_ADDN_UI_CLKOUT2_FREQ_HZ", "0.0");
     model_param_props.addFloat("M_ADDN_UI_CLKOUT3_FREQ_HZ", "0.0");
     model_param_props.addFloat("M_ADDN_UI_CLKOUT4_FREQ_HZ", "0.0");

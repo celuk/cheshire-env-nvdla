@@ -40,6 +40,7 @@ module dram_wrapper #(
   input  logic [31:0] uart_dram_write_addr_i,
   input  logic [31:0] uart_dram_write_data_i,
   input  logic        uart_dram_write_rst_i,
+  output logic        addn_ui_clkout1,
 
   // PHY interfaces
 
@@ -167,6 +168,13 @@ module dram_wrapper #(
   axi_dw_iw_req_t  iresizer_cdc_req, cdc_dram_req;
   axi_dw_iw_resp_t iresizer_cdc_rsp, cdc_dram_rsp;
 
+  logic soc_clk_int;
+  `ifdef ZCU106
+  assign soc_clk_int = addn_ui_clkout1;
+  `else
+  assign soc_clk_int = soc_clk_i;
+  `endif
+
   // Entry signals
   assign soc_dresizer_req = soc_req_i;
   assign soc_rsp_o = soc_dresizer_rsp;
@@ -196,7 +204,7 @@ module dram_wrapper #(
     .axi_slv_req_t        ( axi_soc_req_t  ),
     .axi_slv_resp_t       ( axi_soc_resp_t )
   ) i_axi_dw_converter (
-    .clk_i      ( soc_clk_i    ),
+    .clk_i      ( soc_clk_int  ),
     .rst_ni     ( soc_resetn_i ),
     .slv_req_i  ( soc_dresizer_req ),
     .slv_resp_o ( soc_dresizer_rsp ),
@@ -225,7 +233,7 @@ module dram_wrapper #(
     .mst_req_t              ( axi_dw_iw_req_t  ),
     .mst_resp_t             ( axi_dw_iw_resp_t )
   ) i_axi_iw_converter (
-    .clk_i      ( soc_clk_i    ),
+    .clk_i      ( soc_clk_int  ),
     .rst_ni     ( soc_resetn_i ),
     .slv_req_i  ( dresizer_iresizer_req ),
     .slv_resp_o ( dresizer_iresizer_rsp ),
@@ -258,7 +266,7 @@ module dram_wrapper #(
       .axi_resp_t ( axi_dw_iw_resp_t),
       .LogDepth   ( cfg.CdcLogDepth )
     ) i_axi_cdc_mig (
-      .src_clk_i  ( soc_clk_i    ),
+      .src_clk_i  ( soc_clk_int  ),
       .src_rst_ni ( soc_resetn_i ),
       `ifdef GENESYS2
       .src_req_i  ( pre_cdc_req ),
@@ -809,6 +817,7 @@ module dram_wrapper #(
     .c0_ddr4_ck_t                    ( c0_ddr4_ck_t ),
     .c0_ddr4_ui_clk                  ( c0_ddr4_ui_clk ),
     .c0_ddr4_ui_clk_sync_rst         ( c0_ddr4_ui_clk_sync_rst ),
+    .addn_ui_clkout1                 ( addn_ui_clkout1 ),
     .c0_ddr4_aresetn                 ( soc_resetn_i ),
     .c0_ddr4_s_axi_awid              ( cdc_dram_req.aw.id ),
     .c0_ddr4_s_axi_awaddr            ( cdc_dram_req_aw_addr ),
@@ -851,6 +860,7 @@ module dram_wrapper #(
   );
 
 `else
+  assign addn_ui_clkout1 = 1'b0;
   assign dram_axi_clk = soc_clk_i;
   assign dram_rst_o   = ~soc_resetn_i;
 

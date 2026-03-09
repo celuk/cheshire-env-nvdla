@@ -19,8 +19,6 @@ module cheshire_soc_wrap import cheshire_pkg::*;
   input  wire sys_clk_p,
   input  wire sys_clk_n,
   `elsif ZCU106
-  input wire clk_p,
-  input wire clk_n,
   input wire c0_sys_clk_p,
   input wire c0_sys_clk_n,
   `else
@@ -235,25 +233,11 @@ module cheshire_soc_wrap import cheshire_pkg::*;
      // cascading PLLs causes jitter issues and calibration failures.
      wire dram_ref_clk = sys_clk;
     `elsif ZCU106
-        wire clk100;
-        wire clk_ddr;
-        wire clk_ref;
-        wire clk_ddr_dqs;
-        wire clk_i;
-
-        clk_wiz_0 u_pll (
-          .clk_in1_p(clk_p),
-          .clk_in1_n(clk_n),
-          .reset(0),
-          .clk_out1(clk100),
-          .clk_out2(clk_ddr),
-          .clk_out3(clk_ref),
-          .clk_out4(clk_ddr_dqs),
-          .clk_out5(clk_i),
-          .locked()
-        );
-
-        wire clkwiz_o = clk_i;
+      wire clk100 = 1'b0;
+      wire clk_ddr = 1'b0;
+      wire clk_ref = 1'b0;
+      wire clk_ddr_dqs = 1'b0;
+      wire clkwiz_o;
       wire rst_n = rst_ni & system_reset_o & !uart_dram_mode;
   `else
      wire clkwiz_o = clk_i;
@@ -638,7 +622,11 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     .axi_soc_resp_t    ( axi_llc_rsp_t     )
   ) dram_controller (
     .soc_resetn_i ( (rst_ni & system_reset_o) || uart_dram_mode ),
+    `ifdef ZCU106
+    .soc_clk_i    ( 1'b0 ),
+    `else
     .soc_clk_i    ( clkwiz_o ),
+    `endif
 
     .clk100       ( clk100 ),
     .clk_ddr      ( clk_ddr ),
@@ -668,6 +656,7 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     .uart_dram_write_addr_i ( uart_dram_write_addr ),
     .uart_dram_write_data_i ( uart_dram_write_data ),
     .uart_dram_write_rst_i  ( 0 ),
+    .addn_ui_clkout1        ( clkwiz_o ),
 
     // PHY interfaces
     `ifdef ZCU106

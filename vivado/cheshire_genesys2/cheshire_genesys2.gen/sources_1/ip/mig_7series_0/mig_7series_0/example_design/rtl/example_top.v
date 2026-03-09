@@ -116,7 +116,7 @@ module example_top #
    parameter ECC                   = "OFF",
    parameter ECC_TEST              = "OFF",
    //parameter nBANK_MACHS           = 4,
-   parameter nBANK_MACHS           = 4,
+   parameter nBANK_MACHS           = 2,
    parameter RANKS                 = 1,
                                      // # of Ranks.
    parameter ROW_WIDTH             = 15,
@@ -145,13 +145,13 @@ module example_top #
    //***************************************************************************
    parameter CLKIN_PERIOD          = 5000,
                                      // Input Clock Period
-   parameter CLKFBOUT_MULT         = 8,
+   parameter CLKFBOUT_MULT         = 4,
                                      // write PLL VCO multiplier
    parameter DIVCLK_DIVIDE         = 1,
                                      // write PLL VCO divisor
-   parameter CLKOUT0_PHASE         = 337.5,
+   parameter CLKOUT0_PHASE         = 315.0,
                                      // Phase for PLL output clock (CLKOUT0)
-   parameter CLKOUT0_DIVIDE        = 2,
+   parameter CLKOUT0_DIVIDE        = 1,
                                      // VCO output divisor for PLL output clock (CLKOUT0)
    parameter CLKOUT1_DIVIDE        = 2,
                                      // VCO output divisor for PLL output clock (CLKOUT1)
@@ -161,7 +161,7 @@ module example_top #
                                      // VCO output divisor for PLL output clock (CLKOUT3)
    parameter MMCM_VCO              = 800,
                                      // Max Freq (MHz) of MMCM VCO
-   parameter MMCM_MULT_F           = 4,
+   parameter MMCM_MULT_F           = 8,
                                      // write MMCM VCO multiplier
    parameter MMCM_DIVCLK_DIVIDE    = 1,
                                      // write MMCM VCO divisor
@@ -191,7 +191,7 @@ module example_top #
    //***************************************************************************
    // AXI4 Shim parameters
    //***************************************************************************
-   parameter C_S_AXI_ID_WIDTH              = 4,
+   parameter C_S_AXI_ID_WIDTH              = 8,
                                              // Width of all master and slave ID signals.
                                              // # = >= 1.
    parameter C_S_AXI_ADDR_WIDTH            = 30,
@@ -245,8 +245,9 @@ module example_top #
 
    // Inputs
    
-   // Single-ended system clock
-   input                                        sys_clk_i,
+   // Differential system clocks
+   input                                        sys_clk_p,
+   input                                        sys_clk_n,
    
 
    output                                       tg_compare_error,
@@ -482,7 +483,8 @@ function integer clogb2 (input integer size);
       
        
 // System Clock Ports
-       .sys_clk_i                       (sys_clk_i),
+       .sys_clk_p                       (sys_clk_p),
+       .sys_clk_n                       (sys_clk_n),
        .device_temp            (device_temp),
        `ifdef SKIP_CALIB
        .calib_tap_req                    (calib_tap_req),

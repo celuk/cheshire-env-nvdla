@@ -15,7 +15,7 @@
 
   <DataDepth_En>1024</DataDepth_En>
 
-  <LowPower_En>ON</LowPower_En>
+  <LowPower_En>OFF</LowPower_En>
 
   <XADC_En>Enabled</XADC_En>
 
@@ -23,7 +23,7 @@
 
   <Version>4.2</Version>
 
-  <SystemClock>No Buffer</SystemClock>
+  <SystemClock>Differential</SystemClock>
 
   <ReferenceClock>Use System Clock</ReferenceClock>
 
@@ -33,14 +33,14 @@
 
   <InternalVref>0</InternalVref>
 
-  <dci_hr_inouts_inputs>50 Ohms</dci_hr_inouts_inputs>
+  <dci_hr_inouts_inputs>40 Ohms</dci_hr_inouts_inputs>
 
   <dci_cascade>0</dci_cascade>
 
   <Controller number="0">
     <MemoryDevice>DDR3_SDRAM/Components/MT41J256m16XX-107</MemoryDevice>
-    <TimePeriod>1250</TimePeriod>
-    <VccAuxIO>2.0V</VccAuxIO>
+    <TimePeriod>2500</TimePeriod>
+    <VccAuxIO>1.8V</VccAuxIO>
     <PHYRatio>4:1</PHYRatio>
     <InputClkFreq>200</InputClkFreq>
     <UIExtraClocks>0</UIExtraClocks>
@@ -54,8 +54,8 @@
     <DeepMemory>1</DeepMemory>
     <DataMask>1</DataMask>
     <ECC>Disabled</ECC>
-    <Ordering>Normal</Ordering>
-    <BankMachineCnt>4</BankMachineCnt>
+    <Ordering>Strict</Ordering>
+    <BankMachineCnt>2</BankMachineCnt>
     <CustomPart>FALSE</CustomPart>
     <NewPartName/>
     <RowAddress>15</RowAddress>
@@ -136,6 +136,9 @@
       <Pin IN_TERM="" IOSTANDARD="LVCMOS15" PADName="AG5" SLEW="" VCCAUX_IO="HIGH" name="ddr3_reset_n"/>
       <Pin IN_TERM="" IOSTANDARD="SSTL15" PADName="AG13" SLEW="" VCCAUX_IO="HIGH" name="ddr3_we_n"/>
     </PinSelection>
+    <System_Clock>
+      <Pin Bank="33" PADName="AD12/AD11(CC_P/N)" name="sys_clk_p/n"/>
+    </System_Clock>
     <System_Control>
       <Pin Bank="Select Bank" PADName="No connect" name="sys_rst"/>
       <Pin Bank="Select Bank" PADName="No connect" name="init_calib_complete"/>
@@ -146,7 +149,7 @@
     </TimingParameters>
     <mrBurstLength name="Burst Length">8 - Fixed</mrBurstLength>
     <mrBurstType name="Read Burst Type and Length">Sequential</mrBurstType>
-    <mrCasLatency name="CAS Latency">11</mrCasLatency>
+    <mrCasLatency name="CAS Latency">6</mrCasLatency>
     <mrMode name="Mode">Normal</mrMode>
     <mrDllReset name="DLL Reset">No</mrDllReset>
     <mrPdMode name="DLL control for precharge PD">Slow Exit</mrPdMode>
@@ -160,7 +163,7 @@
     <emrDQS name="TDQS enable">Enabled</emrDQS>
     <emrRDQS name="Qoff">Output Buffer Enabled</emrRDQS>
     <mr2PartialArraySelfRefresh name="Partial-Array Self Refresh">Full Array</mr2PartialArraySelfRefresh>
-    <mr2CasWriteLatency name="CAS write latency">8</mr2CasWriteLatency>
+    <mr2CasWriteLatency name="CAS write latency">5</mr2CasWriteLatency>
     <mr2AutoSelfRefresh name="Auto Self Refresh">Enabled</mr2AutoSelfRefresh>
     <mr2SelfRefreshTempRange name="High Temparature Self Refresh Rate">Normal</mr2SelfRefreshTempRange>
     <mr2RTTWR name="RTT_WR - Dynamic On Die Termination (ODT)">Dynamic ODT off</mr2RTTWR>
@@ -169,7 +172,7 @@
       <C0_C_RD_WR_ARB_ALGORITHM>RD_PRI_REG</C0_C_RD_WR_ARB_ALGORITHM>
       <C0_S_AXI_ADDR_WIDTH>30</C0_S_AXI_ADDR_WIDTH>
       <C0_S_AXI_DATA_WIDTH>64</C0_S_AXI_DATA_WIDTH>
-      <C0_S_AXI_ID_WIDTH>4</C0_S_AXI_ID_WIDTH>
+      <C0_S_AXI_ID_WIDTH>8</C0_S_AXI_ID_WIDTH>
       <C0_S_AXI_SUPPORTS_NARROW_BURST>0</C0_S_AXI_SUPPORTS_NARROW_BURST>
     </AXIParameters>
   </Controller>

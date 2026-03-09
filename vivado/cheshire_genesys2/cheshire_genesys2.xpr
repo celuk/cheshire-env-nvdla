@@ -3,7 +3,7 @@
 <!--                                                         -->
 <!-- Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.   -->
 
-<Project Version="7" Minor="61" Path="/home/shc/projects/cheshire-env-nvdla/vivado/cheshire_genesys2/cheshire_genesys2.xpr">
+<Project Version="7" Minor="61" Path="C:/Users/2640084/Desktop/ubuntu/shared/projects/cheshire-env-nvdla/vivado/cheshire_genesys2/cheshire_genesys2.xpr">
   <DefaultLaunch Dir="$PRUNDIR"/>
   <Configuration>
     <Option Name="Id" Val="71cb76c9f06040cfa4530aa14d761b93"/>
@@ -65,13 +65,13 @@
     <Option Name="WTVcsLaunchSim" Val="0"/>
     <Option Name="WTRivieraLaunchSim" Val="0"/>
     <Option Name="WTActivehdlLaunchSim" Val="0"/>
-    <Option Name="WTXSimExportSim" Val="10"/>
-    <Option Name="WTModelSimExportSim" Val="10"/>
-    <Option Name="WTQuestaExportSim" Val="9"/>
+    <Option Name="WTXSimExportSim" Val="11"/>
+    <Option Name="WTModelSimExportSim" Val="11"/>
+    <Option Name="WTQuestaExportSim" Val="10"/>
     <Option Name="WTIesExportSim" Val="0"/>
-    <Option Name="WTVcsExportSim" Val="8"/>
-    <Option Name="WTRivieraExportSim" Val="8"/>
-    <Option Name="WTActivehdlExportSim" Val="8"/>
+    <Option Name="WTVcsExportSim" Val="9"/>
+    <Option Name="WTRivieraExportSim" Val="9"/>
+    <Option Name="WTActivehdlExportSim" Val="9"/>
     <Option Name="GenerateIPUpgradeLog" Val="TRUE"/>
     <Option Name="XSimRadix" Val="hex"/>
     <Option Name="XSimTimeUnit" Val="ns"/>
@@ -2413,14 +2413,14 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../cheshire/.bender/git/checkouts/axi-b93d0d6a6eea0215/include/axi/typedef.svh">
+      <File Path="$PPRDIR/../../cheshire/.bender/git/checkouts/axi-b93d0d6a6eea0215/include/axi/assign.svh">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
           <Attr Name="IsVisible" Val="1"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../cheshire/.bender/git/checkouts/axi-b93d0d6a6eea0215/include/axi/assign.svh">
+      <File Path="$PPRDIR/../../cheshire/.bender/git/checkouts/axi-b93d0d6a6eea0215/include/axi/typedef.svh">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
@@ -3575,34 +3575,6 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../rtl/src/ddr3_controller.sv">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="implementation"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../../rtl/src/ddr3_core.sv">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="implementation"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../../rtl/src/ddr3_dfi_phy.sv">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="implementation"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../../rtl/src/ddr3_dfi_seq.sv">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="implementation"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
       <File Path="$PPRDIR/../../cheshire/.bender/git/checkouts/riscv-dbg-26f3bea9e87f8154/debug_rom/debug_rom.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -3681,20 +3653,6 @@
         </FileInfo>
       </File>
       <File Path="$PPRDIR/../../cheshire/.bender/git/checkouts/riscv-dbg-26f3bea9e87f8154/src/dmi_jtag_tap.sv">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="implementation"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../../rtl/src/dram_controller_axi.sv">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="implementation"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../../rtl/src/dram_controller_wb.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
@@ -4254,6 +4212,13 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
+      <File Path="$PPRDIR/../../cheshire/.bender/git/checkouts/idma-f908701a071bbdb8/src/include/idma/guard.svh">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+          <Attr Name="IsVisible" Val="1"/>
+        </FileInfo>
+      </File>
       <File Path="$PPRDIR/../../cheshire/.bender/git/checkouts/idma-f908701a071bbdb8/src/include/tilelink/typedef.svh">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -4262,13 +4227,6 @@
         </FileInfo>
       </File>
       <File Path="$PPRDIR/../../cheshire/.bender/git/checkouts/axi_stream-beabe2c04fcf6efb/include/axi_stream/typedef.svh">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-          <Attr Name="IsVisible" Val="1"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../../cheshire/.bender/git/checkouts/idma-f908701a071bbdb8/src/include/idma/guard.svh">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
@@ -4338,14 +4296,14 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../cheshire/.bender/git/checkouts/cva6-2d66dd46fd533439/common/local/util/instr_trace_item.svh">
+      <File Path="$PPRDIR/../../cheshire/.bender/git/checkouts/cva6-2d66dd46fd533439/common/local/util/ex_trace_item.svh">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
           <Attr Name="IsVisible" Val="1"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../cheshire/.bender/git/checkouts/cva6-2d66dd46fd533439/common/local/util/ex_trace_item.svh">
+      <File Path="$PPRDIR/../../cheshire/.bender/git/checkouts/cva6-2d66dd46fd533439/common/local/util/instr_trace_item.svh">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
@@ -5285,6 +5243,62 @@
       </File>
       <File Path="$PPRDIR/../../rtl/src/cheshire_soc_wrap.sv">
         <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PSRCDIR/sources_1/ip/clk_wiz_0/clk_wiz_0.xci">
+        <FileInfo>
+          <Attr Name="AutoDisabled" Val="1"/>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../rtl/src/ddr3_controller.sv">
+        <FileInfo>
+          <Attr Name="AutoDisabled" Val="1"/>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../rtl/src/ddr3_core.sv">
+        <FileInfo>
+          <Attr Name="AutoDisabled" Val="1"/>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../rtl/src/ddr3_dfi_phy.sv">
+        <FileInfo>
+          <Attr Name="AutoDisabled" Val="1"/>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../rtl/src/ddr3_dfi_seq.sv">
+        <FileInfo>
+          <Attr Name="AutoDisabled" Val="1"/>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../rtl/src/dram_controller_axi.sv">
+        <FileInfo>
+          <Attr Name="AutoDisabled" Val="1"/>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../rtl/src/dram_controller_wb.sv">
+        <FileInfo>
+          <Attr Name="AutoDisabled" Val="1"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
@@ -10810,13 +10824,13 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PSRCDIR/sources_1/ip/mig_7series_0/mig_a.prj">
+      <File Path="$PSRCDIR/sources_1/ip/mig_7series_0/mig_b.prj">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="ScopedToCell" Val="mig_7series_0"/>
         </FileInfo>
       </File>
-      <File Path="$PSRCDIR/sources_1/ip/mig_7series_0/mig_b.prj">
+      <File Path="$PSRCDIR/sources_1/ip/mig_7series_0/mig_a.prj">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="ScopedToCell" Val="mig_7series_0"/>
@@ -10892,7 +10906,6 @@
     <FileSet Name="mig_7series_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/mig_7series_0" RelGenDir="$PGENDIR/mig_7series_0">
       <File Path="$PSRCDIR/sources_1/ip/mig_7series_0/mig_7series_0.xci">
         <FileInfo>
-          <Attr Name="AutoDisabled" Val="1"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
@@ -10900,47 +10913,6 @@
       </File>
       <Config>
         <Option Name="TopModule" Val="mig_7series_0"/>
-        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/common_cells-c159992f96c142c6/include"/>
-        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/apb-e3aa324d02239b4e/include"/>
-        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/axi-b93d0d6a6eea0215/include"/>
-        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/obi-54801685a76362e8/include"/>
-        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/axi_stream-beabe2c04fcf6efb/include"/>
-        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/register_interface-7455b30659b3b228/include"/>
-        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/axi_llc-1c63a0c45fcf3e82/include"/>
-        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/axi_llc-1c63a0c45fcf3e82/test"/>
-        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/axi_rt-3edb1eb4a82b5fc1/include"/>
-        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/cva6-2d66dd46fd533439/common/local/util"/>
-        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/cva6-2d66dd46fd533439/core/include"/>
-        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/idma-f908701a071bbdb8/src/include"/>
-        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/idma-f908701a071bbdb8/target/rtl/include"/>
-        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/idma-f908701a071bbdb8/test"/>
-        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/serial_link-6a7ec72ff7cf8235/src/axis/include"/>
-        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/cva6-2d66dd46fd533439/core/cache_subsystem/hpdcache/rtl/include"/>
-        <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/hw/include"/>
-        <Option Name="VerilogDir" Val="$PPRDIR/../../rtl/src"/>
-        <Option Name="VerilogDir" Val="$PPRDIR/../../rtl"/>
-        <Option Name="dataflowViewerSettings" Val="min_width=16"/>
-        <Option Name="UseBlackboxStub" Val="1"/>
-        <Define Name="TARGET_CVA6"/>
-        <Define Name="TARGET_RTL"/>
-        <Define Name="TARGET_CV64A6_IMAFDCSCLIC_SV39"/>
-        <Define Name="VLIB_BYPASS_POWER_CG"/>
-        <Define Name="NV_FPGA_FIFOGEN"/>
-        <Define Name="FIFOGEN_MASTER_CLK_GATING_DISABLED"/>
-        <Define Name="FPGA"/>
-        <Define Name="SYNTHESIS"/>
-      </Config>
-    </FileSet>
-    <FileSet Name="clk_wiz_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/clk_wiz_0" RelGenDir="$PGENDIR/clk_wiz_0">
-      <File Path="$PSRCDIR/sources_1/ip/clk_wiz_0/clk_wiz_0.xci">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="implementation"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <Config>
-        <Option Name="TopModule" Val="clk_wiz_0"/>
         <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/common_cells-c159992f96c142c6/include"/>
         <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/apb-e3aa324d02239b4e/include"/>
         <Option Name="VerilogDir" Val="$PPRDIR/../../cheshire/.bender/git/checkouts/axi-b93d0d6a6eea0215/include"/>
@@ -10984,14 +10956,11 @@
     <Simulator Name="Questa">
       <Option Name="Description" Val="Questa Advanced Simulator"/>
     </Simulator>
-    <Simulator Name="Xcelium">
-      <Option Name="Description" Val="Xcelium Parallel Simulator"/>
-    </Simulator>
-    <Simulator Name="VCS">
-      <Option Name="Description" Val="Verilog Compiler Simulator (VCS)"/>
-    </Simulator>
     <Simulator Name="Riviera">
       <Option Name="Description" Val="Riviera-PRO Simulator"/>
+    </Simulator>
+    <Simulator Name="ActiveHDL">
+      <Option Name="Description" Val="Active-HDL Simulator"/>
     </Simulator>
   </Simulators>
   <Runs Version="1" Minor="19">
@@ -11006,16 +10975,6 @@
       <RQSFiles/>
     </Run>
     <Run Id="mig_7series_0_synth_1" Type="Ft3:Synth" SrcSet="mig_7series_0" Part="xc7k325tffg900-2" ConstrsSet="mig_7series_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/mig_7series_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/mig_7series_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/mig_7series_0_synth_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2022"/>
-        <Step Id="synth_design"/>
-      </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
-      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2022"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="clk_wiz_0_synth_1" Type="Ft3:Synth" SrcSet="clk_wiz_0" Part="xc7k325tffg900-2" ConstrsSet="clk_wiz_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/clk_wiz_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/clk_wiz_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/clk_wiz_0_synth_1">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2022">
           <Desc>Vivado Synthesis Defaults</Desc>
@@ -11046,23 +11005,6 @@
       <RQSFiles/>
     </Run>
     <Run Id="mig_7series_0_impl_1" Type="Ft2:EntireDesign" Part="xc7k325tffg900-2" ConstrsSet="mig_7series_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="mig_7series_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/mig_7series_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/mig_7series_0_impl_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2022"/>
-        <Step Id="init_design"/>
-        <Step Id="opt_design"/>
-        <Step Id="power_opt_design"/>
-        <Step Id="place_design"/>
-        <Step Id="post_place_power_opt_design"/>
-        <Step Id="phys_opt_design"/>
-        <Step Id="route_design"/>
-        <Step Id="post_route_phys_opt_design"/>
-        <Step Id="write_bitstream"/>
-      </Strategy>
-      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2022"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="clk_wiz_0_impl_1" Type="Ft2:EntireDesign" Part="xc7k325tffg900-2" ConstrsSet="clk_wiz_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="clk_wiz_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/clk_wiz_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/clk_wiz_0_impl_1">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2022">
           <Desc>Default settings for Implementation.</Desc>

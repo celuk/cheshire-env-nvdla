@@ -21,7 +21,7 @@
         "TEMP_MON_CONTROL": [ { "value": "INTERNAL", "resolve_type": "generated", "usage": "all" } ],
         "POLARITY": [ { "value": "ACTIVE_HIGH", "resolve_type": "generated", "usage": "all" } ],
         "IS_CLK_SHARED": [ { "value": "FALSE", "resolve_type": "generated", "usage": "all" } ],
-        "SYSCLK_TYPE": [ { "value": "NOBUF", "resolve_type": "generated", "usage": "all" } ],
+        "SYSCLK_TYPE": [ { "value": "DIFF", "resolve_type": "generated", "usage": "all" } ],
         "USE_AXI": [ { "value": "1", "resolve_type": "generated", "format": "long", "usage": "all" } ],
         "ECC": [ { "value": "OFF", "resolve_type": "generated", "usage": "all" } ],
         "DDR3_DQ_WIDTH": [ { "value": "32", "resolve_type": "generated", "format": "long", "usage": "all" } ],
@@ -85,7 +85,7 @@
         "LPDDR2_ADDR_WIDTH": [ { "value": "8", "resolve_type": "generated", "format": "long", "usage": "all" } ],
         "LPDDR2_nCK_PER_CLK": [ { "value": "2", "resolve_type": "generated", "format": "long", "usage": "all" } ],
         "LPDDR2_DATA_WIDTH": [ { "value": "8", "resolve_type": "generated", "format": "long", "usage": "all" } ],
-        "FREQ_HZ": [ { "value": "200000000", "resolve_type": "generated", "format": "float", "usage": "all" } ],
+        "FREQ_HZ": [ { "value": "100000000", "resolve_type": "generated", "format": "float", "usage": "all" } ],
         "PHASE": [ { "value": "0.000", "resolve_type": "generated", "format": "float", "usage": "all" } ],
         "UI_EXTRA_CLOCKS": [ { "value": "FALSE", "resolve_type": "generated", "usage": "all" } ],
         "MMCM_VCO": [ { "value": "800", "resolve_type": "generated", "format": "float", "usage": "all" } ],
@@ -103,7 +103,7 @@
         "C_S_AXI_CTRL_DATA_WIDTH": [ { "value": "32", "resolve_type": "generated", "format": "long", "usage": "all" } ],
         "C_S_AXI_CTRL_ADDR_WIDTH": [ { "value": "32", "resolve_type": "generated", "format": "long", "usage": "all" } ],
         "C_S_AXI_CTRL_MEM_SIZE": [ { "value": "1048576", "resolve_type": "generated", "format": "long", "usage": "all" } ],
-        "C_S_AXI_ID_WIDTH": [ { "value": "4", "resolve_type": "generated", "format": "long", "usage": "all" } ],
+        "C_S_AXI_ID_WIDTH": [ { "value": "8", "resolve_type": "generated", "format": "long", "usage": "all" } ],
         "C_S_AXI_DATA_WIDTH": [ { "value": "64", "resolve_type": "generated", "format": "long", "usage": "all" } ],
         "C_S_AXI_ADDR_WIDTH": [ { "value": "30", "resolve_type": "generated", "format": "long", "usage": "all" } ],
         "C_S_AXI_MEM_SIZE": [ { "value": "1073741824", "resolve_type": "generated", "format": "long", "usage": "all" } ],
@@ -1164,7 +1164,7 @@
       },
       "project_parameters": {
         "ARCHITECTURE": [ { "value": "kintex7" } ],
-        "BASE_BOARD_PART": [ { "value": "digilentinc.com:genesys2:part0:1.1" } ],
+        "BASE_BOARD_PART": [ { "value": "" } ],
         "BOARD_CONNECTIONS": [ { "value": "" } ],
         "DEVICE": [ { "value": "xc7k325t" } ],
         "PACKAGE": [ { "value": "ffg900" } ],
@@ -1208,7 +1208,7 @@
         "ddr3_odt": [ { "direction": "out", "size_left": "0", "size_right": "0", "display_name": "on die termination", "description": "on die termination" } ],
         "ui_clk_sync_rst": [ { "direction": "out" } ],
         "ui_clk": [ { "direction": "out" } ],
-        "s_axi_awid": [ { "direction": "in", "size_left": "3", "size_right": "0", "driver_value": "0" } ],
+        "s_axi_awid": [ { "direction": "in", "size_left": "7", "size_right": "0", "driver_value": "0" } ],
         "s_axi_awaddr": [ { "direction": "in", "size_left": "29", "size_right": "0" } ],
         "s_axi_awlen": [ { "direction": "in", "size_left": "7", "size_right": "0" } ],
         "s_axi_awsize": [ { "direction": "in", "size_left": "2", "size_right": "0" } ],
@@ -1225,10 +1225,10 @@
         "s_axi_wvalid": [ { "direction": "in" } ],
         "s_axi_wready": [ { "direction": "out" } ],
         "s_axi_bready": [ { "direction": "in" } ],
-        "s_axi_bid": [ { "direction": "out", "size_left": "3", "size_right": "0" } ],
+        "s_axi_bid": [ { "direction": "out", "size_left": "7", "size_right": "0" } ],
         "s_axi_bresp": [ { "direction": "out", "size_left": "1", "size_right": "0" } ],
         "s_axi_bvalid": [ { "direction": "out" } ],
-        "s_axi_arid": [ { "direction": "in", "size_left": "3", "size_right": "0", "driver_value": "0" } ],
+        "s_axi_arid": [ { "direction": "in", "size_left": "7", "size_right": "0", "driver_value": "0" } ],
         "s_axi_araddr": [ { "direction": "in", "size_left": "29", "size_right": "0" } ],
         "s_axi_arlen": [ { "direction": "in", "size_left": "7", "size_right": "0" } ],
         "s_axi_arsize": [ { "direction": "in", "size_left": "2", "size_right": "0" } ],
@@ -1240,13 +1240,14 @@
         "s_axi_arvalid": [ { "direction": "in" } ],
         "s_axi_arready": [ { "direction": "out" } ],
         "s_axi_rready": [ { "direction": "in" } ],
-        "s_axi_rid": [ { "direction": "out", "size_left": "3", "size_right": "0" } ],
+        "s_axi_rid": [ { "direction": "out", "size_left": "7", "size_right": "0" } ],
         "s_axi_rdata": [ { "direction": "out", "size_left": "63", "size_right": "0" } ],
         "s_axi_rresp": [ { "direction": "out", "size_left": "1", "size_right": "0" } ],
         "s_axi_rlast": [ { "direction": "out" } ],
         "s_axi_rvalid": [ { "direction": "out" } ],
         "mmcm_locked": [ { "direction": "out" } ],
-        "sys_clk_i": [ { "direction": "in", "display_name": "Clock P", "description": "Clock P" } ],
+        "sys_clk_p": [ { "direction": "in", "display_name": "Clock P", "description": "Clock P" } ],
+        "sys_clk_n": [ { "direction": "in", "display_name": "Clock P", "description": "Clock P" } ],
         "init_calib_complete": [ { "direction": "out" } ],
         "aresetn": [ { "direction": "in" } ]
       },
@@ -1373,7 +1374,7 @@
           "abstraction_type": "xilinx.com:signal:clock_rtl:1.0",
           "mode": "master",
           "parameters": {
-            "FREQ_HZ": [ { "value": "200000000", "resolve_type": "dependent", "format": "float", "usage": "all" } ],
+            "FREQ_HZ": [ { "value": "100000000", "resolve_type": "dependent", "format": "float", "usage": "all" } ],
             "ASSOCIATED_BUSIF": [ { "value": "S_AXI:S_AXI_CTRL", "value_src": "constant", "usage": "all" } ],
             "ASSOCIATED_RESET": [ { "value": "aresetn:ui_clk_sync_rst", "value_src": "constant", "usage": "all" } ],
             "PHASE": [ { "value": "0", "resolve_type": "dependent", "format": "float", "usage": "all" } ],
@@ -1472,10 +1473,10 @@
           "mode": "slave",
           "memory_map_ref": "memmap",
           "parameters": {
-            "FREQ_HZ": [ { "value": "200000000", "resolve_type": "dependent", "format": "float", "usage": "all" } ],
+            "FREQ_HZ": [ { "value": "100000000", "resolve_type": "dependent", "format": "float", "usage": "all" } ],
             "DATA_WIDTH": [ { "value": "64", "value_src": "auto", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
             "PROTOCOL": [ { "value": "AXI4", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
-            "ID_WIDTH": [ { "value": "4", "value_src": "auto", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
+            "ID_WIDTH": [ { "value": "8", "value_src": "auto", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
             "ADDR_WIDTH": [ { "value": "30", "value_src": "auto", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
             "AWUSER_WIDTH": [ { "value": "0", "value_src": "constant", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
             "ARUSER_WIDTH": [ { "value": "0", "value_src": "constant", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
@@ -1544,22 +1545,17 @@
             "RVALID": [ { "physical_name": "s_axi_rvalid" } ]
           }
         },
-        "SYS_CLK_I": {
-          "vlnv": "xilinx.com:signal:clock:1.0",
-          "abstraction_type": "xilinx.com:signal:clock_rtl:1.0",
+        "SYS_CLK": {
+          "vlnv": "xilinx.com:interface:diff_clock:1.0",
+          "abstraction_type": "xilinx.com:interface:diff_clock_rtl:1.0",
           "mode": "slave",
           "parameters": {
-            "FREQ_HZ": [ { "value": "100000000", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
-            "FREQ_TOLERANCE_HZ": [ { "value": "0", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
-            "PHASE": [ { "value": "0.0", "resolve_type": "generated", "format": "float", "is_ips_inferred": true, "is_static_object": false } ],
-            "CLK_DOMAIN": [ { "value": "", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
-            "ASSOCIATED_BUSIF": [ { "value": "", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
-            "ASSOCIATED_PORT": [ { "value": "", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
-            "ASSOCIATED_RESET": [ { "value": "", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
-            "INSERT_VIP": [ { "value": "0", "value_src": "user", "resolve_type": "user", "format": "long", "usage": "simulation.rtl", "is_ips_inferred": true, "is_static_object": false } ]
+            "CAN_DEBUG": [ { "value": "false", "resolve_type": "generated", "format": "bool", "is_ips_inferred": true, "is_static_object": false } ],
+            "FREQ_HZ": [ { "value": "100000000", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ]
           },
           "port_maps": {
-            "CLK": [ { "physical_name": "sys_clk_i" } ]
+            "CLK_P": [ { "physical_name": "sys_clk_p" } ],
+            "CLK_N": [ { "physical_name": "sys_clk_n" } ]
           }
         },
         "ARESETN": {

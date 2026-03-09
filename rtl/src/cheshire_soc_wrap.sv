@@ -146,6 +146,8 @@ module cheshire_soc_wrap import cheshire_pkg::*;
   logic [31:0] uart_dram_write_data;
   logic uart_dram_write_rst;
   logic uart_dram_mode;
+  logic dram_ui_clk;
+  logic dram_ui_clk_sync_rst;
 
   `ifdef BASYS3
      wire clkwiz_o;
@@ -196,42 +198,12 @@ module cheshire_soc_wrap import cheshire_pkg::*;
      wire rst_n = rst_ni & system_reset_o & !uart_dram_mode; // & !uart_dram_mode
      wire dram_ref_clk = clk_ref; //sys_clk;
   `elsif GENESYS2
-     wire pll_locked;
-     wire clk100;
-     wire clk_ddr;
-     wire clk_ref;
-     wire clk_ddr_dqs;
-     wire clk_i;
-     
-     wire sys_clk;
-     IBUFDS #(
-       .IBUF_LOW_PWR ("FALSE")
-     ) i_bufds_sys_clk (
-       .I  ( sys_clk_p ),
-       .IB ( sys_clk_n ),
-       .O  ( sys_clk   )
-     );
-
-     clk_wiz_0 u_pll (
-        .clk_in1(sys_clk),
-        //.clk_in1_p(sys_clk_p),
-        //.clk_in1_n(sys_clk_n),
-        .reset(~rst_ni),
-        .clk_out1(clk100),
-        .clk_out2(clk_ddr),
-        .clk_out3(clk_ref),
-        .clk_out4(clk_ddr_dqs),
-        .clk_out5(clk_i),
-        .locked(pll_locked)
-     );
-
-     wire clkwiz_o = clk_i;
-     wire rst_n = rst_ni & system_reset_o & !uart_dram_mode & pll_locked;
-
-     // For GENESYS2, MIG needs the raw 200 MHz IBUFDS output (sys_clk),
-     // NOT a PLL-derived clock. The MIG has its own internal MMCM;
-     // cascading PLLs causes jitter issues and calibration failures.
-     wire dram_ref_clk = sys_clk;
+     wire clk100 = 1'b0;
+     wire clk_ddr = 1'b0;
+     wire clk_ref = 1'b0;
+     wire clk_ddr_dqs = 1'b0;
+     wire clkwiz_o = 1'b0;
+     wire rst_n = rst_ni & system_reset_o & !uart_dram_mode;
     `elsif ZCU106
       wire clk100 = 1'b0;
       wire clk_ddr = 1'b0;
@@ -244,8 +216,19 @@ module cheshire_soc_wrap import cheshire_pkg::*;
      wire rst_n = rst_ni & system_reset_o;
   `endif
 
+  `ifdef GENESYS2
+    wire soc_clk = dram_ui_clk;
+    wire soc_rst_n = rst_ni & system_reset_o & !uart_dram_mode & ~dram_ui_clk_sync_rst;
+  `elsif ZCU106
+    wire soc_clk = dram_ui_clk;
+    wire soc_rst_n = rst_ni & system_reset_o & !uart_dram_mode & ~dram_ui_clk_sync_rst;
+  `else
+    wire soc_clk = clkwiz_o;
+    wire soc_rst_n = rst_n;
+  `endif
+
   uart_programmer up_dram (
-     .clk_i(clkwiz_o),
+      .clk_i(soc_clk),
      .rst_ni(rst_ni `ifdef BASYS3 & clkwiz_locked `endif) // pll_locked
      
      ,.program_rx_i(program_rx_i)
@@ -289,8 +272,8 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     end
   end
 
-  always_ff @(posedge clkwiz_o, negedge rst_n) begin
-    if(~rst_n) begin
+  always_ff @(posedge soc_clk, negedge soc_rst_n) begin
+    if(~soc_rst_n) begin
       counter_q <= '0;
       rtc_clk_q <= 0;
     end else begin
@@ -333,8 +316,8 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     .reg_ext_req_t      ( reg_req_t ),
     .reg_ext_rsp_t      ( reg_rsp_t )
   ) csoc (
-    .clk_i              ( clkwiz_o       ),
-    .rst_ni             ( rst_n     ),
+    .clk_i              ( soc_clk       ),
+    .rst_ni             ( soc_rst_n     ),
     .test_mode_i        ( test_mode ),
     .boot_mode_i        ( boot_mode_i ),
     .rtc_i              ( rtc       ),
@@ -625,13 +608,13 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     `ifdef ZCU106
     .soc_clk_i    ( 1'b0 ),
     `else
-    .soc_clk_i    ( clkwiz_o ),
+    .soc_clk_i    ( soc_clk ),
     `endif
 
     .clk100       ( clk100 ),
     .clk_ddr      ( clk_ddr ),
     `ifdef GENESYS2
-    .clk_ref      ( dram_ref_clk ),  // Raw 200 MHz from IBUFDS for MIG
+    .clk_ref      ( clk_ref ),
     `elsif ZC706_MIG
     .clk_ref      ( dram_ref_clk ),
     `else
@@ -645,8 +628,8 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     .c0_sys_clk_p ( c0_sys_clk_p ),
     .c0_sys_clk_n ( c0_sys_clk_n ),
     `elsif GENESYS2
-    .sys_clk_p    ( 1'b0 ),
-    .sys_clk_n    ( 1'b0 ),
+    .sys_clk_p    ( sys_clk_p ),
+    .sys_clk_n    ( sys_clk_n ),
     `else
     .sys_clk_p    ( 1'b0 ),
     .sys_clk_n    ( 1'b0 ),
@@ -656,7 +639,8 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     .uart_dram_write_addr_i ( uart_dram_write_addr ),
     .uart_dram_write_data_i ( uart_dram_write_data ),
     .uart_dram_write_rst_i  ( 0 ),
-    .addn_ui_clkout1        ( clkwiz_o ),
+    .addn_ui_clkout1        ( dram_ui_clk ),
+    .ui_clk_sync_rst_o      ( dram_ui_clk_sync_rst ),
 
     // PHY interfaces
     `ifdef ZCU106

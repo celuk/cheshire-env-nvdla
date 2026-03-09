@@ -117,7 +117,7 @@ module mig_7series_0_mig #
                                       //            for distributed Addressing.
       
    //parameter nBANK_MACHS           = 4,
-   parameter nBANK_MACHS           = 4,
+   parameter nBANK_MACHS           = 2,
    parameter RANKS                 = 1,
                                      // # of Ranks.
    parameter ODT_WIDTH             = 1,
@@ -189,11 +189,11 @@ module mig_7series_0_mig #
                                      // DDR2 SDRAM: Burst Type (Mode Register).
                                      // # = "SEQ" - (Sequential),
                                      //   = "INT" - (Interleaved).
-   parameter CL                    = 11,
+   parameter CL                    = 6,
                                      // in number of clock cycles
                                      // DDR3 SDRAM: CAS Latency (Mode Register 0).
                                      // DDR2 SDRAM: CAS Latency (Mode Register).
-   parameter CWL                   = 8,
+   parameter CWL                   = 5,
                                      // in number of clock cycles
                                      // DDR3 SDRAM: CAS Write Latency (Mode Register 2).
                                      // DDR2 SDRAM: Can be ignored
@@ -230,13 +230,13 @@ module mig_7series_0_mig #
    //***************************************************************************
    parameter CLKIN_PERIOD          = 5000,
                                      // Input Clock Period
-   parameter CLKFBOUT_MULT         = 8,
+   parameter CLKFBOUT_MULT         = 4,
                                      // write PLL VCO multiplier
    parameter DIVCLK_DIVIDE         = 1,
                                      // write PLL VCO divisor
-   parameter CLKOUT0_PHASE         = 337.5,
+   parameter CLKOUT0_PHASE         = 315.0,
                                      // Phase for PLL output clock (CLKOUT0)
-   parameter CLKOUT0_DIVIDE        = 2,
+   parameter CLKOUT0_DIVIDE        = 1,
                                      // VCO output divisor for PLL output clock (CLKOUT0)
    parameter CLKOUT1_DIVIDE        = 2,
                                      // VCO output divisor for PLL output clock (CLKOUT1)
@@ -246,7 +246,7 @@ module mig_7series_0_mig #
                                      // VCO output divisor for PLL output clock (CLKOUT3)
    parameter MMCM_VCO              = 800,
                                      // Max Freq (MHz) of MMCM VCO
-   parameter MMCM_MULT_F           = 4,
+   parameter MMCM_MULT_F           = 8,
                                      // write MMCM VCO multiplier
    parameter MMCM_DIVCLK_DIVIDE    = 1,
                                      // write MMCM VCO divisor
@@ -387,18 +387,18 @@ module mig_7series_0_mig #
    //***************************************************************************
    parameter IBUF_LPWR_MODE        = "OFF",
                                      // to phy_top
-   parameter DATA_IO_IDLE_PWRDWN   = "ON",
+   parameter DATA_IO_IDLE_PWRDWN   = "OFF",
                                      // # = "ON", "OFF"
    parameter BANK_TYPE             = "HP_IO",
                                      // # = "HP_IO", "HPL_IO", "HR_IO", "HRL_IO"
-   parameter DATA_IO_PRIM_TYPE     = "HP_LP",
+   parameter DATA_IO_PRIM_TYPE     = "DEFAULT",
                                      // # = "HP_LP", "HR_LP", "DEFAULT"
    parameter CKE_ODT_AUX           = "FALSE",
    parameter USER_REFRESH          = "OFF",
    parameter WRLVL                 = "ON",
                                      // # = "ON" - DDR3 SDRAM
                                      //   = "OFF" - DDR2 SDRAM.
-   parameter ORDERING              = "NORM",
+   parameter ORDERING              = "STRICT",
                                      // # = "NORM", "STRICT", "RELAXED".
    parameter CALIB_ROW_ADD         = 16'h0000,
                                      // Calibration row address will be used for
@@ -410,10 +410,10 @@ module mig_7series_0_mig #
                                      // Calibration bank address will be used for
                                      // calibration read and write operations
    parameter TCQ                   = 100,
-   parameter IDELAY_ADJ            = "ON",
-   parameter FINE_PER_BIT          = "ON",
-   parameter CENTER_COMP_MODE      = "ON",
-   parameter PI_VAL_ADJ            = "ON",
+   parameter IDELAY_ADJ            = "OFF",
+   parameter FINE_PER_BIT          = "OFF",
+   parameter CENTER_COMP_MODE      = "OFF",
+   parameter PI_VAL_ADJ            = "OFF",
    parameter IODELAY_GRP0          = "MIG_7SERIES_0_IODELAY_MIG0",
                                      // It is associated to a set of IODELAYs with
                                      // an IDELAYCTRL that have same IODELAY CONTROLLER
@@ -422,7 +422,7 @@ module mig_7series_0_mig #
                                      // It is associated to a set of IODELAYs with
                                      // an IDELAYCTRL that have same IODELAY CONTROLLER
                                      // clock frequency (300MHz/400MHz).
-   parameter SYSCLK_TYPE           = "NO_BUFFER",
+   parameter SYSCLK_TYPE           = "DIFFERENTIAL",
                                      // System clock type DIFFERENTIAL, SINGLE_ENDED,
                                      // NO_BUFFER
    parameter REFCLK_TYPE           = "USE_SYSTEM_CLOCK",
@@ -441,7 +441,7 @@ module mig_7series_0_mig #
    parameter CAL_WIDTH             = "HALF",
    parameter STARVE_LIMIT          = 2,
                                      // # = 2,3,4.
-   parameter REF_CLK_MMCM_IODELAY_CTRL    = "TRUE",
+   parameter REF_CLK_MMCM_IODELAY_CTRL    = "FALSE",
       
 
    //***************************************************************************
@@ -455,13 +455,13 @@ module mig_7series_0_mig #
    //***************************************************************************
    // System clock frequency parameters
    //***************************************************************************
-   parameter tCK                   = 1250,
+   parameter tCK                   = 2500,
                                      // memory tCK paramter.
                                      // # = Clock Period in pS.
    parameter nCK_PER_CLK           = 4,
    // # of memory CKs per fabric CLK
    
-   parameter DIFF_TERM_SYSCLK      = "TRUE",
+   parameter DIFF_TERM_SYSCLK      = "FALSE",
                                      // Differential Termination for System
                                      // clock input pins
       
@@ -476,7 +476,7 @@ module mig_7series_0_mig #
                                      // 1/2, 1/4 and 1/8 of fabrick clock.
                                      // Valid for DDR2/DDR3 AXI interfaces
                                      // based on GUI selection
-   parameter C_S_AXI_ID_WIDTH              = 4,
+   parameter C_S_AXI_ID_WIDTH              = 8,
                                              // Width of all master and slave ID signals.
                                              // # = >= 1.
    parameter C_S_AXI_MEM_SIZE              = "1073741824",
@@ -595,8 +595,9 @@ module mig_7series_0_mig #
 
    // Inputs
    
-   // Single-ended system clock
-   input                                        sys_clk_i,
+   // Differential system clocks
+   input                                        sys_clk_p,
+   input                                        sys_clk_n,
    
    
    // user interface signals
@@ -773,8 +774,7 @@ module mig_7series_0_mig #
   // Interrupt output
   wire                              interrupt;
 
-  wire                              sys_clk_p;
-  wire                              sys_clk_n;
+  wire                              sys_clk_i;
   wire                              mmcm_clk;
   wire                              clk_ref_p;
   wire                              clk_ref_n;
@@ -867,8 +867,7 @@ module mig_7series_0_mig #
   assign ui_clk = clk;
   assign ui_clk_sync_rst = rst;
   
-  assign sys_clk_p = 1'b0;
-  assign sys_clk_n = 1'b0;
+  assign sys_clk_i = 1'b0;
   assign clk_ref_i = 1'b0;
   assign device_temp = device_temp_s;
       

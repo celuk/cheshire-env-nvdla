@@ -4,9 +4,9 @@
 
 //`define DRAM_SIM
 //`define SIM
-`define GENESYS2
-//`define ZC706
-//`define ZC706_MIG
+//`define GENESYS2
+`define ZC706
+`define ZC706_MIG
 
 //`define ZCU106
 

@@ -8,13 +8,12 @@
 
 module cheshire_soc_wrap import cheshire_pkg::*;
 (
-  `ifdef ZC706
-  input  wire clk_p,
-  input  wire clk_n,
   `ifdef ZC706_MIG
   input wire sys_clk_p,
   input wire sys_clk_n,
-  `endif
+  `elsif ZC706
+  input  wire clk_p,
+  input  wire clk_n,
   `elsif GENESYS2
   input  wire sys_clk_p,
   input  wire sys_clk_n,
@@ -159,7 +158,14 @@ module cheshire_soc_wrap import cheshire_pkg::*;
         .locked(clkwiz_locked)
      );
      wire rst_n = rst_ni & system_reset_o & clkwiz_locked;
-  `elsif ZC706
+    `elsif ZC706_MIG
+      wire clk100 = 1'b0;
+      wire clk_ddr = 1'b0;
+      wire clk_ref = 1'b0;
+      wire clk_ddr_dqs = 1'b0;
+      wire clkwiz_o = 1'b0;
+      wire rst_n = rst_ni & system_reset_o & !uart_dram_mode;
+    `elsif ZC706
      wire pll_locked;
      wire clk100;
      wire clk_ddr;
@@ -224,6 +230,31 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     //  .IS_CLR_INVERTED(1'b0),
     //  .IS_I_INVERTED (1'b0),
     //  .SIM_DEVICE    ("7SERIES")
+    //) i_soc_clk_div2 (
+    //  .I   (dram_ui_clk),
+    //  .CE  (1'b1),
+    //  .CLR (1'b0),
+    //  .O   (soc_clk_div2)
+    //);
+
+    always_ff @(posedge dram_ui_clk, posedge dram_ui_clk_sync_rst) begin
+      if (dram_ui_clk_sync_rst) begin
+        soc_clk_div2 <= 1'b0;
+      end else begin
+        soc_clk_div2 <= ~soc_clk_div2;
+      end
+    end
+
+    wire soc_clk = soc_clk_div2;
+    wire soc_rst_n = rst_ni & system_reset_o & !uart_dram_mode & ~dram_ui_clk_sync_rst;
+  `elsif ZC706_MIG
+    logic soc_clk_div2;
+    //BUFGCE_DIV #(
+    //  .BUFGCE_DIVIDE (2),
+    //  .IS_CE_INVERTED(1'b0),
+    //  .IS_CLR_INVERTED(1'b0),
+    //  .IS_I_INVERTED (1'b0),
+    //  .SIM_DEVICE    ("ULTRASCALE")
     //) i_soc_clk_div2 (
     //  .I   (dram_ui_clk),
     //  .CE  (1'b1),
@@ -638,7 +669,7 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     `ifdef GENESYS2
     .clk_ref      ( clk_ref ),
     `elsif ZC706_MIG
-    .clk_ref      ( dram_ref_clk ),
+    .clk_ref      ( 1'b0 ),
     `else
     .clk_ref      ( clk_ref ),
     `endif

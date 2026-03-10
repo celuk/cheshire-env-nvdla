@@ -333,7 +333,6 @@ FILE_LIST = [
     f"{ROOT}/.bender/git/checkouts/fpnew-*/src/fpnew_top.sv",
     f"{ROOT}/.bender/git/checkouts/obi_peripherals-*/hw/obi_uart/obi_uart_pkg.sv",
     f"{ROOT}/.bender/git/checkouts/obi_peripherals-*/hw/obi_uart/obi_uart_baudgen.sv",
-#    "../../rtl/src/obi_uart_baudgen.sv",
     f"{ROOT}/.bender/git/checkouts/obi_peripherals-*/hw/obi_uart/obi_uart_interrupts.sv",
     f"{ROOT}/.bender/git/checkouts/obi_peripherals-*/hw/obi_uart/obi_uart_modem.sv",
     f"{ROOT}/.bender/git/checkouts/obi_peripherals-*/hw/obi_uart/obi_uart_rx.sv",
@@ -732,13 +731,10 @@ FILE_LIST = [
     f"{ROOT}/hw/future/spinal_usb_ohci.sv",
     f"{ROOT}/hw/regs/cheshire_reg_pkg.sv",
     f"{ROOT}/hw/regs/cheshire_reg_top.sv",
-#    f"{ROOT}/hw/cheshire_pkg.sv",
-    "../../rtl/src/cheshire_pkg.sv",
+    f"{ROOT}/hw/cheshire_pkg.sv",
     f"{ROOT}/hw/bootrom/cheshire_bootrom.sv",
-#    "../../rtl/src/cheshire_bootrom.sv",
     f"{ROOT}/hw/cheshire_idma_wrap.sv",
-#    f"{ROOT}/hw/cheshire_soc.sv",
-    "../../rtl/src/cheshire_soc.sv",
+    f"{ROOT}/hw/cheshire_soc.sv",
     f"{ROOT}/target/sim/models/s25fs512s.v",
     f"{ROOT}/target/sim/models/24FC1025.v",
     f"{ROOT}/target/sim/src/vip_cheshire_soc.sv",
@@ -774,9 +770,7 @@ def run_test(simulator: str, test_file: Path, top_module: str, waves: bool, cfil
     sim_dir = Path(SCRIPT_DIR / "../../rtl/sim")
 
     submodule_dirs = [
-        Path(SCRIPT_DIR / "../../nvdla/block-nvdla-sifive/vsrc/small"),
-        Path(f"{VIVADO_PATH}/data/verilog/src/unisims"),
-        Path(f"{VIVADO_PATH}/data/verilog/src/retarget")
+        Path(SCRIPT_DIR / "../../nvdla/block-nvdla-sifive/vsrc/small")
     ]
 
     submodule_verilog_files = []
@@ -814,7 +808,6 @@ def run_test(simulator: str, test_file: Path, top_module: str, waves: bool, cfil
         + list(["../../rtl/src/nvdla_wrapper_axi.sv"])
         + list(["../../rtl/src/regwriter.sv"])
         + list(["../../rtl/sim/ddr3.v"])
-        + list(["../../rtl/sim/ddr3_model.sv"])
         + submodule_verilog_files
         + submodule_system_verilog_files
         + list([Path(SCRIPT_DIR / "../../nvdla/block-nvdla-sifive/vsrc/defines/defs.v")])
@@ -830,18 +823,17 @@ def run_test(simulator: str, test_file: Path, top_module: str, waves: bool, cfil
         + list([Path(SCRIPT_DIR / "../../nvdla/block-nvdla-sifive/hw/vmod/vlibs/nv_assert_at_time_interval.vlib")])
         + list([Path(SCRIPT_DIR / "../../nvdla/block-nvdla-sifive/hw/vmod/vlibs/nv_assert_hold_throughout_event_interval.vlib")])
         + list(["../../vivado/cheshire_zc706/cheshire_zc706.gen/sources_1/ip/clk_wiz_0/clk_wiz_0_sim_netlist.v"])
-        + list(filter(lambda x: not x.endswith("mig_7series_0_mig.v"), glob.glob(str(SCRIPT_DIR / "../../vivado/cheshire_zc706/cheshire_zc706.gen/sources_1/ip/mig_7series_0/mig_7series_0/user_design/rtl/**/*.v"), recursive=True)))
         + list([f"{VIVADO_PATH}/data/verilog/src/glbl.v"])
-        #+ list([f"{VIVADO_PATH}/data/verilog/src/unisims/OBUFDS.v"])
-        #+ list([f"{VIVADO_PATH}/data/verilog/src/unisims/IOBUFDS.v"])
-        #+ list([f"{VIVADO_PATH}/data/verilog/src/unisims/OSERDESE2.v"])
-        #+ list([f"{VIVADO_PATH}/data/verilog/src/unisims/ISERDESE2.v"])
-        #+ list([f"{VIVADO_PATH}/data/verilog/src/unisims/IOBUF.v"])
-        #+ list([f"{VIVADO_PATH}/data/verilog/src/unisims/IDELAYE2.v"])
-        #+ list([f"{VIVADO_PATH}/data/verilog/src/unisims/IDELAYCTRL.v"])
-        #+ list([f"{VIVADO_PATH}/data/verilog/src/unisims/BUFG.v"])
-        #+ list([f"{VIVADO_PATH}/data/verilog/src/unisims/IBUFDS.v"])
-        #+ list([f"{VIVADO_PATH}/data/verilog/src/unisims/MMCME2_ADV.v"])
+        + list([f"{VIVADO_PATH}/data/verilog/src/unisims/OBUFDS.v"])
+        + list([f"{VIVADO_PATH}/data/verilog/src/unisims/IOBUFDS.v"])
+        + list([f"{VIVADO_PATH}/data/verilog/src/unisims/OSERDESE2.v"])
+        + list([f"{VIVADO_PATH}/data/verilog/src/unisims/ISERDESE2.v"])
+        + list([f"{VIVADO_PATH}/data/verilog/src/unisims/IOBUF.v"])
+        + list([f"{VIVADO_PATH}/data/verilog/src/unisims/IDELAYE2.v"])
+        + list([f"{VIVADO_PATH}/data/verilog/src/unisims/IDELAYCTRL.v"])
+        + list([f"{VIVADO_PATH}/data/verilog/src/unisims/BUFG.v"])
+        + list([f"{VIVADO_PATH}/data/verilog/src/unisims/IBUFDS.v"])
+        + list([f"{VIVADO_PATH}/data/verilog/src/unisims/MMCME2_ADV.v"])
     )
 
     verilog_sources = [
@@ -904,7 +896,7 @@ def run_test(simulator: str, test_file: Path, top_module: str, waves: bool, cfil
 
         input_script = (
             f"@database -open cocotb_waves -default;"
-            f"probe -database cocotb_waves -create {xrun_top} -all;"
+            f"probe -database cocotb_waves -create {xrun_top} -all -memories -variables -depth all;"
         #    f"probe -create -packed 131072 *;"
             f"run;"
             f"exit;"
@@ -956,7 +948,7 @@ def run_test(simulator: str, test_file: Path, top_module: str, waves: bool, cfil
                              "+define+TARGET_TEST",
                              "+define+TARGET_VCS",
                              #"+define+TARGET_CV64A6_FLAMINGO",
-                             "+define+TARGET_CV64A6_IMAFDCSCLIC_SV39"
+                             "+define+TARGET_CV64A6_IMAFDCSCLIC_SV39",
         ] #'+incdir+"../../../vivado/cva_soc_zc706/cva_soc_zc706.gen/sources_1/ip/clk_wiz_0"']
         if DRAM_SIM: #if "dram" in cfile:
             runner_build_args.extend(["-f", f"{VIVADO_PATH}/data/secureip/secureip_cell.list.f"])

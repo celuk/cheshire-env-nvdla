@@ -4,6 +4,19 @@
 
 `include "header.vh"
 
+`ifndef DDR3_SIM_INIT_CHIP0
+`define DDR3_SIM_INIT_CHIP0 ""
+`endif
+`ifndef DDR3_SIM_INIT_CHIP1
+`define DDR3_SIM_INIT_CHIP1 ""
+`endif
+`ifndef DDR3_SIM_INIT_CHIP2
+`define DDR3_SIM_INIT_CHIP2 ""
+`endif
+`ifndef DDR3_SIM_INIT_CHIP3
+`define DDR3_SIM_INIT_CHIP3 ""
+`endif
+
 //`default_nettype none
 
 module cheshire_soc_wrap import cheshire_pkg::*;
@@ -248,7 +261,7 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     wire soc_clk = soc_clk_div2;
     wire soc_rst_n = rst_ni & system_reset_o & !uart_dram_mode & ~dram_ui_clk_sync_rst;
   `elsif ZC706_MIG
-    logic [1:0] soc_clk_div4;
+    logic soc_clk_div2;
     //BUFGCE_DIV #(
     //  .BUFGCE_DIVIDE (2),
     //  .IS_CE_INVERTED(1'b0),
@@ -259,18 +272,18 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     //  .I   (dram_ui_clk),
     //  .CE  (1'b1),
     //  .CLR (1'b0),
-    //  .O   (soc_clk_div4[1])
+    //  .O   (soc_clk_div2)
     //);
 
     always_ff @(posedge dram_ui_clk, posedge dram_ui_clk_sync_rst) begin
       if (dram_ui_clk_sync_rst) begin
-        soc_clk_div4 <= 2'b00;
+        soc_clk_div2 <= 1'b0;
       end else begin
-        soc_clk_div4 <= soc_clk_div4 + 2'b01;
+        soc_clk_div2 <= ~soc_clk_div2;
       end
     end
 
-    wire soc_clk = soc_clk_div4[1];
+    wire soc_clk = soc_clk_div2;
     wire soc_rst_n = rst_ni & system_reset_o & !uart_dram_mode & ~dram_ui_clk_sync_rst;
   `elsif ZCU106
     wire soc_clk = dram_ui_clk;
@@ -475,8 +488,7 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     // Two x16 DDR3 chips to form 32-bit data bus (matching MIG DQ_WIDTH=32, MEMORY_WIDTH=16)
     // Chip 0: DQ[15:0], DQS[1:0], DM[1:0] — carries lower 16 bits of each 32-bit word
     ddr3_model #(
-      //.MEM_INIT_FILE("../../../cheshire/sw/tests/helloworld.mem_init_chip0.txt")
-    .MEM_INIT_FILE("")
+      .MEM_INIT_FILE(`DDR3_SIM_INIT_CHIP0)
     ) ddr3_chip0 (
       .rst_n  (ddr3_reset_n),
       .ck     (ddr3_ck_p),
@@ -498,8 +510,7 @@ module cheshire_soc_wrap import cheshire_pkg::*;
 
     // Chip 1: DQ[31:16], DQS[3:2], DM[3:2] — carries upper 16 bits of each 32-bit word
     ddr3_model #(
-      //.MEM_INIT_FILE("../../../cheshire/sw/tests/helloworld.mem_init_chip1.txt")
-    .MEM_INIT_FILE("")
+      .MEM_INIT_FILE(`DDR3_SIM_INIT_CHIP1)
     ) ddr3_chip1 (
       .rst_n  (ddr3_reset_n),
       .ck     (ddr3_ck_p),
@@ -535,7 +546,9 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     wire [7:0] ddr3_dqs_n;
     wire [63:0] ddr3_dq;
 
-    ddr3_model ddr3_dut0 (
+    ddr3_model #(
+      .MEM_INIT_FILE(`DDR3_SIM_INIT_CHIP0)
+    ) ddr3_dut0 (
       .rst_n  (ddr3_reset_n),
       .ck     (ddr3_ck_p),
       .ck_n   (ddr3_ck_n),
@@ -554,7 +567,9 @@ module cheshire_soc_wrap import cheshire_pkg::*;
       .odt    (ddr3_odt)
     );
 
-    ddr3_model ddr3_dut1 (
+    ddr3_model #(
+      .MEM_INIT_FILE(`DDR3_SIM_INIT_CHIP1)
+    ) ddr3_dut1 (
       .rst_n  (ddr3_reset_n),
       .ck     (ddr3_ck_p),
       .ck_n   (ddr3_ck_n),
@@ -573,7 +588,9 @@ module cheshire_soc_wrap import cheshire_pkg::*;
       .odt    (ddr3_odt)
     );
 
-    ddr3_model ddr3_dut2 (
+    ddr3_model #(
+      .MEM_INIT_FILE(`DDR3_SIM_INIT_CHIP2)
+    ) ddr3_dut2 (
       .rst_n  (ddr3_reset_n),
       .ck     (ddr3_ck_p),
       .ck_n   (ddr3_ck_n),
@@ -592,7 +609,9 @@ module cheshire_soc_wrap import cheshire_pkg::*;
       .odt    (ddr3_odt)
     );
 
-    ddr3_model ddr3_dut3 (
+    ddr3_model #(
+      .MEM_INIT_FILE(`DDR3_SIM_INIT_CHIP3)
+    ) ddr3_dut3 (
       .rst_n  (ddr3_reset_n),
       .ck     (ddr3_ck_p),
       .ck_n   (ddr3_ck_n),

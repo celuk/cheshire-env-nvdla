@@ -2,7 +2,7 @@
 `define ASSERTS_OFF 1
 `define TARGET_SYNTHESIS
 
-//`define DRAM_SIM
+`define DRAM_SIM
 //`define SIM
 //`define GENESYS2
 `define ZC706
@@ -25,3 +25,8 @@
 //`define NV_FPGA_UNIT 1
 
 `define JTAG
+
+`define DDR3_SIM_INIT_CHIP0 "../../../cheshire/sw/tests/helloworld.mem_init_chip0.txt"
+`define DDR3_SIM_INIT_CHIP1 "../../../cheshire/sw/tests/helloworld.mem_init_chip1.txt"
+`define DDR3_SIM_INIT_CHIP2 "../../../cheshire/sw/tests/helloworld.mem_init_chip2.txt"
+`define DDR3_SIM_INIT_CHIP3 "../../../cheshire/sw/tests/helloworld.mem_init_chip3.txt"

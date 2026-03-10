@@ -248,7 +248,7 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     wire soc_clk = soc_clk_div2;
     wire soc_rst_n = rst_ni & system_reset_o & !uart_dram_mode & ~dram_ui_clk_sync_rst;
   `elsif ZC706_MIG
-    logic soc_clk_div2;
+    logic [1:0] soc_clk_div4;
     //BUFGCE_DIV #(
     //  .BUFGCE_DIVIDE (2),
     //  .IS_CE_INVERTED(1'b0),
@@ -259,18 +259,18 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     //  .I   (dram_ui_clk),
     //  .CE  (1'b1),
     //  .CLR (1'b0),
-    //  .O   (soc_clk_div2)
+    //  .O   (soc_clk_div4[1])
     //);
 
     always_ff @(posedge dram_ui_clk, posedge dram_ui_clk_sync_rst) begin
       if (dram_ui_clk_sync_rst) begin
-        soc_clk_div2 <= 1'b0;
+        soc_clk_div4 <= 2'b00;
       end else begin
-        soc_clk_div2 <= ~soc_clk_div2;
+        soc_clk_div4 <= soc_clk_div4 + 2'b01;
       end
     end
 
-    wire soc_clk = soc_clk_div2;
+    wire soc_clk = soc_clk_div4[1];
     wire soc_rst_n = rst_ni & system_reset_o & !uart_dram_mode & ~dram_ui_clk_sync_rst;
   `elsif ZCU106
     wire soc_clk = dram_ui_clk;

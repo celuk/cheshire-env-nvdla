@@ -61,8 +61,8 @@ module dram_wrapper #(
   inout  [7:0]  c0_ddr4_dqs_c,
   inout  [7:0]  c0_ddr4_dqs_t,
   `else
-  output        ddr3_ck_p,
-  output        ddr3_ck_n,
+  output [0:0]  ddr3_ck_p,
+  output [0:0]  ddr3_ck_n,
   `ifdef GENESYS2
   inout  [31:0] ddr3_dq,
   inout  [3:0]  ddr3_dqs_n,

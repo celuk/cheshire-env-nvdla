@@ -63,10 +63,10 @@ module cheshire_soc_wrap import cheshire_pkg::*;
   `else
   // DDR3 Interface
   ,output logic ddr3_reset_n,
-  output logic ddr3_cke,
-  output logic ddr3_ck_p,
-  output logic ddr3_ck_n,
-  output logic ddr3_cs_n,
+  output logic [0:0] ddr3_cke,
+  output logic [0:0] ddr3_ck_p,
+  output logic [0:0] ddr3_ck_n,
+  output logic [0:0] ddr3_cs_n,
   output logic ddr3_ras_n,
   output logic ddr3_cas_n,
   output logic ddr3_we_n,
@@ -81,7 +81,7 @@ module cheshire_soc_wrap import cheshire_pkg::*;
   `elsif ZC706_MIG
   output logic [2:0] ddr3_ba,
   output logic [13:0] ddr3_addr,
-  output logic ddr3_odt,
+  output logic [0:0] ddr3_odt,
   inout  logic [7:0] ddr3_dm,
   inout  logic [7:0] ddr3_dqs_p,
   inout  logic [7:0] ddr3_dqs_n,
@@ -531,16 +531,16 @@ module cheshire_soc_wrap import cheshire_pkg::*;
     );
     `elsif ZC706_MIG
     wire ddr3_reset_n;
-    wire ddr3_cke;
-    wire ddr3_ck_p;
-    wire ddr3_ck_n;
-    wire ddr3_cs_n;
+    wire [0:0] ddr3_cke;
+    wire [0:0] ddr3_ck_p;
+    wire [0:0] ddr3_ck_n;
+    wire [0:0] ddr3_cs_n;
     wire ddr3_ras_n;
     wire ddr3_cas_n;
     wire ddr3_we_n;
     wire [2:0] ddr3_ba;
     wire [13:0] ddr3_addr;
-    wire ddr3_odt;
+    wire [0:0] ddr3_odt;
     wire [7:0] ddr3_dm;
     wire [7:0] ddr3_dqs_p;
     wire [7:0] ddr3_dqs_n;
